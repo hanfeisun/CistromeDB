@@ -1,0 +1,27 @@
+<html>
+   <head><title>Paper Form</title>
+   </head>
+   <body>
+      {% if form.errors %}
+         <p>Please correct the error{{ form.errors|pluralize }} below.</p>
+      {% endif %}
+      <div>
+         <h1>Paper Form:</h1>
+	 <form action="" method="post">
+	     {% csrf_token %}
+	     {{ form.as_p }}
+	     <input type="submit" value="Submit"/>
+	 </form>
+	 <!--<form action="/new_paper_form/" method="post">
+	    <p>Pubmed id: <input type="text" name="pmid"/></p>
+	    <p>Geo Series id: <input type="text" name="gseid"/></p>
+	    <p>Title: <input type="text" name="title"/></p>
+	    <p>Abstract: <textarea name="abstract"></textarea></p>
+	    <p>Publication date: <input type="text" name="pub_date"/></p>
+	    <p>Last Author: <input type="text" name="last_auth"/></p>
+	    <p>Last Author Email: <input type="text" name="last_auth_email"/></p>
+	    <input type="submit" value="Submit"/>
+	 </form>-->
+      </div>
+   </body>
+</html>

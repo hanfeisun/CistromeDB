@@ -1,0 +1,17 @@
+<html>
+   <head><title>Dataset Form</title>
+   </head>
+   <body>
+      {% if form.errors %}
+         <p>Please correct the error{{ form.errors|pluralize }} below.</p>
+      {% endif %}
+      <div>
+         <h1>Dataset Form:</h1>
+	 <form enctype="multipart/form-data" action="" method="post">
+	     {% csrf_token %}
+	     {{ form.as_p }}
+	     <input type="submit" value="Submit"/>
+	 </form>
+      </div>
+   </body>
+</html>
