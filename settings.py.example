@@ -1,4 +1,5 @@
 # Django settings for newdc project.
+#NOTE: this was generated with django1.2, but newdc is built using django1.1
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -8,16 +9,12 @@ ADMINS = (('Len Taing', 'lentaing@jimmy.harvard.edu'),
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'mysql', 
-        'NAME': 'newdc',
-        'USER': 'root',
-        'PASSWORD': 'daisy',
-        'HOST': '',
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    }
-}
+DATABASE_ENGINE = 'mysql'
+DATABASE_NAME = 'newdc'
+DATABASE_USER = 'root'
+DATABASE_PASSWORD = 'daisy'
+DATABASE_HOST = ''
+DATABASE_PORT = ''
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -54,18 +51,19 @@ ADMIN_MEDIA_PREFIX = '/media/'
 SECRET_KEY = '@y7n)31q3q=*0v!kvbg5rq_hhkt$(!#o2u88cr_xshhn=3ij=6'
 
 # List of callables that know how to import templates from various sources.
+# List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-)
+        'django.template.loaders.filesystem.load_template_source',
+            'django.template.loaders.app_directories.load_template_source',
+        #     'django.template.loaders.eggs.load_template_source',
+        )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    #'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 ROOT_URLCONF = 'newdc.urls'
@@ -82,7 +80,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'django.contrib.messages',
+    #'django.contrib.messages',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     'datacollection'
@@ -90,3 +88,4 @@ INSTALLED_APPS = (
 
 LOGIN_REDIRECT_URL='/datasets/'
 
+PREFIX_URL="/"
