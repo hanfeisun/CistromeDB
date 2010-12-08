@@ -8,14 +8,17 @@ import settings
 # from django.contrib import admin
 # admin.autodiscover()
 
+PREFIX_URL = settings.PREFIX_URL.lstrip("/")
+
 urlpatterns = patterns('',
-              (r'^new_paper_form/$', views.new_paper_form),
-              (r'^new_dataset_form/$', views.new_dataset_form),
-              (r'^datasets/$', views.datasets),
-              (r'^accounts/login/$', login),
-              (r'^accounts/logout/$', logout),
-              (r'^accounts/register/$', views.register),
-              (r'^static/(?P<path>.*)$', 'django.views.static.serve',
+              (r'^'+PREFIX_URL+'new_paper_form/$', views.new_paper_form),
+              (r'^'+PREFIX_URL+'new_dataset_form/$', views.new_dataset_form),
+              (r'^'+PREFIX_URL+'datasets/$', views.datasets),
+              (r'^'+PREFIX_URL+'accounts/login/$', login),
+              (r'^'+PREFIX_URL+'accounts/logout/$', logout),
+              (r'^'+PREFIX_URL+'accounts/register/$', views.register),
+              (r'^'+PREFIX_URL+'static/(?P<path>.*)$', 
+               'django.views.static.serve',
                {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     # Example:
     # (r'^newdc/', include('newdc.foo.urls')),
