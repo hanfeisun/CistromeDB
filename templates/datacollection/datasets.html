@@ -1,0 +1,61 @@
+<html>
+   <head><title>Datasets</title>
+   </head>
+   <body>
+   {% if user.is_authenticated %}
+      <p>Welcome, {{ user.username }}.<a href="/accounts/logout/">logout</a></p>
+   {% else %}
+      <a href="/accounts/login/">login</a>
+   {% endif %}
+   <table>
+      <tr>
+         <th>GSMID</th>
+	 <th>Chip Page</th>
+	 <th>Control GSMID</th>
+	 <th>Control Page</th>
+         <th>Date collected</th>
+	 <th>Pubmed Id</th>
+	 <th>GSEID</th>
+	 <th>Title</th>
+	 <th>Abstract</th>
+	 <th>Publication Date</th>
+	 <th>Last Author</th>
+	 <th>Last Author Email</th>
+	 <th>Factor</th>
+	 <th>Platform</th>
+	 <th>Species</th>
+	 <th>Cell Type</th>
+	 <th>Cell Line</th>
+	 <th>Population</th>
+	 <th>Strain/Mutation</th>
+	 <th>Condition</th>
+      </tr>
+      {% for d in datasets %}
+      <tr>
+         <td>{{ d.gsmid }}</td>
+         <td>{{ d.chip_page }}</td>
+         <td>{{ d.control_gsmid }}</td>
+         <td>{{ d.control_page }}</td>
+         <td>{{ d.date_collected }}</td>
+         <td>{{ d.paper.pmid }}</td>
+         <td>{{ d.paper.gseid }}</td>
+         <td>{{ d.paper.title }}</td>
+         <td>{{ d.paper.abstract }}</td>
+         <td>{{ d.paper.pub_date }}</td>
+         <td>{{ d.paper.last_auth }}</td>
+         <td>{{ d.paper.last_auth_email }}</td>
+	 <!-- use a printer--that checks to see if d's platform is 0, in 
+	 which case it inherits the paper's platform-->
+         <td>{{ d.factor.name }}</td>
+         <td>{{ d.platform.name }}</td>
+         <td>{{ d.species }}</td>
+         <td>{{ d.cell_type.name }}</td>
+         <td>{{ d.cell_line.name }}</td>
+         <td>{{ d.cell_pop.name }}</td>
+         <td>{{ d.strain.name }}</td>
+         <td>{{ d.condition.name }}</td>
+       </tr>
+       {% endfor %}
+    </table>
+    </body>
+</html>
