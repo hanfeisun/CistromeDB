@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, Http404
 from django.contrib import auth
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -14,8 +14,15 @@ try:
 except ImportError:
     import simplejson as json
 
+def no_view(request):
+    """
+    We don't really want anyone going to the static_root.
+    However, since we're raising a 404, this allows flatpages middleware to
+    step in and serve a page, if there is one defined for the URL.
+    """
+    raise Http404
+
 def papers(request):
-    PREFIX_URL = settings.PREFIX_URL
     return render_to_response('datacollection/papers.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -24,7 +31,6 @@ def new_paper_form(request):
     #errors = []
     #NOTE: by convention i should have to do this; django should be smart
     #enough to scrape these fields for me if i leave them the same
-    PREFIX_URL = settings.PREFIX_URL
     fields = ['pmid', 'gseid', 'title', 'abstract', 'pub_date',
               'last_auth', 'last_auth_email']
     form = None;
@@ -33,7 +39,7 @@ def new_paper_form(request):
         if form.is_valid():
             #tmp = form.save(commit=False) #will not commit to db
             tmp = form.save() #will commit to the db
-            return HttpResponseRedirect(PREFIX_URL)
+            return HttpResponseRedirect(reverse('home'))
     else:
         form = forms.PaperForm()
     return render_to_response('datacollection/new_paper_form.html', locals(),
@@ -41,19 +47,17 @@ def new_paper_form(request):
 
 @login_required
 def new_dataset_form(request):    
-    PREFIX_URL = settings.PREFIX_URL
     if request.method == "POST":
         form = forms.DatasetForm(request.POST, request.FILES)
         if form.is_valid():
             tmp = form.save() #will commit to the db
-            return HttpResponseRedirect(PREFIX_URL)
+            return HttpResponseRedirect(reverse('home'))
     else:
         form = forms.DatasetForm()
     return render_to_response('datacollection/new_dataset_form.html', locals(),
                               context_instance=RequestContext(request))
 
 def all_papers(request):
-    PREFIX_URL = settings.PREFIX_URL
     papers = models.Papers.objects.all()
     papersList = "[%s]" % ",".join(map(lambda p: p.to_json(), papers))
     return render_to_response('datacollection/all_papers.html', locals(),
@@ -119,7 +123,7 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             new_user = form.save()
-            return HttpResponseRedirect(PREFIX_URL)
+            return HttpResponseRedirect("/")
     else:
         form = UserCreationForm()
     return render_to_response("registration/register.html", locals(),
