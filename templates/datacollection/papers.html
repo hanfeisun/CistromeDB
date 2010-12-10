@@ -1,0 +1,49 @@
+{% extends "datacollection/base.html" %}
+
+{% block title %}Cistrome Paper Collection{% endblock %}
+{% block include %}
+<link href="/static/css/papers.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="/static/js/prototype.js"></script>
+<script type="text/javascript" src="/static/js/papers.js"></script>
+{% endblock %}
+
+{% block login_form %}
+      {% if user.is_authenticated %}
+      <span id="login">Welcome, {{ user.username }}. <a href="/accounts/logout/">logout</a></span>
+      {% else %}
+      <form action="/accounts/login/" method="post" id="login">
+         <label for="username">Administrator Login:</label>
+	 <input type="text" name="username" id="username"/>
+         <label for="password">Password:</label>
+	 <input type="password" name="password" id="password"/>
+	 <input type="submit" name="login" value="login"/>
+      </form>
+      {% endif %}
+{% endblock %}
+
+{% block content %}
+   <div id="nav_div">
+      <span class="section_hdr"><span>Papers:</span>
+                                {% if user.is_authenticated %}
+				<a href="/new_paper_form/">Add a new paper</a>
+				{% endif %}
+      </span>
+      <iframe src="/all_papers/" scrolling="yes" name="navigation" id="nav_frame">
+      <p>Your browser must support iframes to view this page</p>
+      </iframe>
+   </div>
+   <div id="info_div">
+      <span class="section_hdr">Paper Info:</span>
+      <div id="info_container">
+      </div>
+   </div>
+   <div id="dataset_div">
+      <span class="section_hdr"><span>Datasets:</span>
+                                {% if user.is_authenticated %}
+				<a href="/new_dataset_form/">Add a new dataset</a>
+				{% endif %}
+      </span>
+      <div id="dataset_container">
+      </div>
+   </div>
+{% endblock %}

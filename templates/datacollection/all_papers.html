@@ -1,0 +1,42 @@
+<html>
+<head>
+   <link href="/static/css/all_papers.css" rel="stylesheet" type="text/css"/>
+   <script>
+
+{% autoescape off %}
+//this needs to be converted--i.e. the nodes need to be made into Motif objs.
+var papersList_json = {{ papersList }}
+
+function helper(i) {
+   parent.papersModel.setCurrentPaperID(i);
+}
+
+{% endautoescape %} 
+   </script>
+</head>
+<body onload="parent.initPage(papersList_json);">
+   <div id="papers_div">
+      <table class="datatable" id="papers_table">
+         <tr><th>Pubmed ID</th>
+	     <th>Title</th>
+	     <th>Authors</th>
+	     <th>Journal</th>
+	     <th>Published</th>
+	 </tr>
+	 {% for p in papers %}
+	 {% if forloop.counter0|divisibleby:2 %}
+	 <tr class="row" onclick="helper({{ forloop.counter0 }});">
+	 {% else %}
+	 <tr class="altrow" onclick="helper({{ forloop.counter0 }});">
+	 {% endif %}
+	     <td>{{ p.pmid }}</td>
+	     <td>{{ p.title|truncatewords:5 }}</td>
+	     <td>{{ p.authors|truncatewords:4 }}</td>
+	     <td>{{ p.journal }}</td>
+	     <td>{{ p.pub_date|date:"M Y" }}</td>
+	 </tr>
+	 {% endfor %}
+      </table>
+   </div>
+</body>
+</html>

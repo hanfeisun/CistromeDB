@@ -1,8 +1,13 @@
-<html>
-<head><title>Logged out</title>
-</head>
-<body>
-<h1>you are logged out</h1>
-<a href="/accounts/login/">Login</a>
-</body>
-</html>
+{% extends "datacollection/base.html" %}
+
+{% block title %}Logged out{% endblock %}
+{% block include %}
+<link href="/static/css/forms.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+      <div id="content_div">
+         <h1>you are logged out</h1>
+         <a href="/accounts/login/">Login</a>
+      </div>
+{% endblock %}

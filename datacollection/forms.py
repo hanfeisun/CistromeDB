@@ -14,8 +14,10 @@ class PaperForm(forms.ModelForm):
     class Meta:
         model = models.Papers
     labels = {'pmid':'Pubmed ID', 'gseid':'GEO Series ID',
-              'pub_date':'Publication Date', 'last_auth':'Last Author',
-              'last_auth_email': 'Last Author Email'}
+              'pub_date':'Publication Date',
+              #'last_auth':'Last Author',
+              #'last_auth_email': 'Last Author Email'
+              }
     def __init__(self, post=None):
         super(PaperForm, self).__init__(post)
         for k in self.labels.keys():

@@ -1,16 +1,19 @@
-<html>
-   <head><title>Dataset Form</title>
-   </head>
-   <body>
+{% extends "datacollection/base.html" %}
+
+{% block title %}New Dataset Form{% endblock %}
+{% block include %}
+<link href="/static/css/forms.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
       {% if form.errors %}
          <p>Please correct the error{{ form.errors|pluralize }} below.</p>
       {% endif %}
-      <div>
-         <h1>Dataset Form:</h1>
+      <div id="content_div">
+         <h2 class="section_hdr">Dataset Form:</h2>
 	 <form enctype="multipart/form-data" action="" method="post">
 	     {{ form.as_p }}
 	     <input type="submit" value="Submit"/>
 	 </form>
       </div>
-   </body>
-</html>
+{% endblock %}

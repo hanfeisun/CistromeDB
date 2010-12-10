@@ -2,6 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 import os
 
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
 SPECIES_CHOICES = (
     (u'hg', u'homo sapien'),
     (u'mm', u'mus musculus'),
@@ -12,7 +17,23 @@ EXPERIMENT_TYPE_CHOICES = (
     (u'seq', u'ChIP-Seq'),
     )
 
-class Papers(models.Model):
+class DCModel(models.Model):
+    """Implements common fns that will be inherited by all of the models
+    NOTE: this is an ABSTRACT class, otherwise django will try to make a db
+    for it.
+    """
+    class Meta:
+        abstract = True
+        
+    def to_json(self):
+        """Returns the model as a json strong"""
+        tmp = {}
+        for k in self.__dict__.keys():
+            tmp[k] = "%s" % self.__dict__[k]
+        return json.dumps(tmp)
+
+
+class Papers(DCModel):
     """Papers are publications that are publicly available on Pubmed and Geo.
     The fields are:
     pmid - the pubmed id of the publication
@@ -36,8 +57,8 @@ class Papers(models.Model):
     title = models.CharField(max_length=255)
     abstract = models.TextField()
     pub_date = models.DateField()
-    last_auth = models.CharField(max_length=255)
-    last_auth_email = models.EmailField()
+    authors = models.CharField(max_length=255)
+    #last_auth_email = models.EmailField()
     disease_state = models.CharField(max_length=255, blank=True)
     #platform_id = models.IntegerField(default=0) #change this to ForeignKey
     platform = models.ForeignKey('Platforms', default=0)
@@ -48,12 +69,13 @@ class Papers(models.Model):
     cell_pop = models.ForeignKey('CellPops', default=0)
     strain = models.ForeignKey('Strains', default=0)
     condition = models.ForeignKey('Conditions', default=0)
+    journal = models.ForeignKey('Journals', default=0)
 
     def __str__(self):
         return self.title
 
 
-class Datasets(models.Model):
+class Datasets(DCModel):
     """Datasets are the data associated with the papers.  They are usually
     available for download from Geo.
     The fields are:
@@ -107,7 +129,7 @@ class Datasets(models.Model):
     condition = models.ForeignKey('Conditions', default=0)
 
 
-class Platforms(models.Model):
+class Platforms(DCModel):
     """Platforms are the chips/assemblies used to generate the dataset.
     For example, it can be an Affymetrix Human Genome U133 Plus 2.0 Array,
     i.e. GPLID = GPL570
@@ -124,14 +146,14 @@ class Platforms(models.Model):
         return self.name
 
 
-class Factors(models.Model):
+class Factors(DCModel):
     """The factors applied to the sample, e.g. PolII, H3K36me3, etc."""
     name = models.CharField(max_length=255)
     antibody = models.CharField(max_length=255, blank=True)
     def __str__(self):
         return self.name
 
-class CellTypes(models.Model):
+class CellTypes(DCModel):
     """Sample's tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
     """
     name = models.CharField(max_length=255)
@@ -139,7 +161,7 @@ class CellTypes(models.Model):
     def __str__(self):
         return self.name
 
-class CellLines(models.Model):
+class CellLines(DCModel):
     """Sample's cell lines.  I really don't know what distinguishes
     cell lines from cell populations or strains and mutations, but i'm going
     to create the tables just to be inclusive
@@ -148,18 +170,24 @@ class CellLines(models.Model):
     def __str__(self):
         return self.name
 
-class CellPops(models.Model):
+class CellPops(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
         return self.name
 
-class Strains(models.Model):
+class Strains(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
         return self.name
     
-class Conditions(models.Model):
+class Conditions(DCModel):
     """Experiment/sample conditions, e.g. PTIP-knockout, wild-type"""
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+
+class Journals(DCModel):
+    """Journals that the papers are published in"""
     name = models.CharField(max_length=255)
     def __str__(self):
         return self.name
