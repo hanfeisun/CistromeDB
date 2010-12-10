@@ -1,0 +1,14 @@
+<html>
+<head>
+   <title>{% block title %}{% endblock %}</title>
+   <link href="/static/css/base.css" rel="stylesheet" type="text/css"/>
+   {% block include %}{% endblock %}
+</head>
+<body>
+   <div id="header">
+      <a href="/"><img src="/static/img/paper_logo.png"/></a>
+      {% block login_form %}{% endblock %}
+   </div>
+   {% block content %}{% endblock %}
+</body>
+</html>

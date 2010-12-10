@@ -1,0 +1,41 @@
+#content_div {
+   position:relative;
+   left:30%;
+   width:850px;
+   /*margin-top:5px;*/
+   font-family: Helvetica, Arial, sans-serif;
+   font-size: 10pt;
+}
+.section_hdr {
+   display: block;
+   color:#b2bbbe;
+}
+
+form {
+}
+
+form p {
+   clear: left;
+   margin: 0;
+   padding:0;
+   padding-top: 5px;
+}
+
+form p label {
+   float: left;
+   width: 15%;
+   font: bold 0.9em Helvetica, Arial, sans-serif;
+   color:#fff;
+}
+
+input {
+   color: #00008b;
+   background-color: #e3f2f7;
+   border: 1px inset #00008b;
+   width: 200px;
+}
+
+textarea {
+   width:200px;
+   height:100px;
+}

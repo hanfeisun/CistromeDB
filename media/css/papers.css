@@ -1,0 +1,69 @@
+#nav_div {
+   position:relative;
+   left:20px;
+   width:850px;
+   margin-top:5px;
+   font-family: Helvetica, Arial, sans-serif;
+   font-size: 10pt;
+}
+
+#nav_div iframe {
+   width:850px;
+}
+
+.section_hdr {
+   background-color:#615536;
+   display: block;
+   color:#fff;
+   padding: 5px 0px 5px 20px;
+}
+
+#info_div {
+   background-color:#fff;
+   position:relative;
+   left:20px;
+   width:850px;
+   margin-top:5px;
+   font-family: Helvetica, Arial, sans-serif;
+   font-size: 10pt;
+}
+
+#info_container .fld_label {
+   padding-right:10px;
+   padding-left:20px;
+   text-align:right;
+}
+
+#info_container .fld_value {
+   padding-top:10px;
+   padding-right:20px;
+}
+
+#dataset_div {
+   background-color:#fff;
+   position:relative;
+   left:20px;
+   width:850px;
+   margin-top:5px;
+   font-family: Times New Roman, Georgia, serif;
+   font-size: 10pt;
+}
+
+#dataset_div table{
+   width:850px;
+}
+
+#dataset_div th {
+   padding-right:10px;
+   text-align:left;
+}
+
+#dataset_div td {
+   padding-right:10px;
+   text-align:left;
+   font-size:9pt;
+}
+
+td a:link {
+   color:#000;
+}

@@ -1,0 +1,28 @@
+body {
+   background:#2b3141;
+}
+
+a:link, a:visited {
+   color:#fff;
+}
+
+#header {
+   position: relative;
+   top:-15px;
+   border-bottom: 1px solid #b2bbbe;
+}
+
+/*logo*/
+#header img {
+   position: relative;
+   top:15px;
+}
+
+/* login unit */
+#login {
+   padding-left:65px;
+   font-family: Helvetica, Arial, sans-serif;
+   font-size: 10pt;
+   color:#7782a0;
+   display:inline;
+}
