@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
 import models
 import forms
+import settings
 
 try:
     import json
@@ -14,6 +15,7 @@ except ImportError:
     import simplejson as json
 
 def papers(request):
+    PREFIX_URL = settings.PREFIX_URL
     return render_to_response('datacollection/papers.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -22,6 +24,7 @@ def new_paper_form(request):
     #errors = []
     #NOTE: by convention i should have to do this; django should be smart
     #enough to scrape these fields for me if i leave them the same
+    PREFIX_URL = settings.PREFIX_URL
     fields = ['pmid', 'gseid', 'title', 'abstract', 'pub_date',
               'last_auth', 'last_auth_email']
     form = None;
@@ -30,7 +33,7 @@ def new_paper_form(request):
         if form.is_valid():
             #tmp = form.save(commit=False) #will not commit to db
             tmp = form.save() #will commit to the db
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(PREFIX_URL)
     else:
         form = forms.PaperForm()
     return render_to_response('datacollection/new_paper_form.html', locals(),
@@ -38,17 +41,19 @@ def new_paper_form(request):
 
 @login_required
 def new_dataset_form(request):    
+    PREFIX_URL = settings.PREFIX_URL
     if request.method == "POST":
         form = forms.DatasetForm(request.POST, request.FILES)
         if form.is_valid():
             tmp = form.save() #will commit to the db
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(PREFIX_URL)
     else:
         form = forms.DatasetForm()
     return render_to_response('datacollection/new_dataset_form.html', locals(),
                               context_instance=RequestContext(request))
 
 def all_papers(request):
+    PREFIX_URL = settings.PREFIX_URL
     papers = models.Papers.objects.all()
     papersList = "[%s]" % ",".join(map(lambda p: p.to_json(), papers))
     return render_to_response('datacollection/all_papers.html', locals(),
@@ -102,7 +107,7 @@ def get_datasets(request, paper_id):
         dlist.append(tmp)
 
     ret = json.dumps(dlist)
-    print ret
+    #print ret
     return HttpResponse(ret)   
         
     #tmp = "[%s]" % ",".join(map(lambda p: p.to_json(),datasets))
@@ -114,7 +119,7 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             new_user = form.save()
-            return HttpResponseRedirect("/datasets/")
+            return HttpResponseRedirect(PREFIX_URL)
     else:
         form = UserCreationForm()
     return render_to_response("registration/register.html", locals(),
