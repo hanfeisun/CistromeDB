@@ -2,12 +2,12 @@
 
 {% block title %}Logged out{% endblock %}
 {% block include %}
-<link href="{{ PREFIX_URL }}static/css/forms.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
 {% endblock %}
 
 {% block content %}
       <div id="content_div">
          <h1>you are logged out</h1>
-         <a href="{{ PREFIX_URL }}accounts/login/">Login</a>
+         <a href="{% url login %}">Login</a>
       </div>
 {% endblock %}
