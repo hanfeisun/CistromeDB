@@ -5,10 +5,9 @@ import settings
 
 urlpatterns = patterns('',
               url(r'^$', views.papers, name="home"),
-              url(r'^new_paper_form/$', views.new_paper_form, 
-                  name="new_paper_form"),
-              url(r'^new_dataset_form/$', views.new_dataset_form,
-                  name="new_dataset_form"),
+              #SEE how we reduce the redundancy below
+              #url(r'^new_paper_form/$', views.new_paper_form, 
+              #    name="new_paper_form"),
               url(r'^all_papers/$', views.all_papers, name="all_papers"),
               url(r'^get_datasets/(\d+)/$', views.get_datasets, 
                   name="get_datasets"),
@@ -21,6 +20,18 @@ urlpatterns = patterns('',
               # 'django.views.static.serve',
               # {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
 )
+
+#add the generics
+generic_views_list = ['paper', 'dataset',
+                      'platform','factor','celltype','cellline', 'cellpop',
+                      'strain', 'condition', 'journal']
+
+for v in generic_views_list:
+    urlpatterns += patterns('',
+                           url(r'^new_%s_form/$' % v,
+                               getattr(views, "new_%s_form" % v),
+                               name="new_%s_form" % v),)
+    
 
 if settings.DEBUG:
     urlpatterns += patterns('',

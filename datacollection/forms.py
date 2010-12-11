@@ -1,5 +1,11 @@
 from django import forms
+import sys
 import models
+from new import classobj
+
+#a trick to get the current module
+_modname = globals()['__name__']
+_this_mod = sys.modules[_modname]
 
 # class PaperForm(forms.Form):
 #     pmid = forms.IntegerField()
@@ -23,7 +29,30 @@ class PaperForm(forms.ModelForm):
         for k in self.labels.keys():
             self.fields[k].label = self.labels[k]
 
-class DatasetForm(forms.ModelForm):
-    class Meta:
-        model = models.Datasets
+# class DatasetForm(forms.ModelForm):
+#     class Meta:
+#         model = models.Datasets
 
+#SHOULD write a class generator!
+# class PlatformForm(forms.ModelForm):
+#     class Meta:
+#         model = models.Platforms
+
+def FormFactory(name, model):
+    return classobj(name, (forms.ModelForm,),
+                    {'Meta': classobj('Meta',(),{'model':model})})
+
+#we should iterate over the models and auto generate these
+form_dict = {'Dataset': models.Datasets, 'Platform': models.Platforms,
+             'Factor': models.Factors, 'Celltype':models.CellTypes,
+             'Cellline': models.CellLines, 'Cellpop':models.CellPops,
+             'Strain': models.Strains, 'Condition':models.Conditions,
+             'Journal': models.Journals}
+
+
+for k in form_dict:
+    #tmp = FormFactory(k+'Form', form_dict[k])
+    #HACK! instead of PlatformForm = ... we do this
+    #WOW! this works!
+    setattr(_this_mod, k+'Form',
+            FormFactory(k+'Form', form_dict[k]))
