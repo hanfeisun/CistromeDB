@@ -1,3 +1,5 @@
+import sys
+
 from django.shortcuts import render_to_response, Http404
 from django.contrib import auth
 from django.template import RequestContext
@@ -13,6 +15,10 @@ try:
     import json
 except ImportError:
     import simplejson as json
+
+#a trick to get the current module
+_modname = globals()['__name__']
+_this_mod = sys.modules[_modname]
 
 def no_view(request):
     """
@@ -56,6 +62,35 @@ def new_dataset_form(request):
         form = forms.DatasetForm()
     return render_to_response('datacollection/new_dataset_form.html', locals(),
                               context_instance=RequestContext(request))
+
+#GENERIC FORMS section
+def form_view_factory(title_in, form_class):
+#    @login_required
+    def generic_form_view(request):
+        title = title_in
+        if request.method == "POST":
+            form = form_class(request.POST)
+            if form.is_valid():
+                tmp = form.save()
+                return HttpResponseRedirect(request.POST['next'])
+        else:
+            form = form_class()
+            if 'next' in request.GET:
+                next = request.GET['next']
+        return render_to_response('datacollection/generic_form.html', locals(),
+                                  context_instance=RequestContext(request))
+    return generic_form_view
+
+#Cool! but we need the decorators!
+generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
+                      'strain', 'condition', 'journal']
+#new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
+#Generate the generic form views
+for name in generic_forms_list:
+    form = getattr(forms, "%sForm" % name.capitalize())
+    tmp_view = form_view_factory('%s Form' % name.capitalize(), form)
+    setattr(_this_mod, "new_%s_form" % name.lower(), tmp_view)
+
 
 def all_papers(request):
     papers = models.Papers.objects.all()
@@ -114,10 +149,6 @@ def get_datasets(request, paper_id):
     #print ret
     return HttpResponse(ret)   
         
-    #tmp = "[%s]" % ",".join(map(lambda p: p.to_json(),datasets))
-    #print tmp
-    #return HttpResponse(tmp)
-
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
