@@ -148,7 +148,8 @@ def get_datasets(request, paper_id):
     ret = json.dumps(dlist)
     #print ret
     return HttpResponse(ret)   
-        
+
+#DROP the FOLLOWING fn/view?
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -159,3 +160,36 @@ def register(request):
         form = UserCreationForm()
     return render_to_response("registration/register.html", locals(),
                               context_instance=RequestContext(request))
+
+
+def paper_submission(request):
+    #val_dict = {'pmid': 0} #, 'title': 0, 'authors': 0}
+    title = "Paper Submission Form"
+    if request.method == 'POST':
+        tmp = models.PaperSubmissions()
+        tmp.pmid = request.POST['pmid']
+        tmp.title = request.POST['title']
+        tmp.ip_addr = request.META.get('REMOTE_ADDR')
+
+        #check for uniqueness
+        if tmp.pmid:
+            paper_dup = models.Papers.objects.filter(pmid=tmp.pmid)
+            submit_dup = models.PaperSubmissions.objects.filter(pmid=tmp.pmid)
+        elif tmp.title:
+            paper_dup = models.Papers.objects.filter(title__icontains=tmp.title)
+            submit_dup = models.PaperSubmissions.objects.filter(title__icontains=tmp.title)
+        else:
+            msg = "Please enter the Pubmed ID or the title of the paper."
+
+        if paper_dup or submit_dup:
+            msg = "This paper is already submitted or in the collection. \
+            Thank you."
+        else:
+            msg = "Submission successful Thank you."
+            if tmp.pmid == '': tmp.pmid = 0
+            tmp.save()
+        
+    return render_to_response('datacollection/paper_submission.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+    

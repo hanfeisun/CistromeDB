@@ -191,3 +191,11 @@ class Journals(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
         return self.name
+
+class PaperSubmissions(DCModel):
+    """Public paper submission page
+    we collect the ip address of the submitter just in case of malicious usr"""
+    pmid = models.IntegerField(default=0)
+    title = models.CharField(max_length=255, blank=True)
+    ip_addr = models.CharField(max_length=15)
+    
