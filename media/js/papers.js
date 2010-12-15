@@ -141,7 +141,7 @@ function DatasetsInfoView(papersModel, container) {
     //NOTE: given a PAPER, retrieve the datasets associated with that PAPER
     //through AJAX and then set it.
     this.getDatasetList = function(currPaper) {
-	var url = "/get_datasets/"+currPaper.id+"/";
+	var url = SUB_SITE+"get_datasets/"+currPaper.id+"/";
 	var getDataset = 
 	new Ajax.Request(url, {onComplete:outer.getDatasetListCb});
     }
