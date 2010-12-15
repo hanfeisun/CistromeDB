@@ -1,0 +1,29 @@
+{% extends "datacollection/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/submissions.css" rel="stylesheet" type="text/css"/>
+<script src="{% url static_url %}js/submissions.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+   <div id="submission_div">
+      <span class="section_hdr">Submitted papers:</span>
+      <table>
+         <tr>
+	    <th>pmid</th>
+	    <th>title</th>
+	    <th>ip addr of submitter</th>
+	    <th>status</th>
+	 </tr>
+        {% for ps in submissions %}
+	<tr>
+	    <td>{{ ps.pmid }}</td>
+	    <td>{{ ps.title }}</td>
+	    <td>{{ ps.ip_addr }}</td>
+	    <td id="status_{{ ps.id }}">{{ ps.get_status_display }}<span class="clickable" onclick="changeStatus({{ ps.id }}, '{{ ps.get_status_display }}');">change</span></td>
+        </tr>
+        {% endfor %}
+      </table>
+   </div>
+{% endblock %}

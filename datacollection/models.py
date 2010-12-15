@@ -17,6 +17,14 @@ EXPERIMENT_TYPE_CHOICES = (
     (u'seq', u'ChIP-Seq'),
     )
 
+SUBMISSION_STATUS = (
+    (u'pending', u'Pending'),
+    (u'closed', u'Imported/Closed'),
+    (u'n/a', u'Not Appropriate'),
+    )
+#pending is the default submission status
+DEFAULT_SUBMISSION_STATUS = SUBMISSION_STATUS[0][0]
+
 class DCModel(models.Model):
     """Implements common fns that will be inherited by all of the models
     NOTE: this is an ABSTRACT class, otherwise django will try to make a db
@@ -194,8 +202,13 @@ class Journals(DCModel):
 
 class PaperSubmissions(DCModel):
     """Public paper submission page
-    we collect the ip address of the submitter just in case of malicious usr"""
+    we collect the ip address of the submitter just in case of malicious usr
+    pmid - pubmed id, title- title of paper, status- see submission status,
+    user- curator who last handled this submission
+    """
     pmid = models.IntegerField(default=0)
     title = models.CharField(max_length=255, blank=True)
+    status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
+    user = models.ForeignKey(User, default=0)
     ip_addr = models.CharField(max_length=15)
     
