@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
+from django.core.urlresolvers import reverse
 import models
 import forms
 import settings
@@ -186,10 +187,36 @@ def paper_submission(request):
             Thank you."
         else:
             msg = "Submission successful Thank you."
+            #set to default status
+            tmp.status = models.DEFAULT_SUBMISSION_STATUS
             if tmp.pmid == '': tmp.pmid = 0
             tmp.save()
         
     return render_to_response('datacollection/paper_submission.html',
                               locals(),
                               context_instance=RequestContext(request))
+
+@login_required
+def submissions_admin(request):
+    """View of paper submissions where curators can change the status"""
+    title = "Submission Admin page"
+    statuses = [first for (first, sec) in models.SUBMISSION_STATUS]
+    if 'status' in request.GET and request.GET['status'] in statuses:
+        #filter by the status passed in
+        status = request.GET['status']
+        submissions = models.PaperSubmissions.objects.filter(status=status)
+    else:
+        #default to all
+        submissions = models.PaperSubmissions.objects.all()
+    return render_to_response('datacollection/submissions_admin.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+    
+@login_required
+def change_status(request, submission_id):
+    if request.method == 'POST' and request.POST['status']:
+        ps = models.PaperSubmissions.objects.get(id=submission_id)
+        ps.status = request.POST['status']
+        ps.save()
+    return HttpResponseRedirect(reverse('submissions_admin'))
     

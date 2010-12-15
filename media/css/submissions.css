@@ -1,0 +1,41 @@
+#submission_div {
+   position:relative;
+   left:20px;
+   width:850px;
+   margin-top:5px;
+   font-family: Helvetica, Arial, sans-serif;
+   font-size: 10pt;
+/*   color:#fff;*/
+}
+
+.section_hdr {
+   background-color:#615536;
+   display: block;
+   color:#fff;
+   padding: 5px 0px 5px 20px;
+}
+
+table{
+   width:850px;
+   background-color:#fff;
+}
+
+th {
+   padding-right:10px;
+   text-align:left;
+}
+
+td {
+   padding-right:10px;
+   text-align:left;
+   font-size:9pt;
+}
+
+span.clickable {
+   padding-left: 10px;
+}
+
+span.clickable:hover {
+   color:#f00;
+   cursor:pointer;
+}
