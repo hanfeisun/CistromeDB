@@ -6,7 +6,7 @@ function changeStatus(id, currStatus) {
     
     //create a new form
     form = document.createElement("form");
-    form.action = "/change_status/"+id+"/";
+    form.action = SUB_SITE + "change_status/"+id+"/";
     form.method = "post";
     //make selection
     sel = document.createElement("select");
