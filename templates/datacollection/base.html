@@ -4,7 +4,7 @@
    <link href="{% url static_url %}css/base.css" rel="stylesheet" type="text/css"/>
    {% block include %}{% endblock %}
 </head>
-<body>
+<body {% block onload %}{% endblock %}>
    <div id="header">
       <a href="{% url home %}"><img src="{% url static_url %}img/paper_logo.png"/></a>
       {% block login_form %}{% endblock %}

@@ -169,18 +169,18 @@ def paper_submission(request):
     if request.method == 'POST':
         tmp = models.PaperSubmissions()
         tmp.pmid = request.POST['pmid']
-        tmp.title = request.POST['title']
+        tmp.gseid = request.POST['gseid']
         tmp.ip_addr = request.META.get('REMOTE_ADDR')
 
         #check for uniqueness
         if tmp.pmid:
             paper_dup = models.Papers.objects.filter(pmid=tmp.pmid)
             submit_dup = models.PaperSubmissions.objects.filter(pmid=tmp.pmid)
-        elif tmp.title:
-            paper_dup = models.Papers.objects.filter(title__icontains=tmp.title)
-            submit_dup = models.PaperSubmissions.objects.filter(title__icontains=tmp.title)
+        elif tmp.gseid:
+            paper_dup = models.Papers.objects.filter(gseid__iexact=tmp.gseid)
+            submit_dup = models.PaperSubmissions.objects.filter(gseid__iexact=tmp.gseid)
         else:
-            msg = "Please enter the Pubmed ID or the title of the paper."
+            msg = "Please enter the Pubmed ID or the GSEID of the paper."
 
         if paper_dup or submit_dup:
             msg = "This paper is already submitted or in the collection. \
@@ -219,4 +219,12 @@ def change_status(request, submission_id):
         ps.status = request.POST['status']
         ps.save()
     return HttpResponseRedirect(reverse('submissions_admin'))
+    
+
+@login_required
+def delete_submission(request, submission_id):
+    ps = models.PaperSubmissions.objects.get(id=submission_id)
+    if ps:
+        ps.delete()
+    return HttpResponse("{success:true}")
     
