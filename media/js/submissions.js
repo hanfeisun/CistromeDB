@@ -1,3 +1,200 @@
+var PaperSubmissions = loadJSRecord('PaperSubmissions');
+
+//------------------------------MODEL------------------------------
+
+/**
+ * Class: PaperSubmissionsList
+ * Description:This model will contain all of the publicly submitted papers
+ * 
+ * @param: list - a json obj(? representation of the papersubmissions list
+ * @param: currPaper - the current paper (that the user clicked)
+ */
+function PaperSubmissionsList(list, currPaper) {
+    var outer = this;
+    this.superclass = ModelFactory(['list', 'currPaper'],[]);
+    this.superclass({'list':list,'currPaper':currPaper});
+
+    this.originalList = this.list;
+    this.delete = function(id) {
+	//So the JSRecordFactory is suppose to implement delete, BUT it doesn't
+	//this might be advantageous, b/c all it does is implement read-only 
+	//fns, i'll implement delete myself
+	var callback = function(req) {
+	    resp = eval(req.responseText);
+	    //alert(resp);
+	}
+	var found = false;
+	for (var i = 0; i < outer.list.length && !found; i++) {
+	    if (outer.list[i].id == id) {
+		found = true;
+		outer.list.splice(i, 1); //remove the elm from the list
+		outer.listEvent.notify();
+		var deleteCall =  //call it and forget it.
+		new Ajax.Request(SUB_SITE + "delete_submission/"+id+"/",
+			 {method:"get", onSuccess: callback});
+	    }
+	}
+    }
+}
+
+//------------------------------VIEW------------------------------
+
+/**
+ * Class: PaperSubmissions view
+ * Description: Creates the table listing all of the submitted papers
+ * 
+ * @param: pslist - a PaperSubmissionList MODEL
+ * @param: container - a div/section to draw the table
+ */
+
+//helper function, takes optional param, opts, which is a dict e.g. innerHTML; 
+//tries to create the domElement, and set the innerHTML if provided
+function createHelper(elmType, opts) {
+    var tmp = document.createElement(elmType);
+    var fields = ["className", "innerHTML"];
+    if (opts) {
+	//set optional fields
+	/*
+	for (var i = 0; i < fields; i++) {
+	    if (opts[fields[i]]) {
+		tmp[fields[i]] = opts[fields[i]];
+	    }
+	}
+	*/
+	
+        if (opts.className) {
+	    tmp.className = opts.className;
+	}
+
+	if (opts.innerHTML) {
+	    tmp.innerHTML = opts.innerHTML;
+	}
+	
+    }
+
+    return tmp;
+}
+
+function PaperSubmissionsView(pslist, container) {
+    this.pslist = pslist;
+    this.container = container;
+    
+    var outer = this;
+
+    this.pslistLstnr = function() { outer.makeHTML(); }
+    this.pslist.listEvent.register(this.pslistLstnr);
+
+    //Sorting fn related things
+    this.statusAscending = null; //True-ascending; false-descending
+
+    this.statusSort = function() {
+	var sortFn = function(a,b) {
+	    if (a.status == b.status) {
+		return 0;
+	    } else if (a.status > b.status) {
+		return 1;
+	    } else {
+		return -1;
+	    }
+	}
+
+	if (outer.statusAscending) { 
+	    //DESCENDING
+	    outer.statusAscending = false;
+	    var tmp = outer.pslist.list.sort(sortFn);
+	    tmp.reverse();
+	    outer.pslist.setList(tmp);
+	} else { 
+	    //ASCENDING
+	    outer.statusAscending = true;
+	    var tmp = outer.pslist.list.sort(sortFn);
+	    outer.pslist.setList(tmp);	    
+	}
+    }
+
+    this.makeHTML = function(pslist) {
+	outer.container.innerHTML = ""; //clear the container
+	var tmpSpan = createHelper("span", {'className':"section_hdr", 
+					   'innerHTML':"Submitted papers:"});
+	outer.container.appendChild(tmpSpan);
+	
+	var tbl = createHelper("table");
+	var tr = createHelper("tr");
+	tr.appendChild(createHelper('th', {'innerHTML':'pmid'}));
+	tr.appendChild(createHelper('th', {'innerHTML':'gseid'}));
+	tr.appendChild(createHelper('th', {'innerHTML':'ip addr of submitter'}));
+	tr.appendChild(createHelper('th', {'innerHTML':'comments'}));
+	var th = createHelper('th', {'innerHTML':'status'});
+	var img = createHelper('img');
+	if (outer.statusAscending == null) {
+	    img.src = SUB_SITE + "static/img/down.png";
+	} else if (outer.statusAscending) {
+	    img.src = SUB_SITE + "static/img/down-red.png";
+	} else {
+	    img.src = SUB_SITE + "static/img/up-red.png";
+	}
+	img.onclick = function(event) { outer.statusSort(img); }
+	th.appendChild(img);
+	tr.appendChild(th);
+
+	tr.appendChild(createHelper('th', {'innerHTML':'delete'}));
+
+	tbl.appendChild(tr);
+	outer.container.appendChild(tbl);
+	
+	for (var i = 0; i < outer.pslist.list.length; i++) {
+	    var tr = createHelper('tr');
+	    tr.appendChild(createHelper('td', {'innerHTML': 
+					    outer.pslist.list[i].pmid}));
+	    tr.appendChild(createHelper('td', {'innerHTML': 
+					    outer.pslist.list[i].gseid}));
+	    tr.appendChild(createHelper('td', {'innerHTML': 
+					    outer.pslist.list[i].ip_addr}));
+	    tr.appendChild(createHelper('td', {'innerHTML': 
+					    outer.pslist.list[i].comments}));
+
+	    var td = createHelper('td', {'innerHTML': 
+				      outer.pslist.list[i].status});
+	    td.id = "status_"+outer.pslist.list[i].id;
+	    tmpSpan = createHelper('span', {'className':'clickable', 'innerHTML':'change'});
+	    tmpSpan.onclick = function(id, status) {
+		return function(event) {
+		    changeStatus(id, status); 
+		}
+	    } (outer.pslist.list[i].id, outer.pslist.list[i].status);
+
+	    td.appendChild(tmpSpan);
+	    tr.appendChild(td);
+
+	    //DELETE btn
+	    td = createHelper('td');
+	    img = createHelper('img');
+	    img.src = SUB_SITE + "static/img/x-red.png";
+	    img.onclick = function(id) {
+		return function(event) {
+		    outer.pslist.delete(id);
+		}
+	    } (outer.pslist.list[i].id);
+	    td.appendChild(img);
+	    tr.appendChild(td);
+
+	    tbl.appendChild(tr);
+
+	}
+    }    
+}
+
+
+function init() {
+    var paperSubmissionsList = 
+	new PaperSubmissionsList(null, null);
+    var paperSubmissionsView = 
+	new PaperSubmissionsView(paperSubmissionsList, $('submission_div'));
+
+    paperSubmissionsList.setList(PaperSubmissions.all());
+}
+
+//--- OLD stuff
 
 function changeStatus(id, currStatus) {
     var status = [["pending", "Pending"], ["closed", "Imported/Closed"],
@@ -16,7 +213,7 @@ function changeStatus(id, currStatus) {
 	opt = document.createElement("option");
 	opt.value = status[i][0];
 	opt.innerHTML = status[i][1];
-	if (status[i][1] == currStatus) {
+	if (status[i][0] == currStatus) {
 	    opt.selected = "selected";
 	}
 	sel.appendChild(opt);
