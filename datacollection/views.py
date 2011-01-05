@@ -46,7 +46,11 @@ def new_paper_form(request):
         form = forms.PaperForm(request.POST)
         if form.is_valid():
             #tmp = form.save(commit=False) #will not commit to db
-            tmp = form.save() #will commit to the db
+            #tmp = form.save() #will commit to the db
+            tmp = form.save(commit=False)
+            tmp.date_collected = datetime.datetime.now()
+            tmp.user = request.user
+            tmp.save()
             return HttpResponseRedirect(reverse('home'))
     else:
         form = forms.PaperForm()

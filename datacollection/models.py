@@ -46,6 +46,7 @@ class Papers(DCModel):
     The fields are:
     pmid - the pubmed id of the publication
     gseid - the GEO series id associated with the publication
+    user - the user who currated the dataset
     title - the title of the publication
     abstract - the abstract of the publication
     pub_date - the publication date
@@ -62,9 +63,11 @@ class Papers(DCModel):
     """
     pmid = models.IntegerField()
     gseid = models.CharField(max_length=8)
+    user = models.ForeignKey(User)
     title = models.CharField(max_length=255)
     abstract = models.TextField()
     pub_date = models.DateField()
+    date_collected = models.DateTimeField()
     authors = models.CharField(max_length=255)
     #last_auth_email = models.EmailField()
     disease_state = models.CharField(max_length=255, blank=True)

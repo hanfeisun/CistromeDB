@@ -19,6 +19,7 @@ _this_mod = sys.modules[_modname]
 class PaperForm(forms.ModelForm):
     class Meta:
         model = models.Papers
+        exclude = ('date_collected', 'user')
     labels = {'pmid':'Pubmed ID', 'gseid':'GEO Series ID',
               'pub_date':'Publication Date',
               #'last_auth':'Last Author',
