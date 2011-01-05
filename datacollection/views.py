@@ -1,4 +1,5 @@
 import sys
+import datetime
 
 from django.shortcuts import render_to_response, Http404
 from django.contrib import auth
@@ -53,12 +54,17 @@ def new_paper_form(request):
                               context_instance=RequestContext(request))
 
 @login_required
-def new_dataset_form(request):    
+def new_dataset_form(request):
     if request.method == "POST":
         form = forms.DatasetForm(request.POST, request.FILES)
         if form.is_valid():
-            tmp = form.save() #will commit to the db
+            tmp = form.save(commit=False)
+            tmp.date_collected = datetime.datetime.now()
+            tmp.user = request.user
+            tmp.save()
             return HttpResponseRedirect(reverse('home'))
+        else:
+            print "INVALID DATASET FORM"
     else:
         form = forms.DatasetForm()
     return render_to_response('datacollection/new_dataset_form.html', locals(),
