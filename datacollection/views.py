@@ -18,6 +18,8 @@ try:
 except ImportError:
     import simplejson as json
 
+FIRST_PMID = 11125145
+
 #a trick to get the current module
 _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
@@ -191,6 +193,9 @@ def paper_submission(request):
             submit_dup = models.PaperSubmissions.objects.filter(gseid__iexact=tmp.gseid)
         else:
             msg = "Please enter the Pubmed ID or the GSEID of the paper."
+            return render_to_response('datacollection/paper_submission.html',
+                                      locals(),
+                                      context_instance=RequestContext(request))
 
         if paper_dup or submit_dup:
             msg = "This paper is already submitted or in the collection. \
@@ -199,9 +204,19 @@ def paper_submission(request):
             msg = "Submission successful Thank you."
             #set to default status
             tmp.status = models.DEFAULT_SUBMISSION_STATUS
-            if tmp.pmid == '': tmp.pmid = 0
-            tmp.save()
-        
+            
+            try:
+                tmp.pmid = int(tmp.pmid)
+            except:
+                tmp.pmid = 0
+
+            if tmp.pmid > FIRST_PMID:
+                #print "%s\t%s" % (tmp.pmid, FIRST_PMID)
+                tmp.save()
+            elif tmp.gseid != '':
+                tmp.save()
+            #else: IGNORED
+            
     return render_to_response('datacollection/paper_submission.html',
                               locals(),
                               context_instance=RequestContext(request))
