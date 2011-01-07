@@ -180,7 +180,7 @@ function JSRecordFactory(className, fields) {
 			      parameters: eval("("+outer.serialize()+")")});
 	}
 	
-	this.deleteThis = function(callbackFn) {
+	this.delete = function(callbackFn) {
 	    if (outer.id != null) {
 		var deleteCall = 
 		new Ajax.Request(outer.jsrecordURL+outer.className+"/delete/"+
