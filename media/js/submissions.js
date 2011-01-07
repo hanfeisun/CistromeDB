@@ -15,26 +15,6 @@ function PaperSubmissionsList(list, currPaper) {
     this.superclass({'list':list,'currPaper':currPaper});
 
     this.originalList = this.list;
-    this.delete = function(id) {
-	//So the JSRecordFactory is suppose to implement delete, BUT it doesn't
-	//this might be advantageous, b/c all it does is implement read-only 
-	//fns, i'll implement delete myself
-	var callback = function(req) {
-	    resp = eval(req.responseText);
-	    //alert(resp);
-	}
-	var found = false;
-	for (var i = 0; i < outer.list.length && !found; i++) {
-	    if (outer.list[i].id == id) {
-		found = true;
-		outer.list.splice(i, 1); //remove the elm from the list
-		outer.listEvent.notify();
-		var deleteCall =  //call it and forget it.
-		new Ajax.Request(SUB_SITE + "delete_submission/"+id+"/",
-			 {method:"get", onSuccess: callback});
-	    }
-	}
-    }
 }
 
 //------------------------------VIEW------------------------------
@@ -51,25 +31,11 @@ function PaperSubmissionsList(list, currPaper) {
 //tries to create the domElement, and set the innerHTML if provided
 function createHelper(elmType, opts) {
     var tmp = document.createElement(elmType);
-    var fields = ["className", "innerHTML"];
     if (opts) {
 	//set optional fields
-	/*
-	for (var i = 0; i < fields; i++) {
-	    if (opts[fields[i]]) {
-		tmp[fields[i]] = opts[fields[i]];
-	    }
+	for (var i in opts) {
+	    tmp[i] = opts[i];
 	}
-	*/
-	
-        if (opts.className) {
-	    tmp.className = opts.className;
-	}
-
-	if (opts.innerHTML) {
-	    tmp.innerHTML = opts.innerHTML;
-	}
-	
     }
 
     return tmp;
@@ -137,7 +103,7 @@ function PaperSubmissionsView(pslist, container) {
 	th.appendChild(img);
 	tr.appendChild(th);
 
-	tr.appendChild(createHelper('th', {'innerHTML':'delete'}));
+	//tr.appendChild(createHelper('th', {'innerHTML':'delete'}));
 
 	tbl.appendChild(tr);
 	outer.container.appendChild(tbl);
@@ -150,33 +116,98 @@ function PaperSubmissionsView(pslist, container) {
 					    outer.pslist.list[i].gseid}));
 	    tr.appendChild(createHelper('td', {'innerHTML': 
 					    outer.pslist.list[i].ip_addr}));
-	    tr.appendChild(createHelper('td', {'innerHTML': 
-					    outer.pslist.list[i].comments}));
 
-	    var td = createHelper('td', {'innerHTML': 
-				      outer.pslist.list[i].status});
-	    td.id = "status_"+outer.pslist.list[i].id;
-	    tmpSpan = createHelper('span', {'className':'clickable', 'innerHTML':'change'});
-	    tmpSpan.onclick = function(id, status) {
+	    var commentTd = createHelper('td', {'innerHTML': 
+					     outer.pslist.list[i].comments});
+	    tr.appendChild(commentTd);
+
+	    var statusTd = createHelper('td', {'innerHTML': 
+					    outer.pslist.list[i].status});
+	    tr.appendChild(statusTd);
+
+	    var editTd = createHelper('td');
+	    var editBtn = createHelper('input', {'type':'button', 
+					       'value': 'edit'});
+	    editBtn.onclick = function(ps, cTd, sTd, eTd, editB) {
 		return function(event) {
-		    changeStatus(id, status); 
-		}
-	    } (outer.pslist.list[i].id, outer.pslist.list[i].status);
+		    //CHANGE the comment field to a textarea; status to 
+		    //dropdown, and edits to save/cancel
+		    var textArea = createHelper("input", {'type':"textarea",
+							"value":ps.comments});
+		    if (cTd.childNodes.length > 0) {
+			cTd.replaceChild(textArea, cTd.childNodes[0]);
+		    } else {
+			cTd.appendChild(textArea);
+		    }
+		    
+		    var opts = ["pending", "closed", "n/a"];
+		    var select = createHelper("select");
+		    for (var i = 0; i < opts.length; i++) {
+			var opt = createHelper("option", {'value': opts[i],
+						       'innerHTML': opts[i]});
+			opt.selected = (opts[i] == ps.status) ?"selected":"";
+			select.appendChild(opt);
+		    }
+		    
+		    if (sTd.childNodes.length > 0) {
+			sTd.replaceChild(select, sTd.childNodes[0]);
+		    } else {
+			sTd.appendChild(select);
+		    }
 
-	    td.appendChild(tmpSpan);
-	    tr.appendChild(td);
+		    var cancelBtn = createHelper("input", {'type':'button',
+							 'value':'cancel'});
+		    
+		    cancelBtn.onclick = function(event) {
+			//restore the ps's values
+			cTd.innerHTML = ps.comments;
+			sTd.innerHTML = ps.status;
+			//remove the cancel and save btns
+			eTd.replaceChild(editB, eTd.childNodes[0]);
+			eTd.removeChild(eTd.childNodes[1]);
+			//NOTE: this isn't eTd.childNodes[2], b/c the last
+			//line had a side-effect!
+			eTd.removeChild(eTd.childNodes[1]);
+		    }
+		    var saveBtn = createHelper("input", {"type":"button",
+						       "value":"save"});
+		    saveBtn.onclick = function(event) {
+			ps.comments = cTd.childNodes[0].value;
+			ps.status = sTd.childNodes[0].value;
+			var cb = function(resp) {
+			    //alert(resp.responseText);
+			}
+			tmp = PaperSubmissions.get(ps.id);
+			tmp.setComments(ps.comments);
+			tmp.setStatus(ps.status);
+			tmp.save(cb);
 
-	    //DELETE btn
-	    td = createHelper('td');
-	    img = createHelper('img');
-	    img.src = SUB_SITE + "static/img/x-red.png";
-	    img.onclick = function(id) {
-		return function(event) {
-		    outer.pslist.delete(id);
+			//remove the cancel and save btns
+			cancelBtn.onclick();
+		    }
+
+		    var deleteBtn = createHelper("input", {"type":"button",
+							 "value":"delete"});
+		    deleteBtn.onclick = function(event) {
+			var resp = confirm("Are you sure?");
+			if (resp) {
+			    //delete the row from pslist
+			    var newList = outer.pslist.list.without(ps);
+			    outer.pslist.setList(newList);
+			    //delete the row from the db
+			    tmp = PaperSubmissions.get(ps.id);
+			    tmp.delete();
+			} 
+		    }
+
+		    eTd.replaceChild(cancelBtn, eTd.childNodes[0]);
+		    eTd.appendChild(saveBtn);
+		    eTd.appendChild(deleteBtn);
 		}
-	    } (outer.pslist.list[i].id);
-	    td.appendChild(img);
-	    tr.appendChild(td);
+	    } (outer.pslist.list[i], commentTd, statusTd, editTd, editBtn);
+
+	    editTd.appendChild(editBtn);
+	    tr.appendChild(editTd);
 
 	    tbl.appendChild(tr);
 
@@ -194,8 +225,8 @@ function init() {
     paperSubmissionsList.setList(PaperSubmissions.all());
 }
 
-//--- OLD stuff
-
+//--- OLD stuff--DELETE!
+/*
 function changeStatus(id, currStatus) {
     var status = [["pending", "Pending"], ["closed", "Imported/Closed"],
 		  ["n/a", "Not Appropriate"]]
@@ -248,10 +279,11 @@ function cancel(container, id, currStatus) {
 function replaceChildren(container, new_children) {
     //remove current children
     while (container.childNodes.length > 0) {
-	container.removeChild(tmp.firstChild);
+	container.removeChild(container.firstChild);
     }
     for (var i = 0; i < new_children.length; i++) {
 	container.appendChild(new_children[i]);
     }
 }
 
+*/

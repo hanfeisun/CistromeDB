@@ -210,9 +210,9 @@ class PaperSubmissions(DCModel):
     user- curator who last handled this submission
     """
     pmid = models.IntegerField(default=0)
-    gseid = models.CharField(max_length=8)
+    gseid = models.CharField(max_length=8, blank=True)
     status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
     user = models.ForeignKey(User, default=1) #default to a valid user:lentaing
     ip_addr = models.CharField(max_length=15)
-    comments = models.TextField()
+    comments = models.TextField(blank=True)
 
