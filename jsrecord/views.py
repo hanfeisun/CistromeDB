@@ -1,3 +1,5 @@
+import sys
+
 from django.template import RequestContext
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
@@ -76,7 +78,7 @@ def Save(request, model):
             new_m = form.save()
             return HttpResponse('({success:true, obj:'+jsonify(new_m)+'})')
         else:
-            return HttpResponse('({success:false})')
+            return HttpResponse('({success:false, err:\"%s\"})' % form.errors) 
 
 def Delete(request, _model, id):
     try:
@@ -87,7 +89,8 @@ def Delete(request, _model, id):
         else:
             return HttpResponse('({success:false})')
     except Exception:
-        return HttpResponse('({success:false})')
+        return HttpResponse("({success:false, err:\"%s:%s\"})" %
+                            (sys.exc_type, sys.exc_value))
 
 def loader(request, model):
     _model = getattr(MODELS, model)
