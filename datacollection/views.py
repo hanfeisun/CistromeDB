@@ -237,19 +237,3 @@ def submissions_admin(request):
                               locals(),
                               context_instance=RequestContext(request))
     
-@login_required
-def change_status(request, submission_id):
-    if request.method == 'POST' and request.POST['status']:
-        ps = models.PaperSubmissions.objects.get(id=submission_id)
-        ps.status = request.POST['status']
-        ps.save()
-    return HttpResponseRedirect(reverse('submissions_admin'))
-    
-
-@login_required
-def delete_submission(request, submission_id):
-    ps = models.PaperSubmissions.objects.get(id=submission_id)
-    if ps:
-        ps.delete()
-    return HttpResponse("{success:true}")
-    
