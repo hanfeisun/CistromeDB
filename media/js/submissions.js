@@ -196,7 +196,7 @@ function PaperSubmissionsView(pslist, container) {
 			    outer.pslist.setList(newList);
 			    //delete the row from the db
 			    tmp = PaperSubmissions.get(ps.id);
-			    tmp.delete();
+			    tmp.Delete();
 			} 
 		    }
 

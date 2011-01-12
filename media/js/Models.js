@@ -180,7 +180,8 @@ function JSRecordFactory(className, fields) {
 			      parameters: eval("("+outer.serialize()+")")});
 	}
 	
-	this.delete = function(callbackFn) {
+	//NOTE: this can't be named delete b/c Safari reserves that word!
+	this.Delete = function(callbackFn) {
 	    if (outer.id != null) {
 		var deleteCall = 
 		new Ajax.Request(outer.jsrecordURL+outer.className+"/delete/"+
