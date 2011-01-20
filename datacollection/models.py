@@ -206,13 +206,20 @@ class Journals(DCModel):
 class PaperSubmissions(DCModel):
     """Public paper submission page
     we collect the ip address of the submitter just in case of malicious usr
-    pmid - pubmed id, title- title of paper, status- see submission status,
+    pmid - pubmed id,
+    gseid - GEO series id,
+    NOTE: either pmid or gseid must be submitted
+    status- see submission status,
     user- curator who last handled this submission
+    ip_addr - the ip address of the submitter
+    submitter_name - optional name of the submitter
+    comments - any comments a currator might attach to the submission
     """
     pmid = models.IntegerField(default=0)
     gseid = models.CharField(max_length=8, blank=True)
     status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
     user = models.ForeignKey(User, default=1) #default to a valid user:lentaing
     ip_addr = models.CharField(max_length=15)
+    submitter_name = models.CharField(max_length=255, blank=True)
     comments = models.TextField(blank=True)
 

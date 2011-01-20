@@ -182,6 +182,7 @@ def paper_submission(request):
         tmp = models.PaperSubmissions()
         tmp.pmid = request.POST['pmid']
         tmp.gseid = request.POST['gseid']
+        tmp.submitter_name = request.POST['submitter_name']
         tmp.ip_addr = request.META.get('REMOTE_ADDR')
 
         #check for uniqueness
@@ -236,4 +237,4 @@ def submissions_admin(request):
     return render_to_response('datacollection/submissions_admin.html',
                               locals(),
                               context_instance=RequestContext(request))
-    
+
