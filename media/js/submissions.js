@@ -89,6 +89,7 @@ function PaperSubmissionsView(pslist, container) {
 	tr.appendChild(createHelper('th', {'innerHTML':'pmid'}));
 	tr.appendChild(createHelper('th', {'innerHTML':'gseid'}));
 	tr.appendChild(createHelper('th', {'innerHTML':'ip addr of submitter'}));
+	tr.appendChild(createHelper('th', {'innerHTML':'submitter name'}));
 	tr.appendChild(createHelper('th', {'innerHTML':'comments'}));
 	var th = createHelper('th', {'innerHTML':'status'});
 	var img = createHelper('img');
@@ -116,6 +117,8 @@ function PaperSubmissionsView(pslist, container) {
 					    outer.pslist.list[i].gseid}));
 	    tr.appendChild(createHelper('td', {'innerHTML': 
 					    outer.pslist.list[i].ip_addr}));
+	    tr.appendChild(createHelper('td', {'innerHTML': 
+					    outer.pslist.list[i].submitter_name}));
 
 	    var commentTd = createHelper('td', {'innerHTML': 
 					     outer.pslist.list[i].comments});
