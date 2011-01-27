@@ -50,8 +50,9 @@ class Papers(DCModel):
     title - the title of the publication
     abstract - the abstract of the publication
     pub_date - the publication date
-    last_auth - the name of the last/corresponding author
-    last_auth_email - the email address of the last/corresponding author
+    authors - list of the paper's authors
+    corresponding_email - the email address of the last/corresponding author
+    --Should we have this?
 
     diseas_state - the disease state of the samples used in the paper
     platform - the platform, e.g. Affymetrix Human Genome Version 2.0
@@ -61,8 +62,8 @@ class Papers(DCModel):
     cell_line, cell_pop, strain - the cell line used in the paper
     condition - the condition used in the paper, e.g. PTIP-knockout
     """
-    pmid = models.IntegerField()
-    gseid = models.CharField(max_length=8)
+    pmid = models.IntegerField(unique=True)
+    gseid = models.CharField(max_length=8,unique=True)
     user = models.ForeignKey(User)
     title = models.CharField(max_length=255)
     abstract = models.TextField()
@@ -70,16 +71,19 @@ class Papers(DCModel):
     date_collected = models.DateTimeField()
     authors = models.CharField(max_length=255)
     #last_auth_email = models.EmailField()
-    disease_state = models.CharField(max_length=255, blank=True)
-    #platform_id = models.IntegerField(default=0) #change this to ForeignKey
-    platform = models.ForeignKey('Platforms', default=0)
-    species = models.CharField(max_length=2, choices=SPECIES_CHOICES,
-                               blank=True)
-    cell_type = models.ForeignKey('CellTypes', default=0)
-    cell_line = models.ForeignKey('CellLines', default=0)
-    cell_pop = models.ForeignKey('CellPops', default=0)
-    strain = models.ForeignKey('Strains', default=0)
-    condition = models.ForeignKey('Conditions', default=0)
+    
+    #MAY DROP the fields below!
+#     disease_state = models.CharField(max_length=255, blank=True)
+#     #platform_id = models.IntegerField(default=0) #change this to ForeignKey
+#     platform = models.ForeignKey('Platforms', default=0)
+#     species = models.CharField(max_length=2, choices=SPECIES_CHOICES,
+#                                blank=True)
+#     cell_type = models.ForeignKey('CellTypes', default=0)
+#     cell_line = models.ForeignKey('CellLines', default=0)
+#     cell_pop = models.ForeignKey('CellPops', default=0)
+#     strain = models.ForeignKey('Strains', default=0)
+#     condition = models.ForeignKey('Conditions', default=0)
+    
     journal = models.ForeignKey('Journals', default=0)
 
     def __str__(self):
@@ -121,18 +125,21 @@ class Datasets(DCModel):
                             self.gsmid[6:], filename)
 
     gsmid = models.CharField(max_length=9)
+    #Name comes from "title" in the geo sample information
+    name = models.CharField(max_length=255, blank=True)
     chip_page = models.URLField(blank=True)
     control_gsmid = models.CharField(max_length=9, blank=True)
     control_page = models.URLField(blank=True)
     date_collected = models.DateTimeField()
     file = models.FileField(upload_to=upload_to_path, null=True)
+    file_url = models.URLField(max_length=255, blank=True)
+    file_type = models.ForeignKey('FileTypes')
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
-    factor = models.ForeignKey('Factors')
+    factor = models.ForeignKey('Factors', default=0)
 
     platform = models.ForeignKey('Platforms', default=0)
-    species = models.CharField(max_length=2, choices=SPECIES_CHOICES,
-                               blank=True)
+    species = models.ForeignKey('Species')    
     cell_type = models.ForeignKey('CellTypes', default=0)
     cell_line = models.ForeignKey('CellLines', default=0)
     cell_pop = models.ForeignKey('CellPops', default=0)
@@ -149,10 +156,11 @@ class Platforms(DCModel):
     gplid - GEO Platform ID
     experiment type- Choice: ChIP-Chip/ChIP-Seq
     """
-    name = models.CharField(max_length=255)
     gplid = models.CharField(max_length=7)
-    experiment_type = models.CharField(max_length=10,
-                                       choices=EXPERIMENT_TYPE_CHOICES)
+    name = models.CharField(max_length=255, blank=True)
+    technology = models.CharField(max_length=255, blank=True)
+    #experiment_type = models.CharField(max_length=10,
+    #choices=EXPERIMENT_TYPE_CHOICES)
     def __str__(self):
         return self.name
 
@@ -223,3 +231,10 @@ class PaperSubmissions(DCModel):
     submitter_name = models.CharField(max_length=255, blank=True)
     comments = models.TextField(blank=True)
 
+class FileTypes(DCModel):
+    """File types for our geo datasets"""
+    name = models.CharField(max_length=20)
+
+class Species(DCModel):
+    name = models.CharField(max_length=255)
+    
