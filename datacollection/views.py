@@ -9,9 +9,11 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
 from django.core.urlresolvers import reverse
+
 import models
 import forms
 import settings
+from entrezutils import models as entrez
 
 try:
     import json
@@ -235,6 +237,77 @@ def submissions_admin(request):
         #default to all
         submissions = models.PaperSubmissions.objects.all()
     return render_to_response('datacollection/submissions_admin.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
+def _auto_dataset_import(paper, user, gsmids):
+    """Given a paper id and a set of gsmids, this fn tries to create the
+    datasets and associate it with the paper"""
+
+    for gsmid in gsmids:
+        geoQuery = entrez.DatasetAdapter(gsmid)
+        tmp = models.Datasets()
+        
+        attrs = ['gsmid', 'name', 'file_url']
+        for a in attrs:
+            setattr(tmp, a, getattr(geoQuery, a))
+
+        tmp.date_collected = datetime.datetime.now()
+        (tmp.file_type, created) = models.FileTypes.objects.get_or_create(name=geoQuery.file_type)
+        tmp.user = user
+        tmp.paper = paper
+        
+        platform = entrez.PlatformAdapter(geoQuery.platform)
+        (tmp.platform, created) = models.Platforms.objects.get_or_create(gplid=platform.gplid, name=platform.name, technology=platform.technology)
+        (tmp.species, created) = models.Species.objects.get_or_create(name=geoQuery.species)
+        tmp.save()
+
+@login_required
+def auto_paper_import(request):
+    """View of auto_paper importer where curators can try to fetch GEO
+    information using pubmed ids"""
+    if request.method == "POST":
+        #the user is trying to autoimport a paper
+        if request.POST['gseid']:
+            geoQuery = entrez.PaperAdapter(request.POST['gseid'])
+            attrs = ['pmid', 'gseid', 'title', 'abstract', 'pub_date']
+
+            #try to create a new paper
+            tmp = models.Papers()
+            for a in attrs:
+                #tmp.a = geoQuery.a
+                setattr(tmp, a, getattr(geoQuery, a))
+            #deal with authors
+            tmp.authors = ",".join(geoQuery.authors)
+
+            #set the journal
+            JM = models.Journals
+            (journal,created) = JM.objects.get_or_create(name=geoQuery.journal)
+            tmp.journal = journal
+            
+            #add automatic info
+            tmp.user = request.user
+            tmp.date_collected = datetime.datetime.now()
+
+            try: 
+                tmp.save()
+
+                #try to auto import the associated datasets
+                _auto_dataset_import(tmp.id, request.user, geoQuery.datasets)
+                
+                #json - a flag that is sent in
+                if 'json' in request.POST and request.POST['json']:
+                    return HttpResponse("{'success':true}")
+            except:
+                #probably a duplicate entry--silently ignored
+                sys.stderr.write("autopaperimport error: %s\n\t%s\n" % \
+                                (sys.exc_info()[0],"probably duplicate entry"))
+                if 'json' in request.POST and request.POST['json']:
+                    return HttpResponse("{'success':false}")
+    else:
+        pass
+
+    return render_to_response('datacollection/auto_paper_import.html',
                               locals(),
                               context_instance=RequestContext(request))
 
