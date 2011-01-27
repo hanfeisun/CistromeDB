@@ -103,6 +103,8 @@ function PaperSubmissionsView(pslist, container) {
 	img.onclick = function(event) { outer.statusSort(img); }
 	th.appendChild(img);
 	tr.appendChild(th);
+	//add a blank th
+	tr.appendChild(createHelper('th', {'innerHTML':''}));
 
 	//tr.appendChild(createHelper('th', {'innerHTML':'delete'}));
 
@@ -223,7 +225,7 @@ function init() {
     var paperSubmissionsList = 
 	new PaperSubmissionsList(null, null);
     var paperSubmissionsView = 
-	new PaperSubmissionsView(paperSubmissionsList, $('submission_div'));
+	new PaperSubmissionsView(paperSubmissionsList, $('main'));
 
     paperSubmissionsList.setList(PaperSubmissions.all());
 }

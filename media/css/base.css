@@ -1,3 +1,49 @@
+body { 
+    width:960px; 
+    margin:15px auto; 
+    font-family: Helvetica, Arial, "MS Trebuchet", sans-serif;
+}
+
+p {
+    margin: 0 0 20px 0
+}
+
+
+header#page_header{
+    width:100%;
+}
+
+header#page_header nav ul, #page_footer nav ul {
+    list-style:none;
+    margin:0;
+    padding:0;
+}
+
+#page_header nav ul li, footer#page_footer nav ul li {
+    padding:0;
+    margin: 0 20px 0 0;
+    display:inline;
+}
+
+section#main{
+    float:left;
+    width:60%;
+    padding-left:10%;
+}
+
+section#sidebar{
+    float:left;
+    width:25%;
+}
+
+footer#page_footer{
+    clear:both;
+    width:100%;
+    display:block;
+    text-align: center;
+}
+
+/*
 body {
    background:#2b3141;
 }
@@ -11,14 +57,16 @@ a:link, a:visited {
    top:-15px;
    border-bottom: 1px solid #b2bbbe;
 }
-
+*/
 /*logo*/
+/*
 #header img {
    position: relative;
    top:15px;
 }
-
+*/
 /* login unit */
+/*
 #login {
    padding-left:65px;
    font-family: Helvetica, Arial, sans-serif;
@@ -26,3 +74,4 @@ a:link, a:visited {
    color:#7782a0;
    display:inline;
 }
+*/

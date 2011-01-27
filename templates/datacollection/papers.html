@@ -23,6 +23,28 @@
 {% endblock %}
 
 {% block content %}
+      <table class="datatable" id="papers_table">
+         <tr><th>Pubmed ID</th>
+	     <th>Title</th>
+	     <th>Authors</th>
+	     <th>Journal</th>
+	     <th>Published</th>
+	 </tr>
+	 {% for p in papers %}
+	 {% if forloop.counter0|divisibleby:2 %}
+	 <tr class="row" onclick="helper({{ forloop.counter0 }});">
+	 {% else %}
+	 <tr class="altrow" onclick="helper({{ forloop.counter0 }});">
+	 {% endif %}
+	     <td>{{ p.pmid }}</td>
+	     <td>{{ p.title|truncatewords:5 }}</td>
+	     <td>{{ p.authors|truncatewords:4 }}</td>
+	     <td>{{ p.journal }}</td>
+	     <td>{{ p.pub_date|date:"M Y" }}</td>
+	 </tr>
+	 {% endfor %}
+      </table>
+<!--
    <div id="nav_div">
       <span class="section_hdr"><span>Papers:</span>
                                 {% if user.is_authenticated %}
@@ -47,4 +69,5 @@
       <div id="dataset_container">
       </div>
    </div>
+-->
 {% endblock %}

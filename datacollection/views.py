@@ -35,6 +35,7 @@ def no_view(request):
     raise Http404
 
 def papers(request):
+    papers = models.Papers.objects.all()
     return render_to_response('datacollection/papers.html', locals(),
                               context_instance=RequestContext(request))
 

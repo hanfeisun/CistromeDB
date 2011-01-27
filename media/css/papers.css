@@ -1,3 +1,15 @@
+table {
+    width:100%;
+    border: 2px solid #000;
+    border-collapse: collapse;
+    margin-bottom:20px;
+}
+
+td, th {
+    border: 1px dotted #000;
+}
+
+/*
 #nav_div {
    position:relative;
    left:20px;
@@ -67,3 +79,4 @@
 td a:link {
    color:#000;
 }
+*/

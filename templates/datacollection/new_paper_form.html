@@ -17,11 +17,11 @@ onload="init();"
       {% if form.errors %}
          <p>Please correct the error{{ form.errors|pluralize }} below.</p>
       {% endif %}
-      <div id="content_div">
+      <!--<div id="content_div">-->
          <h2 class="section_hdr">Paper Form:</h2>
 	 <form action="" method="post">
 	     {{ form.as_p }}
 	     <input type="submit" value="Submit"/>
 	 </form>
-      </div>
+      <!--</div>-->
 {% endblock %}
