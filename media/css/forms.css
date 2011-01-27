@@ -1,8 +1,35 @@
+p.info {
+    color:gray;
+    width:100%;
+    margin: 5px, 0, 0, 0;
+}
+span.label {
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:0px;
+    margin:0;
+}
+span.value {
+    margin-left:25px;
+    display:block;
+    color:#000;
+}
+
+input#submitBtn {
+    margin-left:230px;
+}
+/*       
+p.info span {
+    color:gray;
+}
+*/
+
+/*
 #content_div {
    position:relative;
    left:30%;
    width:850px;
-   /*margin-top:5px;*/
    font-family: Helvetica, Arial, sans-serif;
    font-size: 10pt;
 }
@@ -43,3 +70,4 @@ textarea {
 .msg {
    color:#fff;
 }
+*/

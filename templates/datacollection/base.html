@@ -1,14 +1,53 @@
-<html>
+<!DOCTYPE html>
+<html lang="en-US">
 <head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
    <title>{% block title %}{% endblock %}</title>
    <link href="{% url static_url %}css/base.css" rel="stylesheet" type="text/css"/>
    {% block include %}{% endblock %}
 </head>
 <body {% block onload %}{% endblock %}>
+   <header id="page_header">
+      <h1>Paper Collection</h1>
+      <!--<nav>
+        <ul> <li><a href="/">Home</a></li>
+ 	     <li><a href="about">About</a></li> 
+	     <li><a href="help">Help</a></li> 
+	     <li><a href="contact">Contact Us</a></li>
+	</ul> 
+      </nav>-->
+   </header>
+   <section id="main">
+   {% block content %}{% endblock %}
+   </section>
+   <!--<section id="news_sidebar">
+      <nav>
+         <p><h3>News:</h3>
+         <ul>
+	    <li><a href="">Latest news</a></li>
+	    <li><a href="">Newest datasets</a></li>
+	    <li><a href="">Database statistics</a></li>
+	 </ul>
+      </nav>
+   </section>-->
+   <!--- ------------ --->
+   <!-- MINIMAL STYLING
    <div id="header">
       <a href="{% url home %}"><img src="{% url static_url %}img/paper_logo.png"/></a>
       {% block login_form %}{% endblock %}
    </div>
-   {% block content %}{% endblock %}
+   -->
+   <!--- ------------ --->
+
+   <footer id="page_footer">
+      <p>The paper collection is part of the <a href="http://liulab.dfci.harvard.edu/">Shirley Liu Lab</a> and is still under active development</p>
+      <nav>
+         <ul> <li><a href="/">Home</a></li> 
+	      <li><a href="about">About</a></li> 
+	      <li><a href="terms.html">Terms of Service</a></li> 
+	      <li><a href="privacy.html">Privacy</a></li>
+	 </ul> 
+      </nav>
+   </footer>
 </body>
 </html>

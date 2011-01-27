@@ -1,12 +1,6 @@
-<html>
-   <head><title>Datasets</title>
-   </head>
-   <body>
-   {% if user.is_authenticated %}
-      <p>Welcome, {{ user.username }}.<a href="/accounts/logout/">logout</a></p>
-   {% else %}
-      <a href="/accounts/login/">login</a>
-   {% endif %}
+{% extends "datacollection/base.html" %}
+{% block title %}Cistrome Paper Collection - Datasets{% endblock %}
+{% block content %}
    <table>
       <tr>
          <th>GSMID</th>
@@ -39,8 +33,8 @@
          <td>{{ d.date_collected }}</td>
          <td>{{ d.paper.pmid }}</td>
          <td>{{ d.paper.gseid }}</td>
-         <td>{{ d.paper.title }}</td>
-         <td>{{ d.paper.abstract }}</td>
+         <td>{{ d.paper.title|truncatewords:5 }}</td>
+         <td>{{ d.paper.abstract|truncatewords:5 }}</td>
          <td>{{ d.paper.pub_date }}</td>
          <td>{{ d.paper.last_auth }}</td>
          <td>{{ d.paper.last_auth_email }}</td>
@@ -57,5 +51,5 @@
        </tr>
        {% endfor %}
     </table>
-    </body>
-</html>
+{% endblock %}
+

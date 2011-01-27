@@ -9,7 +9,7 @@
       {% if form.errors %}
          <p>Please correct the error{{ form.errors|pluralize }} below.</p>
       {% endif %}
-      <div id="content_div">
+      <!--<div id="content_div">-->
          <h2 class="section_hdr">{{ title }}:</h2>
 	 <span class="msg">{{ msg }}</span>
 	 <form action="" method="post">
@@ -17,7 +17,7 @@
 	     <p><span class="msg">--OR--</span></p>
 	     <p><label for="id_gseid">GSE ID:</label> <input type="text" name="gseid" id="id_gseid" /></p> 
 	     <p><label for="id_submitter_name">Your Name (optional):</label> <input type="text" name="submitter_name" id="id_submitter_name" /></p> 
-	     <input type="submit" value="Submit"/>
+	     <p class="info"><input type="submit" id="submitBtn" value="Submit"/><p>
 	 </form>
-      </div>
+      <!--</div>-->
 {% endblock %}
