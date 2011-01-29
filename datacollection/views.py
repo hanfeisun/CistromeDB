@@ -312,3 +312,11 @@ def auto_paper_import(request):
                               locals(),
                               context_instance=RequestContext(request))
 
+def paper_profile(request, paper_id):
+    """View of the paper_profile page"""
+    paper = models.Papers.objects.get(id=paper_id)
+    datasets = models.Datasets.objects.filter(paper=paper_id)
+    return render_to_response('datacollection/paper_profile.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+                
