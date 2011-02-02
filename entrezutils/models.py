@@ -265,6 +265,8 @@ class PaperAdapter:
         pubmedItems = pubmed.getElementsByTagName("Item")
         self.journal= filter(lambda node: node['_attribs']['Name'] == 'Source',
                              pubmedItems)[0]['_value']
+        self.issn = filter(lambda node: node['_attribs']['Name'] == 'ISSN',
+                           pubmedItems)[0]['_value']
         
     def __str__(self):
         attrs = ["pmid", "gseid", "title", "abstract", "pub_date", "authors",
@@ -305,7 +307,14 @@ class PlatformAdapter:
         self.name = geo.getElementsByTagName("Title")[0]['_value']
         self.technology = geo.getElementsByTagName("Technology")[0]['_value']
         self.species = geo.getElementsByTagName("Organism")[0]['_value']
+        
+        #YUCK!
+        if '_value' in geo.getElementsByTagName("Manufacturer")[0]:
+            self.company = geo.getElementsByTagName("Manufacturer")[0]['_value']
+        else:
+            self.company = ""
+
 
     def __str__(self):
-        attrs = ["gplid", "name", "technology", "species"]                 
+        attrs = ["gplid", "name", "technology", "species", "company"]
         return "\n".join(["%s:%s" % (a, getattr(self, a)) for a in attrs])
