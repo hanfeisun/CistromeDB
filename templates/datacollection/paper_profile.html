@@ -2,11 +2,11 @@
 
 {% block title %}{{ title }}{% endblock %}
 {% block include %}
-<link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/paper_profile.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/Models.js" type="text/javascript"></script>
-<!--<script src="{% url static_url %}js/autopaperimport.js" type="text/javascript"></script>-->
+<script src="{% url static_url %}js/paper_profile.js" type="text/javascript"></script>
 
 {% endblock %}
 
@@ -28,9 +28,65 @@ onload="init();"
 	   <tr><td>Datasets:</td></tr>
 	   {% for d in datasets %}
 	   {% cycle '<tr>' '' '' %}
-	       <td><span><a href="">{{ d.gsmid }}</a></span></td>
+	       <td><span class="a" onclick="setActiveDataset({{d.id}});">{{ d.gsmid }}</span></td>
 	   {% cycle '' '' '</tr>' %}
 	   {% endfor %}
 	</table>
+	<section id="dataset_focus">
+	   <table id="focus_tbl">
+	      <tr><td colspan="2">
+	              <span class="label2">Dataset:</span>
+	              <span id="dset_gsmid" class="value2"> </span>
+		  </td>
+	      </tr>
+	      <tr><td colspan="2">
+	              <span class="label2">Name:</span>
+	              <span id="dset_name" class="value2"> </span>
+	          </td>
+	      </tr>
+	      <tr><td><span class="label2">Species:</span>
+	              <span id="dset_species" class="value2"> </span>
+	          </td>
+		  <td><span class="label2">Factor:</span>
+	              <span id="dset_factor" class="value2"> </span>
+	          </td>
+	      </tr>
+	      <tr><td><span class="label2">Tissue:</span>
+	              <span id="dset_tissue" class="value2">FOO</span>
+	          </td>
+		  <td><span class="label2">Antibody:</span>
+	              <span id="dset_antibody" class="value2">BAR</span>
+	          </td>
+	      </tr>
+	      <tr><td><span class="label2">Strain:</span>
+	              <span id="dset_strain" class="value2"> </span>
+	          </td>
+		  <td><span class="label2">Condition:</span>
+	              <span id="dset_condition" class="value2"> </span>
+	          </td>
+	      </tr>
+	      <tr><td><span class="label2">Cell Type:</span>
+	              <span id="dset_cell_type"class="value2"> </span>
+	          </td>
+		  <td><span class="label2">Exp. Type:</span>
+	              <span id="dset_exptype" class="value2">FOO</span>
+	          </td>
+	      </tr>
+	      <tr><td><span class="label2">Cell Line:</span>
+	              <span id="dset_cell_line" class="value2"> </span>
+	          </td>
+		  <td><span class="label2">Platform:</span>
+	              <span id="dset_platform" class="value2"> </span>
+	          </td>
+	      </tr>
+	      <tr><td><span class="label2">Cell Pop:</span>
+	              <span id="dset_cell_pop" class="value2"> </span>
+	          </td>
+		  <td><span class="label2">File:</span>
+	              <span id="dset_file" class="value2"> </span>
+	          </td>
+	      </tr>
+	   </table>
+	</section>
     </section>
 {% endblock %}
