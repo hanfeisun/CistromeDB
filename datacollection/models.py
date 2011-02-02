@@ -99,7 +99,8 @@ class Papers(DCModel):
 #     strain = models.ForeignKey('Strains', default=0)
 #     condition = models.ForeignKey('Conditions', default=0)
     
-    journal = models.ForeignKey('Journals', default=0)
+    journal = models.ForeignKey('Journals',
+                                null=True, blank=True, default=None)
     status = models.CharField(max_length=255, choices=PAPER_STATUS,
                               default="imported")
     #a place for curators to add comments
@@ -152,21 +153,30 @@ class Datasets(DCModel):
     date_collected = models.DateTimeField()
     file = models.FileField(upload_to=upload_to_path, null=True)
     file_url = models.URLField(max_length=255, blank=True)
-    file_type = models.ForeignKey('FileTypes')
+    file_type = models.ForeignKey('FileTypes',
+                                  null=True, blank=True, default=None)
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
-    factor = models.ForeignKey('Factors', default=0)
+    factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
 
-    platform = models.ForeignKey('Platforms', default=0)
-    species = models.ForeignKey('Species')
-    assembly = models.ForeignKey('Assembly', default=0)
+    platform = models.ForeignKey('Platforms',
+                                 null=True, blank=True, default=None)
+    species = models.ForeignKey('Species',
+                                null=True, blank=True, default=None)
+    assembly = models.ForeignKey('Assembly',
+                                 null=True, blank=True, default=None)
     #in description, we can add additional info e.g. protocols etc
     description = models.TextField(blank=True)
-    cell_type = models.ForeignKey('CellTypes', default=0)
-    cell_line = models.ForeignKey('CellLines', default=0)
-    cell_pop = models.ForeignKey('CellPops', default=0)
-    strain = models.ForeignKey('Strains', default=0)
-    condition = models.ForeignKey('Conditions', default=0)
+    cell_type = models.ForeignKey('CellTypes',
+                                  null=True, blank=True, default=None)
+    cell_line = models.ForeignKey('CellLines',
+                                  null=True, blank=True, default=None)
+    cell_pop = models.ForeignKey('CellPops',
+                                 null=True, blank=True, default=None)
+    strain = models.ForeignKey('Strains',
+                               null=True, blank=True, default=None)
+    condition = models.ForeignKey('Conditions',
+                                  null=True, blank=True, default=None)
     
     status = models.CharField(max_length=255, choices=PAPER_STATUS,
                               default="imported")
