@@ -6,12 +6,13 @@ try:
     import json
 except ImportError:
     import simplejson as json
-
+    
+#drop?
 SPECIES_CHOICES = (
     (u'hg', u'homo sapien'),
     (u'mm', u'mus musculus'),
     )
-
+#drop?
 EXPERIMENT_TYPE_CHOICES = (
     (u'chip', u'ChIP-Chip'),
     (u'seq', u'ChIP-Seq'),
@@ -22,6 +23,20 @@ SUBMISSION_STATUS = (
     (u'closed', u'Imported/Closed'),
     (u'n/a', u'Not Appropriate'),
     )
+
+PAPER_STATUS = (
+    (u'imported', u'imported awaiting download'),
+    (u'downloaded', u'datasets downloaded awaiting analysis'),
+    (u'complete', u'analysis complete/complete'),
+    (u'error', u'error/hold- see comments'),
+    )
+
+DATASET_STATUS = (
+    (u'imported', u'imported awaiting file download'),
+    (u'downloaded', u'downloaded/closed'),
+    (u'error', u'error/hold- see comments'),
+    )
+
 #pending is the default submission status
 DEFAULT_SUBMISSION_STATUS = SUBMISSION_STATUS[0][0]
 
@@ -85,6 +100,10 @@ class Papers(DCModel):
 #     condition = models.ForeignKey('Conditions', default=0)
     
     journal = models.ForeignKey('Journals', default=0)
+    status = models.CharField(max_length=255, choices=PAPER_STATUS,
+                              default="imported")
+    #a place for curators to add comments
+    comments = models.TextField(blank=True)
 
     def __str__(self):
         return self.title
@@ -139,13 +158,19 @@ class Datasets(DCModel):
     factor = models.ForeignKey('Factors', default=0)
 
     platform = models.ForeignKey('Platforms', default=0)
-    species = models.ForeignKey('Species')    
+    species = models.ForeignKey('Species')
+    assembly = models.ForeignKey('Assembly', default=0)
+    #in description, we can add additional info e.g. protocols etc
+    description = models.TextField(blank=True)
     cell_type = models.ForeignKey('CellTypes', default=0)
     cell_line = models.ForeignKey('CellLines', default=0)
     cell_pop = models.ForeignKey('CellPops', default=0)
     strain = models.ForeignKey('Strains', default=0)
     condition = models.ForeignKey('Conditions', default=0)
-
+    
+    status = models.CharField(max_length=255, choices=PAPER_STATUS,
+                              default="imported")
+    comments = models.TextField(blank=True)
 
 class Platforms(DCModel):
     """Platforms are the chips/assemblies used to generate the dataset.
@@ -159,6 +184,7 @@ class Platforms(DCModel):
     gplid = models.CharField(max_length=7)
     name = models.CharField(max_length=255, blank=True)
     technology = models.CharField(max_length=255, blank=True)
+    company = models.CharField(max_length=255, blank=True)
     #experiment_type = models.CharField(max_length=10,
     #choices=EXPERIMENT_TYPE_CHOICES)
     def __str__(self):
@@ -208,6 +234,8 @@ class Conditions(DCModel):
 class Journals(DCModel):
     """Journals that the papers are published in"""
     name = models.CharField(max_length=255)
+    issn = models.CharField(max_length=9)
+    impact_factor = models.FloatField(default=0.0)
     def __str__(self):
         return self.name
 
@@ -237,4 +265,8 @@ class FileTypes(DCModel):
 
 class Species(DCModel):
     name = models.CharField(max_length=255)
+    
+class Assembly(DCModel):
+    name = models.CharField(max_length=255)
+    pub_date = models.DateField(blank=True)
     
