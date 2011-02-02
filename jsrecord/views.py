@@ -9,7 +9,7 @@ from django.db.models.base import ModelBase
 from django.forms import ModelForm
 
 from new import classobj
-from datetime import date
+from datetime import date, datetime
 from django.db.models.fields.files import FieldFile
 from types import *
 
@@ -121,7 +121,7 @@ def serializeField(obj, fieldName):
         return fieldName+":"+str(val.id)
     elif type(val) is StringType or type(val) is UnicodeType:
         return fieldName+":\""+val+"\""
-    elif type(val) is date or type(val) is FieldFile:
+    elif type(val) is date or type(val) is datetime or type(val) is FieldFile:
         return fieldName+":\""+str(val)+"\""
     else:
         return fieldName+":"+str(val)
