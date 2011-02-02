@@ -1,0 +1,56 @@
+p.info {
+    color:gray;
+    width:100%;
+    margin: 5px, 0, 0, 0;
+    font-size:10pt;
+}
+span.label {
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:0px;
+    margin:0;
+}
+span.value {
+    margin-left:25px;
+    display:block;
+    color:#000;
+}
+
+/*using span instead of a for ajax onclicks, 
+  but want to mimic a-tag styling*/
+span.a {
+    color:blue;
+    text-decoration: underline;
+    cursor:pointer;
+}
+
+#dataset_info {
+}
+
+#dataset_tbl {
+    float:left;
+    font-size:10pt;
+}
+
+#dataset_focus {
+    float:right;
+    font-size: 10pt;
+}
+
+/*for the focus_tbl*/
+#focus_tbl {
+    border:1px solid #000;
+}
+
+#focus_tbl td {
+    padding-right: 15px;
+}
+
+span.label2 {
+    margin:0;
+    color:gray;
+}
+span.value2 {
+    padding-left:0px;
+}
