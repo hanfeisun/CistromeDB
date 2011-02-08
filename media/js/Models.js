@@ -174,6 +174,8 @@ function JSRecordFactory(className, fields) {
 
 	//INSTANCE METHODS!
 	this.save = function(callbackFn) {
+	    //var tmp = eval("("+outer.serialize()+")");
+	    alert(outer.serialize())
 	    var save = 
 	    new Ajax.Request(outer.jsrecordURL+outer.className+"/save/", 
 			     {method:"post", onComplete: callbackFn, 
@@ -229,7 +231,7 @@ function JSRecordFactory(className, fields) {
 	
 	//expects return to be: [S1, S2, ..., SN]
 	this.callback = function(req) {
-	    resp = eval(req.responseText);
+	    resp = eval("("+req.responseText+")");
 	    var tmp = [];
 	    for (var i = 0; i < resp.size(); i++) {
 		var s = outer.deserialize(resp[i]);
@@ -252,7 +254,7 @@ function JSRecordFactory(className, fields) {
 	var outer = this;
 	
 	this.callback = function(req) {
-	    resp = eval(req.responseText);
+	    resp = eval("("+req.responseText+")");
 	    outer.returnVal = outer.deserialize(resp);
 	}
 	
@@ -271,7 +273,7 @@ function JSRecordFactory(className, fields) {
 	var outer = this;
 	
 	this.callback = function(req) {
-	    resp = eval(req.responseText);
+	    resp = eval("("+req.responseText+")");
 	    var tmp = [];
 	    for (var i = 0; i < resp.size(); i++) {
 		var s = outer.deserialize(resp[i]);
@@ -311,7 +313,7 @@ loadJSRecord = function(model) {
     var outer = this;
     
     this.callback = function(req) {
-	resp = eval(req.responseText);
+	resp = eval("("+req.responseText+")");
 	outer.returnVal = JSRecordFactory(resp.className, resp.fields);
     }
     
