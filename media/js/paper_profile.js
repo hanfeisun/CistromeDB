@@ -18,15 +18,40 @@ function DatasetInfoView(datasetModel, container) {
     this.datasetModel.currDatasetEvent.register(this.currDatasetEventLstnr);
 
     this.makeHTMLcb = function(req) {
-	var dset = eval(req.responseText);
-	var attrs = ['gsmid','name','species', 'factor', 'cell_line',  
-		     'cell_type', 'cell_pop', 'strain', 'condition', 
-		     'platform'];
+	var dset = eval("("+req.responseText+")");
+	//alert(req.responseText);
+	//these are strings
+	var attrs = ['gsmid','name']
+	//these are records, we want to print the names
+	var attrs_rec = ['species', 'factor', 'cell_type', 'cell_pop',
+			 'strain', 'condition', 'platform']
 	attrs.each(function(attr) {
 		       if (dset[attr] != null) {
 			   $('dset_'+attr).innerHTML = dset[attr];
 		       }
 		   });
+	attrs_rec.each(function(attr) {
+			   if (dset[attr] != null) {
+			       var val = dset[attr].name;
+			       if (val.length >= 13) {
+				   //NOTE: w/o the g only the first space 
+				   //will be replaced!
+				   val = val.replace(/\s+/g, "</br>");
+				   /* GOOD but not perfect--want to chunk by 
+				      size 13
+				   //try to split it in half
+				   var i = val.indexOf(" ", val.length/2);
+				   if (i >= 0) {
+				       val = val.substring(0,i) + "</br>"+
+					   val.substring(i, val.length);
+				   } else {
+				       val = val.substring(0,13) + "...";
+				   }
+				   */
+			       }
+			       $('dset_'+attr).innerHTML = val;
+			   }
+		       });
 
 	//handle file dnld link
 	if (dset['file'] != null) {
