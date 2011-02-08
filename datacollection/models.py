@@ -77,6 +77,10 @@ class Papers(DCModel):
     cell_line, cell_pop, strain - the cell line used in the paper
     condition - the condition used in the paper, e.g. PTIP-knockout
     """
+    def __init__(self, *args):
+        super(Papers, self).__init__(*args)
+        self._meta._donotSerialize = ['user']
+
     pmid = models.IntegerField(unique=True)
     gseid = models.CharField(max_length=8,unique=True)
     user = models.ForeignKey(User)
@@ -144,6 +148,10 @@ class Datasets(DCModel):
         return os.path.join('datasets','gsm%s' % self.gsmid[3:6],
                             self.gsmid[6:], filename)
 
+    def __init__(self, *args):
+        super(Datasets, self).__init__(*args)
+        self._meta._donotSerialize = ['user']
+    
     gsmid = models.CharField(max_length=9)
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, blank=True)
@@ -155,6 +163,7 @@ class Datasets(DCModel):
     file_url = models.URLField(max_length=255, blank=True)
     file_type = models.ForeignKey('FileTypes',
                                   null=True, blank=True, default=None)
+    #IF everything is done by auto import we might not need this
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
     factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
