@@ -175,7 +175,7 @@ function JSRecordFactory(className, fields) {
 	//INSTANCE METHODS!
 	this.save = function(callbackFn) {
 	    //var tmp = eval("("+outer.serialize()+")");
-	    alert(outer.serialize())
+	    //alert(outer.serialize())
 	    var save = 
 	    new Ajax.Request(outer.jsrecordURL+outer.className+"/save/", 
 			     {method:"post", onComplete: callbackFn, 
@@ -202,13 +202,27 @@ function JSRecordFactory(className, fields) {
 	    json = "";
 	    if (outer.fields.length > 0) {
 		var val = outer[outer.fields[0]];
-		json += outer.fields[0]+":"+
-		    (typeof val == 'string'?"\""+val+"\"":val)
+		if (typeof val == 'string') {
+		    val = "\""+val+"\"";
+		} else if (typeof val == 'object') {
+		    //for model objects
+		    val = val.id;
+		}
+		json += outer.fields[0]+":"+val;
+		//json += outer.fields[0]+":"+
+		//    (typeof val == 'string'?"\""+val+"\"":val)
 	    }
 	    for (i = 1; i < outer.fields.length; i++) {
 		var val = outer[outer.fields[i]];
-		json += ", "+outer.fields[i]+":"+
-		(typeof val == 'string'?"\""+val+"\"":val)
+		if (typeof val == 'string') {
+		    val = "\""+val+"\"";
+		} else if (typeof val == 'object') {
+		    //for model objects
+		    val = val.id;
+		}
+		json += ", "+outer.fields[i]+":"+val;
+		//json += ", "+outer.fields[i]+":"+
+		//(typeof val == 'string'?"\""+val+"\"":val)
 	    }
 	    return "{"+json+"}";
 	}
