@@ -97,7 +97,7 @@ def loader(request, model):
     """Given a django model as a url param, this returns the meta information
     so that an equivalent javascript class can be constructed"""
     _model = getattr(MODELS, model)
-    fields = [field.name for field in _model._meta.fields]
+    fields = [field.name for field in _model._meta.fields]    
     tmp = "{\"className\":%s, \"fields\":%s}" % (json.dumps(_model.__name__),
                                                  json.dumps(fields))
     return HttpResponse(tmp)
@@ -125,17 +125,20 @@ class ModelEncoder(json.JSONEncoder):
         all along before dumping it as a tring"""
         tmp = {"_class":modelObj.__class__.__name__}
         for f in modelObj._meta.fields:
-            #check the _donotSerialize list
-            if '_donotSerialize' not in dir(modelObj._meta) or \
-               f.name not in modelObj._meta._donotSerialize:
-                val = getattr(modelObj, f.name)
-                if isinstance(val, models.Model):
+            val = getattr(modelObj, f.name)
+            if isinstance(val, models.Model):
+                if '_donotSerialize' in dir(modelObj._meta) and \
+                       f.name in modelObj._meta._donotSerialize:
+                    #check the _donotSerialize list --- they aren't enumerated
+                    #we just return their pk
+                    val = val.id
+                else:
                     val = ModelEncoder._modelAsDict(val)
-                if isinstance(val, FieldFile) or isinstance(val, date) or \
-                       isinstance(val, datetime):
-                    val = str(val)
-                tmp[f.name] = val
-        #print dir(modelObj._meta)
+            elif isinstance(val, FieldFile) or isinstance(val, date) or \
+                     isinstance(val, datetime):
+                val = str(val)
+            tmp[f.name] = val
+
         return tmp
     
     def default(self, obj):
