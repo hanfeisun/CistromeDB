@@ -30,6 +30,7 @@ function PaperSubmissionsList(list, currPaper) {
 //helper function, takes optional param, opts, which is a dict e.g. innerHTML; 
 //tries to create the domElement, and set the innerHTML if provided
 function createHelper(elmType, opts) {
+    /*
     var tmp = document.createElement(elmType);
     if (opts) {
 	//set optional fields
@@ -39,6 +40,9 @@ function createHelper(elmType, opts) {
     }
 
     return tmp;
+    */
+    //NOTE: this has been renamed to $D in Utils.js
+    return $D(elmType, opts);
 }
 
 function PaperSubmissionsView(pslist, container) {
