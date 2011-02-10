@@ -25,7 +25,9 @@ SUBMISSION_STATUS = (
     )
 
 PAPER_STATUS = (
-    (u'imported', u'imported awaiting download'),
+    (u'imported', u'imported awaiting datasets'),
+    (u'datasets', u'datasets imported awaiting download'),
+    (u'transfer', u'datasets download in progress'),
     (u'downloaded', u'datasets downloaded awaiting analysis'),
     (u'complete', u'analysis complete/complete'),
     (u'error', u'error/hold- see comments'),
@@ -77,9 +79,9 @@ class Papers(DCModel):
     cell_line, cell_pop, strain - the cell line used in the paper
     condition - the condition used in the paper, e.g. PTIP-knockout
     """
-    def __init__(self, *args):
-        super(Papers, self).__init__(*args)
-        self._meta._donotSerialize = ['user']
+    #def __init__(self, *args):
+    #    super(Papers, self).__init__(*args)
+    #    self._meta._donotSerialize = ['user']
 
     pmid = models.IntegerField(unique=True)
     gseid = models.CharField(max_length=8,unique=True)
@@ -113,6 +115,8 @@ class Papers(DCModel):
     def __str__(self):
         return self.title
 
+#NOTE: _donotSerialize fields are not enumerated as records, just as keys
+Papers._meta._donotSerialize = ['user']
 
 class Datasets(DCModel):
     """Datasets are the data associated with the papers.  They are usually
@@ -148,9 +152,9 @@ class Datasets(DCModel):
         return os.path.join('datasets','gsm%s' % self.gsmid[3:6],
                             self.gsmid[6:], filename)
 
-    def __init__(self, *args):
-        super(Datasets, self).__init__(*args)
-        self._meta._donotSerialize = ['user']
+    #def __init__(self, *args):
+    #    super(Datasets, self).__init__(*args)
+    #    self._meta._donotSerialize = ['user']
     
     gsmid = models.CharField(max_length=9)
     #Name comes from "title" in the geo sample information
@@ -187,9 +191,11 @@ class Datasets(DCModel):
     condition = models.ForeignKey('Conditions',
                                   null=True, blank=True, default=None)
     
-    status = models.CharField(max_length=255, choices=PAPER_STATUS,
+    status = models.CharField(max_length=255, choices=DATASET_STATUS,
                               default="imported")
     comments = models.TextField(blank=True)
+    
+Datasets._meta._donotSerialize = ['user']
 
 class Platforms(DCModel):
     """Platforms are the chips/assemblies used to generate the dataset.
@@ -269,7 +275,7 @@ class PaperSubmissions(DCModel):
     ip_addr - the ip address of the submitter
     submitter_name - optional name of the submitter
     comments - any comments a currator might attach to the submission
-    """
+    """        
     pmid = models.IntegerField(default=0)
     gseid = models.CharField(max_length=8, blank=True)
     status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
@@ -277,6 +283,8 @@ class PaperSubmissions(DCModel):
     ip_addr = models.CharField(max_length=15)
     submitter_name = models.CharField(max_length=255, blank=True)
     comments = models.TextField(blank=True)
+
+PaperSubmissions._meta._donotSerialize = ['user']
 
 class FileTypes(DCModel):
     """File types for our geo datasets"""
