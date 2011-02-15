@@ -42,8 +42,8 @@ function ModelFormHooks(model) {
     var outer = this;
     
     this.callback = function(req) {
-	resp = eval(req.responseText);
 	//alert(req.responseText);
+	resp = eval("("+req.responseText+")");
 	var tmp = {}
 	for (var i = 0; i < resp.fields.length; i++) {
 	    try {
