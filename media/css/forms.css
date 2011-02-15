@@ -19,6 +19,34 @@ span.value {
 input#submitBtn {
     margin-left:230px;
 }
+
+/* for new_paper_form--actually this is a better way to style forms */
+form p {
+    clear: left;
+    margin:0;
+    padding:0;
+    padding-top:5px;
+}
+
+form p label {
+    float:left;
+    width:30%;
+    color:gray;
+}
+
+form p input {
+    width:40%;
+}
+
+form p textarea {
+    width:40%;
+}
+
+form p a {
+    margin-left:15px;
+}
+
+
 /*       
 p.info span {
     color:gray;
