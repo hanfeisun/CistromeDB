@@ -23,6 +23,9 @@
 {% endblock %}
 
 {% block content %}
+      {% if user.is_authenticated %}
+      <a href="{% url new_paper_form %}" style="float:right">add new paper</a>
+      {% endif %}
       <table class="datatable" id="papers_table">
          <tr><th>Pubmed ID</th>
 	     <th>Title</th>
@@ -36,7 +39,7 @@
 	 {% else %}
 	 <tr class="altrow" onclick="helper({{ forloop.counter0 }});">
 	 {% endif %}
-	     <td>{{ p.pmid }}</td>
+	     <td><a href="{% url paper_profile p.id %}">{{ p.pmid }}</a></td>
 	     <td>{{ p.title|truncatewords:5 }}</td>
 	     <td>{{ p.authors|truncatewords:4 }}</td>
 	     <td>{{ p.journal }}</td>
@@ -44,30 +47,4 @@
 	 </tr>
 	 {% endfor %}
       </table>
-<!--
-   <div id="nav_div">
-      <span class="section_hdr"><span>Papers:</span>
-                                {% if user.is_authenticated %}
-				<a href="{% url new_paper_form %}">Add a new paper</a>
-				{% endif %}
-      </span>
-      <iframe src="{% url all_papers %}" scrolling="yes" name="navigation" id="nav_frame">
-      <p>Your browser must support iframes to view this page</p>
-      </iframe>
-   </div>
-   <div id="info_div">
-      <span class="section_hdr">Paper Info:</span>
-      <div id="info_container">
-      </div>
-   </div>
-   <div id="dataset_div">
-      <span class="section_hdr"><span>Datasets:</span>
-                                {% if user.is_authenticated %}
-				<a href="{% url new_dataset_form %}">Add a new dataset</a>
-				{% endif %}
-      </span>
-      <div id="dataset_container">
-      </div>
-   </div>
--->
 {% endblock %}
