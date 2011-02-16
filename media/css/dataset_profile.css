@@ -1,0 +1,22 @@
+
+#dataset_focus {
+    float:right;
+    font-size: 10pt;
+}
+
+/*for the focus_tbl*/
+#focus_tbl {
+    border:1px solid #000;
+}
+
+#focus_tbl td {
+    padding-right: 15px;
+}
+
+span.label2 {
+    margin:0;
+    color:gray;
+}
+span.value2 {
+    padding-left:0px;
+}
