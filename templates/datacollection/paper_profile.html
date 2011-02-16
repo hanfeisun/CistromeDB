@@ -25,13 +25,18 @@ onload="init();"
     </section>
     <section id="dataset_info">
         <table id="dataset_tbl">
-	   <tr><td>Datasets:</td></tr>
+	   <tr><td>Datasets:</td>
+	       {% if user.is_authenticated %}
+	       <td><a href="{% url new_dataset_form %}?p={{paper.id}}">add new dataset</a></td>
+	       {% endif %}
+	   </tr>
 	   {% for d in datasets %}
 	   {% cycle '<tr>' '' '' %}
 	       <td><span class="a" onclick="setActiveDataset({{d.id}});">{{ d.gsmid }}</span></td>
 	   {% cycle '' '' '</tr>' %}
 	   {% endfor %}
 	</table>
+	<!--
 	<section id="dataset_focus">
 	   <table id="focus_tbl">
 	      <tr><td colspan="2">
@@ -43,7 +48,7 @@ onload="init();"
 	              <span class="label2">Name:</span>
 	              <span id="dset_name" class="value2"> </span>
 	          </td>
-	      </tr>
+	      </tr>>
 	      <tr><td><span class="label2">Species:</span>
 	              <span id="dset_species" class="value2"> </span>
 	          </td>
@@ -88,5 +93,6 @@ onload="init();"
 	      </tr>
 	   </table>
 	</section>
+	-->
     </section>
 {% endblock %}

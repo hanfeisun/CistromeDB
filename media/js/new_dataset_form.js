@@ -1,8 +1,10 @@
+var containers;
 
-function init() {
+function init(paperId) {
     containers = ModelFormHooks("Datasets");
 
-    fields = ["factor", "platform", "cell_type", "cell_line", "cell_pop",
+    fields = ["factor", "platform", "species", "assembly",
+	      "cell_type", "cell_line", "cell_pop",
 	      "strain", "condition"];
     exceptions = ["cell_type", "cell_line", "cell_pop"]
     for (var i = 0; i < fields.length; i++) {
@@ -13,8 +15,9 @@ function init() {
 	if (exceptions.indexOf(fields[i]) != -1) {
 	    urlName = fields[i].sub('_','');
 	}
-	newA.href = SUB_SITE+"new_"+urlName+"_form/";
-	newA.innerHTML = "new "+fields[i];
+	var thisPage = SUB_SITE+"new_dataset_form/?p="+paperId;
+	newA.href = SUB_SITE+"new_"+urlName+"_form/?next="+thisPage;
+	newA.innerHTML = "add new "+fields[i];
 	containers[fields[i]].appendChild(newA);
     }
 }
