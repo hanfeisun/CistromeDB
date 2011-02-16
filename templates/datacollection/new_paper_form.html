@@ -20,6 +20,8 @@ onload="init();"
       {% endif %}
          <h2 class="section_hdr">Paper Form:</h2>
 	 <form action="" method="post">
+	     {{ form.as_p }}
+	     <!--
 	     <p>
 	         <label for="pmid">Pubmed ID:</label>
 	         <input type="text" id="pmid" name="pmid"/>
@@ -46,6 +48,7 @@ onload="init();"
 	     </p>
 	     <p id="journal">
 	     </p>
+	     -->
 	     <input type="hidden" name="status" value="imported"/>
 	     <input type="submit" value="Submit"/>
 	 </form>
