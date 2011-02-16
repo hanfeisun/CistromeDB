@@ -1,5 +1,7 @@
+import os
 import sys
 import datetime
+import subprocess
 
 from django.shortcuts import render_to_response, Http404
 from django.contrib import auth
@@ -298,21 +300,24 @@ def auto_paper_import(request):
             tmp.user = request.user
             tmp.date_collected = datetime.datetime.now()
 
-            try: 
-                tmp.save()
+            tmp.save()
+#            _auto_dataset_import(tmp.id, request.user, geoQuery.datasets)
+# TURN THIS ON IF you want it to work with the paper importer 
+#             try: 
+#                 tmp.save()
 
-                #try to auto import the associated datasets
-                _auto_dataset_import(tmp.id, request.user, geoQuery.datasets)
+#                 #try to auto import the associated datasets
+#                 _auto_dataset_import(tmp.id, request.user, geoQuery.datasets)
                 
-                #json - a flag that is sent in
-                if 'json' in request.POST and request.POST['json']:
-                    return HttpResponse("{'success':true}")
-            except:
-                #probably a duplicate entry--silently ignored
-                sys.stderr.write("autopaperimport error: %s\n\t%s\n" % \
-                                (sys.exc_info()[0],"probably duplicate entry"))
-                if 'json' in request.POST and request.POST['json']:
-                    return HttpResponse("{'success':false}")
+#                 #json - a flag that is sent in
+#                 if 'json' in request.POST and request.POST['json']:
+#                     return HttpResponse("{'success':true}")
+#             except:
+#                 #probably a duplicate entry--silently ignored
+#                 sys.stderr.write("autopaperimport error: %s\n\t%s\n" % \
+#                                 (sys.exc_info()[0],"probably duplicate entry"))
+#                 if 'json' in request.POST and request.POST['json']:
+#                     return HttpResponse("{'success':false}")
     else:
         pass
 
@@ -328,3 +333,26 @@ def paper_profile(request, paper_id):
                               locals(),
                               context_instance=RequestContext(request))
                 
+@login_required
+def admin(request):
+    """Admin page"""
+    papers = models.Papers.objects.all()
+    return render_to_response('datacollection/admin.html', locals(),
+                              context_instance=RequestContext(request))
+
+@login_required
+def import_datasets(request, paper_id):
+    """Tries to import the datasets associated with the paper"""
+    paper = models.Papers.objects.get(pk=paper_id)
+    geoQuery = entrez.PaperAdapter(paper.gseid)
+    _auto_dataset_import(paper, paper.user, geoQuery.datasets)
+        
+    return HttpResponse("{success:true}")
+
+@login_required
+def download_datasets(request, paper_id):
+    """Tries to download the datasets associated with the paper"""
+    #NOTE: this uses pip, which is in DEPLOY_DIR/importer
+    path = os.path.join(settings.DEPLOY_DIR, "importer", "pip.py")
+    pid = subprocess.Popen([path, paper_id]).pid
+    return HttpResponse("{success:true}")
