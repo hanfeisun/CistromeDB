@@ -70,12 +70,19 @@ def new_dataset_form(request):
             tmp = form.save(commit=False)
             tmp.date_collected = datetime.datetime.now()
             tmp.user = request.user
+            #I'm not sure why the form isn't finding paper in request.POST
+            tmp.paper = models.Papers.objects.get(id=request.POST['paper'])
             tmp.save()
             return HttpResponseRedirect(reverse('home'))
         else:
             print "INVALID DATASET FORM"
     else:
         form = forms.DatasetForm()
+        #NOTE: we can't pass in the param as paper b/c when we post, it
+        #clobbers the hidden input in our form
+        if 'p' in request.GET:
+            #paper = models.Papers.objects.get(id=request.GET['paper'])
+            paper = request.GET['p']
     return render_to_response('datacollection/new_dataset_form.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -99,7 +106,8 @@ def form_view_factory(title_in, form_class):
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
-                      'strain', 'condition', 'journal']
+                      'strain', 'condition', 'journal', 'species',
+                      'assembly']
 #new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
 #Generate the generic form views
 for name in generic_forms_list:

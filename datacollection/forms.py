@@ -19,7 +19,7 @@ _this_mod = sys.modules[_modname]
 class PaperForm(forms.ModelForm):
     class Meta:
         model = models.Papers
-        exclude = ('date_collected', 'user')
+        exclude = ('date_collected', 'user', 'status', 'comments')
     labels = {'pmid':'Pubmed ID', 'gseid':'GEO Series ID',
               'pub_date':'Publication Date',
               #'last_auth':'Last Author',
@@ -40,7 +40,8 @@ form_dict = {'Dataset': models.Datasets, 'Platform': models.Platforms,
              'Factor': models.Factors, 'Celltype':models.CellTypes,
              'Cellline': models.CellLines, 'Cellpop':models.CellPops,
              'Strain': models.Strains, 'Condition':models.Conditions,
-             'Journal': models.Journals}
+             'Journal': models.Journals, 'Species':models.Species,
+             'Assembly': models.Assemblies}
 
 
 for k in form_dict:
@@ -54,4 +55,6 @@ for k in form_dict:
 class DatasetForm(forms.ModelForm):
      class Meta:
          model = models.Datasets
-         exclude = ('date_collected', 'user')
+         exclude = ('date_collected', 'user', 'paper',
+                    'file', 'raw_file_type', 'raw_file_url', 'description',
+                    'comments', 'status')
