@@ -33,3 +33,10 @@ td, th {
 .error_row {
     background-color:red;
 }
+
+/* override the base.css def */
+section#main{
+    float:left;
+    width:80%;
+    padding-left:10%;
+}

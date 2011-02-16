@@ -1,5 +1,6 @@
+
+/*
 body {
-   /*background:#f00;*/
 }
 
 td, th {
@@ -36,12 +37,10 @@ td, th {
 
 .datatable tr.altrow {
    background-color: #DFE7F2;
-   /*background-color:#FF7380;*/
    color: #000000;
 }
 
 .datatable tr:hover {
-   /*background-color: #B0A48B;*/
    background-color: #FFFA00;
    color: #000;
    cursor: pointer;
@@ -51,3 +50,4 @@ td, th {
    text-decoration: underline;
    color: #30C;
 }
+*/
