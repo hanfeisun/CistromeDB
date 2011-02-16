@@ -356,3 +356,10 @@ def download_datasets(request, paper_id):
     path = os.path.join(settings.DEPLOY_DIR, "importer", "pip.py")
     pid = subprocess.Popen([path, paper_id]).pid
     return HttpResponse("{success:true}")
+
+def dataset_profile(request, dataset_id):
+    """View of the paper_profile page"""
+    dataset = models.Datasets.objects.get(id=dataset_id)
+    return render_to_response('datacollection/dataset_profile.html',
+                              locals(),
+                              context_instance=RequestContext(request))
