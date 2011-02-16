@@ -1,0 +1,60 @@
+{% extends "datacollection/base.html" %}
+
+{% block title %}Cistrome Paper Collection{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/admin.css" rel="stylesheet" type="text/css"/>
+<script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/Utils.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/Models.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/admin.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block login_form %}
+      {% if user.is_authenticated %}
+      <span id="login">Welcome, {{ user.username }}. <a href="{% url logout %}">logout</a></span>
+      {% endif %}
+{% endblock %}
+
+{% block onload %}
+onload="init();"
+{% endblock %}
+
+{% block content %}
+<!-- NOTE: the content is created in javascript -->
+<!--
+      <table class="datatable" id="papers_table">
+         <tr><th>Pubmed ID</th>
+	     <th>GSEID</th>
+	     <th>Status</th>
+	     <th>Comments</th>
+	     <th>Curator</th>
+	     <th>Action</th>
+	     <th> </th>
+	 </tr>
+	 {% for p in papers %}
+	 <tr>
+	     <td><a href="{% url paper_profile p.id %}">{{ p.pmid }}</a></td>
+	     <td><a href="{% url paper_profile p.id %}">{{ p.gseid }}</a></td>
+	     {% ifequal p.status "imported" %}
+	     <td class="imported_row">{{ p.get_status_display }}</td>
+	     {% else %} {% ifequal p.status "datasets" %}
+	     <td class="datasets_row">{{ p.get_status_display }}</td>
+	     {% else %} {% ifequal p.status "downloaded" %}
+	     <td class="downloaded_row">{{ p.get_status_display }}</td>
+	     {% else %} {% ifequal p.status "complete" %}
+	     <td class="complete_row">{{ p.get_status_display }}</td>
+	     {% else %} {% ifequal p.status "error" %}
+	     <td class="error_row">{{ p.get_status_display }}</td>
+	     {% else %}
+	     <td>{{ p.get_status_display }}</td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+	     <td>{{ p.comments }}</td>
+	     <td>{{ p.user }}</td>
+	     <td> </td>
+	     <td>edit </td>
+	 </tr>
+	 {% endfor %}
+      </table>
+-->
+{% endblock %}
