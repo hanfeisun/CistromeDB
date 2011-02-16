@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block onload %}
-onload="init();"
+onload="init({{paper}});"
 {% endblock %}
 
 {% block content %}
@@ -21,6 +21,9 @@ onload="init();"
          <h2 class="section_hdr">Dataset Form:</h2>
 	 <form enctype="multipart/form-data" action="" method="post">
 	    {{ form.as_p }}
+	    {% if paper %}
+	    <input type="hidden" value="{{paper}}" id="id_paper" name="paper"/>
+	    {% endif %}
 	    <input type="submit" value="Submit"/>
 	 </form>
       <!--</div>-->

@@ -144,13 +144,19 @@ class Datasets(DCModel):
     cell_line, cell_pop, strain - the sample's cell line
     condition - the sample's condition, e.g. PTIP-knockout
     """
-    def upload_to_path(self, filename):
-        """Returns the upload_to path for this dataset.
-        NOTE: we are going to store the files by gsmid, e.g. GSM566957
-        is going to be stored in: datasets/gsm566/957.
-        I'm not sure if this is the place to validate gsmids, but it may be"""
-        return os.path.join('datasets','gsm%s' % self.gsmid[3:6],
-                            self.gsmid[6:], filename)
+    def upload_factory(sub_dir):
+        """a factory for generating upload_to_path fns--e.g. use to generate
+        the various sub-directories we use to store the info associated w/
+        a sample"""
+        def upload_to_path(self, filename):
+            """Returns the upload_to path for this dataset.
+            NOTE: we are going to store the files by gsmid, e.g. GSM566957
+            is going to be stored in: datasets/gsm566/957.
+            I'm not sure if this is the place to validate gsmids, but it maybe
+            """
+            return os.path.join('datasets','gsm%s' % self.gsmid[3:6],
+                                self.gsmid[6:], sub_dir, filename)
+        return upload_to_path
 
     #def __init__(self, *args):
     #    super(Datasets, self).__init__(*args)
@@ -163,10 +169,24 @@ class Datasets(DCModel):
     control_gsmid = models.CharField(max_length=9, blank=True)
     control_page = models.URLField(blank=True)
     date_collected = models.DateTimeField()
-    file = models.FileField(upload_to=upload_to_path, null=True)
-    file_url = models.URLField(max_length=255, blank=True)
-    file_type = models.ForeignKey('FileTypes',
-                                  null=True, blank=True, default=None)
+    #FILES--maybe these should be in a different table, but for now here they r
+    raw_file = models.FileField(upload_to=upload_factory("raw"),
+                                null=True, blank=True)
+    raw_file_url = models.URLField(max_length=255, blank=True)
+    raw_file_type = models.ForeignKey('FileTypes',
+                                      null=True, blank=True, default=None)
+
+    peak_file = models.FileField(upload_to=upload_factory("peak"),
+                                 null=True, blank=True)
+    wig_file = models.FileField(upload_to=upload_factory("wig"),
+                                null=True, blank=True)
+    qc_file = models.FileField(upload_to=upload_factory("qc"),
+                               null=True, blank=True)
+    ceas_file = models.FileField(upload_to=upload_factory("ceas"),
+                                 null=True, blank=True)
+    venn_file = models.FileField(upload_to=upload_factory("venn"),
+                                 null=True, blank=True)
+    
     #IF everything is done by auto import we might not need this
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
@@ -176,7 +196,7 @@ class Datasets(DCModel):
                                  null=True, blank=True, default=None)
     species = models.ForeignKey('Species',
                                 null=True, blank=True, default=None)
-    assembly = models.ForeignKey('Assembly',
+    assembly = models.ForeignKey('Assemblies',
                                  null=True, blank=True, default=None)
     #in description, we can add additional info e.g. protocols etc
     description = models.TextField(blank=True)
@@ -289,11 +309,16 @@ PaperSubmissions._meta._donotSerialize = ['user']
 class FileTypes(DCModel):
     """File types for our geo datasets"""
     name = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
 
 class Species(DCModel):
     name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
     
-class Assembly(DCModel):
+class Assemblies(DCModel):
     name = models.CharField(max_length=255)
     pub_date = models.DateField(blank=True)
-    
+    def __str__(self):
+        return self.name
