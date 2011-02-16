@@ -32,7 +32,7 @@ onload="init();"
 	   </tr>
 	   {% for d in datasets %}
 	   {% cycle '<tr>' '' '' %}
-	       <td><span class="a" onclick="setActiveDataset({{d.id}});">{{ d.gsmid }}</span></td>
+	       <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
 	   {% cycle '' '' '</tr>' %}
 	   {% endfor %}
 	</table>
