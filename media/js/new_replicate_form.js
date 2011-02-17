@@ -105,7 +105,32 @@ function init(paperId) {
 	setPaper(paperId);
     }
     
-
-
 }
 
+function mySubmit() {
+    var tmp = "";
+    var valid = true;
+    if (replicateContainers.length > 0) {
+	tmp = $('id_replicate0').value;
+	if ($('id_replicate0').value == "") {
+	    valid = false;
+	}
+    }
+    for (var i = 1; i < replicateContainers.length; i++) {
+	tmp += ","+$('id_replicate'+i).value;
+	if ($('id_replicate'+i).value == "") {
+	    valid = false;
+	}
+    }
+
+    if (valid) {
+	//set the datasetvalue
+	$('id_datasets').value = tmp;
+	//submit the form
+	$('rep_form').submit();
+    } else {
+	alert("Please select fill all replicates before submitting");
+    }
+
+    //alert(
+}

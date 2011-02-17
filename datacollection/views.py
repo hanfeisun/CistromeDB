@@ -92,7 +92,18 @@ def new_dataset_form(request):
 @login_required
 def new_replicate_form(request):
     if request.method == "POST":
-        pass
+        form = forms.ReplicateForm(request.POST, request.FILES)
+        if form.is_valid():
+            tmp = form.save(commit=False)
+            tmp.user = request.user
+            #I'm not sure why the form isn't finding paper OR datasets in
+            #request.POST
+            tmp.datasets = request.POST['datasets']
+            tmp.paper = models.Papers.objects.get(id=request.POST['paper'])
+            tmp.save()
+            return HttpResponseRedirect(reverse('home'))
+        else:
+            print "INVALID REPLICATE FORM"
     else:
         form = forms.ReplicateForm()
         if 'p' in request.GET:

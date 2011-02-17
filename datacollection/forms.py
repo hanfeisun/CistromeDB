@@ -62,4 +62,4 @@ class DatasetForm(forms.ModelForm):
 class ReplicateForm(forms.ModelForm):
     class Meta:
         model = models.Replicates
-        exclude = ('paper', 'datasets')
+        exclude = ('user', 'paper', 'datasets')
