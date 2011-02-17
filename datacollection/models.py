@@ -355,3 +355,12 @@ class Replicates(DCModel):
                                  null=True, blank=True)
     venn_file = models.FileField(upload_to=upload_factory("venn"),
                                  null=True, blank=True)
+
+    def __str__(self):
+        """Tries to print the GSMID of the datasets"""
+        if self.datasets:
+            datasets = [Datasets.objects.get(id=d) \
+                        for d in self.datasets.split(',')]
+            return "[%s]" % ",".join([d.gsmid for d in datasets])
+        else:
+            return "None"
