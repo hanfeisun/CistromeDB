@@ -341,7 +341,8 @@ class Replicates(DCModel):
                                 self.paper.gseid[5:], self.id, sub_dir,
                                 filename)
         return upload_to_path
-
+    
+    user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
     datasets = models.CommaSeparatedIntegerField(max_length=255)
     peak_file = models.FileField(upload_to=upload_factory("peak"),
