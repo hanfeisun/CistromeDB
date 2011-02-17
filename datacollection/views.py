@@ -16,6 +16,7 @@ import models
 import forms
 import settings
 from entrezutils import models as entrez
+import jsrecord.views
 
 try:
     import json
@@ -88,6 +89,18 @@ def new_dataset_form(request):
     return render_to_response('datacollection/new_dataset_form.html', locals(),
                               context_instance=RequestContext(request))
 
+@login_required
+def new_replicate_form(request):
+    if request.method == "POST":
+        pass
+    else:
+        form = forms.ReplicateForm()
+        if 'p' in request.GET:
+            paper = request.GET['p']
+    return render_to_response('datacollection/new_replicate_form.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
 #GENERIC FORMS section
 def form_view_factory(title_in, form_class):
 #    @login_required
@@ -148,32 +161,34 @@ def get_datasets(request, paper_id):
     """
     paper = models.Papers.objects.get(id=paper_id)
     datasets = models.Datasets.objects.filter(paper=paper_id)
-    dlist = []
-    for d in datasets:
-        tmp = {}
-        tmp['gsmid'] = d.gsmid
-        tmp['factor'] = d.factor.name
-        tmp['file'] = d.file.url
-        if d.platform:
-            tmp['platform'] = d.platform.name
-            tmp['exp_type'] = d.platform.experiment_type
-        else:
-            tmp['platform'] = paper.platform.name
-            tmp['exp_type'] = paper.platform.experiment_type
-        #NOTE: species is a fixed choice, so it should be set
-        if d.species:
-            tmp['species'] = d.species
-        else:
-            tmp['species'] = paper.species
-        if d.cell_type:
-            tmp['cell_type'] = d.cell_type.name
-        else:
-            tmp['cell_type'] = paper.cell_type.name
-        dlist.append(tmp)
+    
+    dlist = ",".join([jsrecord.views.jsonify(d) for d in datasets])
+    return HttpResponse("[%s]" % dlist)
+#     for d in datasets:
+#         tmp = {}
+#         tmp['gsmid'] = d.gsmid
+#         tmp['factor'] = d.factor.name
+#         tmp['file'] = d.file.url
+#         if d.platform:
+#             tmp['platform'] = d.platform.name
+#             tmp['exp_type'] = d.platform.experiment_type
+#         else:
+#             tmp['platform'] = paper.platform.name
+#             tmp['exp_type'] = paper.platform.experiment_type
+#         #NOTE: species is a fixed choice, so it should be set
+#         if d.species:
+#             tmp['species'] = d.species
+#         else:
+#             tmp['species'] = paper.species
+#         if d.cell_type:
+#             tmp['cell_type'] = d.cell_type.name
+#         else:
+#             tmp['cell_type'] = paper.cell_type.name
+#         dlist.append(tmp)
 
-    ret = json.dumps(dlist)
-    #print ret
-    return HttpResponse(ret)   
+#     ret = json.dumps(dlist)
+#     #print ret
+#     return HttpResponse(ret)   
 
 #DROP the FOLLOWING fn/view?
 def register(request):

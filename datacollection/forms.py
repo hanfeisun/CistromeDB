@@ -41,7 +41,7 @@ form_dict = {'Dataset': models.Datasets, 'Platform': models.Platforms,
              'Cellline': models.CellLines, 'Cellpop':models.CellPops,
              'Strain': models.Strains, 'Condition':models.Conditions,
              'Journal': models.Journals, 'Species':models.Species,
-             'Assembly': models.Assemblies}
+             'Assembly': models.Assemblies, 'Replicate':models.Replicates}
 
 
 for k in form_dict:
@@ -58,3 +58,8 @@ class DatasetForm(forms.ModelForm):
          exclude = ('date_collected', 'user', 'paper',
                     'file', 'raw_file_type', 'raw_file_url', 'description',
                     'comments', 'status')
+
+class ReplicateForm(forms.ModelForm):
+    class Meta:
+        model = models.Replicates
+        exclude = ('paper', 'datasets')

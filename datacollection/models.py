@@ -322,3 +322,35 @@ class Assemblies(DCModel):
     pub_date = models.DateField(blank=True)
     def __str__(self):
         return self.name
+
+class Replicates(DCModel):
+    """a table to store all of the replicate information: a replicate is a
+    set of one or more datasets; it is associated with a paper (one paper to
+    many replicates)"""
+    def upload_factory(sub_dir):
+        """a factory for generating upload_to_path fns--e.g. use to generate
+        the various sub-directories we use to store the info associated w/
+        a replicate"""
+        def upload_to_path(self, filename):
+            """Returns the upload_to path for this dataset.
+            NOTE: we are going to store the files by the paper's gseid and
+            the replicate id, e.g. gseid = GSE20852, replicate id = 578
+            is going to be stored in: replicates/gse20/852/578/[peak, wig,etc]
+            """
+            return os.path.join('replicates','gse%s' % self.paper.gseid[3:5],
+                                self.paper.gseid[5:], self.id, sub_dir,
+                                filename)
+        return upload_to_path
+
+    paper = models.ForeignKey('Papers')
+    datasets = models.CommaSeparatedIntegerField(max_length=255)
+    peak_file = models.FileField(upload_to=upload_factory("peak"),
+                                 null=True, blank=True)
+    wig_file = models.FileField(upload_to=upload_factory("wig"),
+                                null=True, blank=True)
+    qc_file = models.FileField(upload_to=upload_factory("qc"),
+                               null=True, blank=True)
+    ceas_file = models.FileField(upload_to=upload_factory("ceas"),
+                                 null=True, blank=True)
+    venn_file = models.FileField(upload_to=upload_factory("venn"),
+                                 null=True, blank=True)

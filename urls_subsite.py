@@ -43,7 +43,7 @@ urlpatterns = patterns('',
 generic_views_list = ['paper', 'dataset',
                       'platform','factor','celltype','cellline', 'cellpop',
                       'strain', 'condition', 'journal',
-                      'species', 'assembly']
+                      'species', 'assembly', 'replicate']
 
 for v in generic_views_list:
     urlpatterns += patterns('',
