@@ -38,6 +38,14 @@ span.a {
     font-size: 10pt;
 }
 
+#replicate_info {
+    clear:both;
+}
+
+#replicate_tbl {
+    font-size:10pt;
+}
+
 /*for the focus_tbl*/
 #focus_tbl {
     border:1px solid #000;

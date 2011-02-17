@@ -355,6 +355,7 @@ def paper_profile(request, paper_id):
     """View of the paper_profile page"""
     paper = models.Papers.objects.get(id=paper_id)
     datasets = models.Datasets.objects.filter(paper=paper_id)
+    replicates = models.Replicates.objects.filter(paper=paper_id)
     return render_to_response('datacollection/paper_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
@@ -387,5 +388,14 @@ def dataset_profile(request, dataset_id):
     """View of the paper_profile page"""
     dataset = models.Datasets.objects.get(id=dataset_id)
     return render_to_response('datacollection/dataset_profile.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
+def replicate_profile(request, replicate_id):
+    """View of the paper_profile page"""
+    replicate = models.Replicates.objects.get(id=replicate_id)
+    dsets = replicate.datasets.split(",")
+    datasets = [models.Datasets.objects.get(id=d) for d in dsets]
+    return render_to_response('datacollection/replicate_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
