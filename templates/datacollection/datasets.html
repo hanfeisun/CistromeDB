@@ -1,55 +1,43 @@
 {% extends "datacollection/base.html" %}
 {% block title %}Cistrome Paper Collection - Datasets{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/admin.css" rel="stylesheet" type="text/css"/>
+<!--
+<script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/papers.js" type="text/javascript"></script>
+-->
+{% endblock %}
+
+{% block login_form %}
+      {% if user.is_authenticated %}
+      <span id="login">Welcome, {{ user.username }}. <a href="{% url logout %}">logout</a></span>
+      {% else %}
+      <form action="{% url login %}" method="post" id="login">
+         <label for="username">Administrator Login:</label>
+	 <input type="text" name="username" id="username"/>
+         <label for="password">Password:</label>
+	 <input type="password" name="password" id="password"/>
+	 <input type="submit" name="login" value="login"/>
+      </form>
+      {% endif %}
+{% endblock %}
+
 {% block content %}
-   <table>
-      <tr>
-         <th>GSMID</th>
-	 <th>Chip Page</th>
-	 <th>Control GSMID</th>
-	 <th>Control Page</th>
-         <th>Date collected</th>
-	 <th>Pubmed Id</th>
-	 <th>GSEID</th>
-	 <th>Title</th>
-	 <th>Abstract</th>
-	 <th>Publication Date</th>
-	 <th>Last Author</th>
-	 <th>Last Author Email</th>
-	 <th>Factor</th>
-	 <th>Platform</th>
-	 <th>Species</th>
-	 <th>Cell Type</th>
-	 <th>Cell Line</th>
-	 <th>Population</th>
-	 <th>Strain/Mutation</th>
-	 <th>Condition</th>
-      </tr>
-      {% for d in datasets %}
-      <tr>
-         <td>{{ d.gsmid }}</td>
-         <td>{{ d.chip_page }}</td>
-         <td>{{ d.control_gsmid }}</td>
-         <td>{{ d.control_page }}</td>
-         <td>{{ d.date_collected }}</td>
-         <td>{{ d.paper.pmid }}</td>
-         <td>{{ d.paper.gseid }}</td>
-         <td>{{ d.paper.title|truncatewords:5 }}</td>
-         <td>{{ d.paper.abstract|truncatewords:5 }}</td>
-         <td>{{ d.paper.pub_date }}</td>
-         <td>{{ d.paper.last_auth }}</td>
-         <td>{{ d.paper.last_auth_email }}</td>
-	 <!-- use a printer--that checks to see if d's platform is 0, in 
-	 which case it inherits the paper's platform-->
-         <td>{{ d.factor.name }}</td>
-         <td>{{ d.platform.name }}</td>
-         <td>{{ d.species }}</td>
-         <td>{{ d.cell_type.name }}</td>
-         <td>{{ d.cell_line.name }}</td>
-         <td>{{ d.cell_pop.name }}</td>
-         <td>{{ d.strain.name }}</td>
-         <td>{{ d.condition.name }}</td>
-       </tr>
-       {% endfor %}
-    </table>
+      <table>
+         <tr><th>GSMID</th>
+	     <th>Paper</th>
+	     <th>Curator</th>
+	     <th>Date Collected</th>
+	 </tr>
+	 {% for d in datasets %}
+	 <tr>
+	     <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
+	     <td><a href="{% url paper_profile d.paper.id %}">{{d.paper.pmid}}</a></td>
+	     <td>{{ d.user }}</td>
+	     <td>{{ d.date_collected|date:"Y-m-d"}}</td>
+	 </tr>
+	 {% endfor %}
+      </table>
 {% endblock %}
 
