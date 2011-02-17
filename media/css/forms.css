@@ -46,6 +46,12 @@ form p a {
     margin-left:15px;
 }
 
+/* for new_replicate_form add a replicate btn, which we use as an a */
+form p span.a {
+    text-decoration:underline;
+    color:blue;
+    cursor:pointer;
+}
 
 /*       
 p.info span {
