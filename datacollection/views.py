@@ -285,12 +285,16 @@ def _auto_dataset_import(paper, user, gsmids):
         geoQuery = entrez.DatasetAdapter(gsmid)
         tmp = models.Datasets()
         
-        attrs = ['gsmid', 'name', 'file_url']
+        attrs = ['gsmid', 'name']#, 'file_url']
         for a in attrs:
             setattr(tmp, a, getattr(geoQuery, a))
 
+        #NOTE: file_url changed to raw_file_url
+        tmp.raw_file_url = geoQuery.file_url
+
         tmp.date_collected = datetime.datetime.now()
-        (tmp.file_type, created) = models.FileTypes.objects.get_or_create(name=geoQuery.file_type)
+        #NOTE: file_type changed to raw_file_type
+        (tmp.raw_file_type, created) = models.FileTypes.objects.get_or_create(name=geoQuery.file_type)
         tmp.user = user
         tmp.paper = paper
         
