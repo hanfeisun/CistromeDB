@@ -68,25 +68,37 @@ onload="init();"
 	            <span id="dset_cell_pop" class="value2">{{dataset.cell_pop}}</span>
 	        </td>
 		<td><span class="label2">Raw File:</span>
+		    {% if dataset.raw_file %}
 	            <span id="dset_file" class="value2"><a href="{{dataset.raw_file.url}}">download</a></span>
+		    {% endif %}
 	        </td>
 	    </tr>
 	    <tr><td><span class="label2">Peak File:</span>
+		    {% if dataset.peak_file %}
 	            <span class="value2"><a href="{{dataset.peak_file.url}}">download</a></span>
+		    {% endif %}
 		</td>
 		<td><span class="label2">Wig File:</span>
+		    {% if dataset.wig_file %}
 	            <span class="value2"><a href="{{dataset.wig_file.url}}">download</a></span>
+		    {% endif %}
 		</td>
 	    </tr>
 	    <tr><td><span class="label2">QC File:</span>
+		    {% if dataset.qc_file %}
 	            <span class="value2"><a href="{{dataset.qc_file.url}}">download</a></span>
+		    {% endif %}
 		</td>
 		<td><span class="label2">CEAS File:</span>
+		    {% if dataset.ceas_file %}
 	            <span class="value2"><a href="{{dataset.ceas_file.url}}">download</a></span>
+		    {% endif %}
 		</td>
 	    </tr>
 	    <tr><td><span class="label2">Venn Diagram:</span>
+		    {% if dataset.venn_file %}
 	            <span class="value2"><a href="{{dataset.venn_file.url}}">download</a></span>
+		    {% endif %}
 		</td>
 	    </tr>
         </table>
