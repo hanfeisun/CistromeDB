@@ -144,7 +144,7 @@ for name in generic_forms_list:
 
 def all_papers(request):
     papers = models.Papers.objects.all()
-    papersList = "[%s]" % ",".join(map(lambda p: p.to_json(), papers))
+    #papersList = "[%s]" % ",".join(map(lambda p: p.to_json(), papers))
     return render_to_response('datacollection/all_papers.html', locals(),
                               context_instance=RequestContext(request))
     

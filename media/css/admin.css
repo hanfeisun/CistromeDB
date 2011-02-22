@@ -37,6 +37,6 @@ td, th {
 /* override the base.css def */
 section#main{
     float:left;
-    width:80%;
+    width:90%;
     padding-left:10%;
 }

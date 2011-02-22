@@ -112,6 +112,26 @@ class Papers(DCModel):
     #a place for curators to add comments
     comments = models.TextField(blank=True)
 
+    def species(self):
+        """Returns a list of the species objs associated with the papers, i.e.
+        the set of species that are found in the paper's datasets"""
+        tmp = []
+        dsets = Datasets.objects.filter(paper=self.id)
+        for d in dsets:
+            if d.species.name not in tmp:
+                tmp.append(d.species)
+        return tmp
+
+    def factors(self):
+        """Returns a list of the factors associated w/ the paper, i.e.
+        returns the set of factors that are found in the paper's datasets"""
+        tmp = []
+        dsets = Datasets.objects.filter(paper=self.id)
+        for d in dsets:
+            if d.factor.name not in tmp:
+                tmp.append(d.factor)
+        return tmp
+
     def __str__(self):
         return self.title
 
