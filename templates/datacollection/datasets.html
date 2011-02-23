@@ -1,7 +1,7 @@
 {% extends "datacollection/base.html" %}
 {% block title %}Cistrome Paper Collection - Datasets{% endblock %}
 {% block include %}
-<link href="{% url static_url %}css/admin.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
 <!--
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
@@ -25,15 +25,45 @@
 
 {% block content %}
       <table>
-         <tr><th>GSMID</th>
+         <tr><th>ID</th>
+	     <th>GSMID</th>
 	     <th>Paper</th>
+	     <th>Factor</th>
+	     <th>Platform</th>
+	     <th>Species</th>
+	     <th>Cell Type</th>
+	     <th>Cell Line</th>
+	     <th>Cell Pop</th>
+	     <th>Strain</th>
+	     <th>Condition</th>
+	     <th>Status</th>
+	     <th>Comments</th>
 	     <th>Curator</th>
 	     <th>Date Collected</th>
 	 </tr>
 	 {% for d in datasets %}
 	 <tr>
+	     <td><a href="{% url dataset_profile d.id %}">{{d.id}}</a></td>
 	     <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
 	     <td><a href="{% url paper_profile d.paper.id %}">{{d.paper.pmid}}</a></td>
+	     <td>{{ d.factor }}</td>
+	     <td>{{ d.platform }}</td>
+	     <td>{{ d.species }}</td>
+	     <td>{{ d.cell_type }}</td>
+	     <td>{{ d.cell_line }}</td>
+	     <td>{{ d.cell_pop }}</td>
+	     <td>{{ d.strain }}</td>
+	     <td>{{ d.condition }}</td>
+	     {% ifequal d.status "imported" %}
+	     <td class="imported_row">{{ p.get_status_display }}</td>
+	     {% else %} {% ifequal p.status "downloaded" %}
+	     <td class="downloaded_row">{{ p.get_status_display }}</td>
+	     {% else %} {% ifequal p.status "error" %}
+	     <td class="error_row">{{ p.get_status_display }}</td>
+	     {% else %}
+	     <td>{{ p.get_status_display }}</td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}
+	     <td>{{ d.comments }}</td>
 	     <td>{{ d.user }}</td>
 	     <td>{{ d.date_collected|date:"Y-m-d"}}</td>
 	 </tr>
