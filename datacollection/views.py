@@ -142,13 +142,29 @@ for name in generic_forms_list:
     setattr(_this_mod, "new_%s_form" % name.lower(), tmp_view)
 
 
-def all_papers(request):
-    papers = models.Papers.objects.all()
+def all_papers(request, user_id):
+    """If given a user_id, shows all of the papers imported by the user,
+    otherwise shows all papers in the db"""
+
+    if user_id:
+        #NOTE: the current url regex doesn't parse out the / from the user_id
+        if user_id.endswith("/"):
+            user_id = user_id[:-1]
+        papers = models.Papers.objects.filter(user=user_id)
+    else:
+        papers = models.Papers.objects.all()
     #papersList = "[%s]" % ",".join(map(lambda p: p.to_json(), papers))
     return render_to_response('datacollection/all_papers.html', locals(),
                               context_instance=RequestContext(request))
-    
 
+def weekly_papers(request, user_id, year, month, day):
+    """Returns all of the papers that the user worked on since the given date
+    """
+    papers = models.Papers.objects.filter(user=user_id)
+    papers = papers.filter(date_collected__gte=\
+                           datetime.date(int(year), int(month), int(day)))
+    return render_to_response('datacollection/all_papers.html', locals(),
+                              context_instance=RequestContext(request))
 # def login_view(request):
 #     redirect_to = request.REQUEST.get('next','')
 #     if not redirect_to:
@@ -158,9 +174,26 @@ def all_papers(request):
 #     #        request.GET["next"] = "/datasets/"
 #    login(request)
 
-def datasets(request):
-    """View all of the datasets in an excel like table"""
-    datasets = models.Datasets.objects.all()
+def datasets(request, user_id):
+    """View all of the datasets in an excel like table; as with all_papers
+    if given a user_id, it will return a page of all of the datsets collected
+    by the user
+    """
+    if user_id:
+        if user_id.endswith("/"):
+            user_id = user_id[:-1]
+        datasets = models.Datasets.objects.filter(user=user_id)
+    else:
+        datasets = models.Datasets.objects.all()
+    return render_to_response('datacollection/datasets.html', locals(),
+                              context_instance=RequestContext(request))
+
+def weekly_datasets(request, user_id, year, month, day):
+    """Returns all of the datasets that the user worked on since the given date
+    """
+    datasets = models.Datasets.objects.filter(user=user_id)
+    datasets = datasets.filter(date_collected__gte=\
+                               datetime.date(int(year), int(month), int(day)))
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -401,5 +434,36 @@ def replicate_profile(request, replicate_id):
     dsets = replicate.datasets.split(",")
     datasets = [models.Datasets.objects.get(id=d) for d in dsets]
     return render_to_response('datacollection/replicate_profile.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
+@login_required
+def report(request):
+    """Generates the weekly report page"""
+    today = datetime.date.today()
+    #to get to Monday, subtract the current day of the week from the date
+    begin = today - datetime.timedelta(today.weekday())
+    end = begin + datetime.timedelta(days=6);
+    week = {'begin':begin, 'end':end}
+
+    paperTeam = models.UserProfiles.objects.filter(team="paper")
+    #Get all of the papers and datasets the user created for the week
+    for u in paperTeam:
+        u.allPapers = models.Papers.objects.filter(user=u.user)
+        u.weekPapers = u.allPapers.filter(date_collected__gte=begin)
+
+        u.allDatasets = models.Datasets.objects.filter(user=u.user)
+        u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin)
+        
+    dataTeam = models.UserProfiles.objects.filter(team="data")
+
+    return render_to_response('datacollection/report.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
+@login_required
+def teams(request):
+    """A page to list the current teams and assign users to different teams"""
+    return render_to_response('datacollection/teams.html',
                               locals(),
                               context_instance=RequestContext(request))

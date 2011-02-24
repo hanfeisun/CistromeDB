@@ -39,6 +39,11 @@ DATASET_STATUS = (
     (u'error', u'error/hold- see comments'),
     )
 
+TEAMS = (
+    (u'paper', u'paper collection team'),
+    (u'data', u'data collection team'),
+    )
+
 #pending is the default submission status
 DEFAULT_SUBMISSION_STATUS = SUBMISSION_STATUS[0][0]
 
@@ -384,3 +389,16 @@ class Replicates(DCModel):
             return "[%s]" % ",".join([d.gsmid for d in datasets])
         else:
             return "None"
+
+class UserProfiles(DCModel):
+    """We want to add additional fields to the auth user model.  So creating
+    this UserProfile model is the django way of doing it.
+    ref: http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
+    NOTE: in the ref, the guy explains how to do it through model inheritance,
+    but get_profile is now a django idiom that i decided to use it instead.
+    """
+    user = models.ForeignKey(User, unique=True, related_name='profile')
+    #which team is the user on, paper team or data team
+    team = models.CharField(max_length=255, choices=TEAMS, blank=True,
+                            null=True, default=None)
+#UserProfiles._meta._donotSerialize = ['user']
