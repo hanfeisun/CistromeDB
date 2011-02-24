@@ -240,7 +240,13 @@ class Datasets(DCModel):
                               default="imported")
     comments = models.TextField(blank=True)
     
-Datasets._meta._donotSerialize = ['user']
+    #user = the person who created this dataset (paper team)
+    #uploader = the person who uploaded the files (data team)
+    uploader = models.ForeignKey(User, null=True, blank=True, default=None,
+                                 related_name="uploader")
+    upload_date = models.DateTimeField(blank=True, null=True, default=None)
+    
+Datasets._meta._donotSerialize = ['user', 'uploader']
 
 class Platforms(DCModel):
     """Platforms are the chips/assemblies used to generate the dataset.
@@ -324,7 +330,7 @@ class PaperSubmissions(DCModel):
     pmid = models.IntegerField(default=0)
     gseid = models.CharField(max_length=8, blank=True)
     status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
-    user = models.ForeignKey(User, default=1) #default to a valid user:lentaing
+    user = models.ForeignKey(User, null=True, blank=True, default=None) 
     ip_addr = models.CharField(max_length=15)
     submitter_name = models.CharField(max_length=255, blank=True)
     comments = models.TextField(blank=True)
@@ -402,3 +408,5 @@ class UserProfiles(DCModel):
     team = models.CharField(max_length=255, choices=TEAMS, blank=True,
                             null=True, default=None)
 #UserProfiles._meta._donotSerialize = ['user']
+
+    

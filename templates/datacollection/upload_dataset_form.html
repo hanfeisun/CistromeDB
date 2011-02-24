@@ -1,0 +1,24 @@
+{% extends "datacollection/base.html" %}
+
+{% block title %}Upload Dataset Form{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
+<script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/Forms.js" type="text/javascript"></script>
+<!--<script src="{% url static_url %}js/new_dataset_form.js" type="text/javascript"></script>-->
+{% endblock %}
+
+{% block onload %}
+{% endblock %}
+
+{% block content %}
+      {% if form.errors %}
+         <p>Please correct the error{{ form.errors|pluralize }} below.</p>
+      {% endif %}
+         <h2 class="section_hdr">Dataset Form:</h2>
+	 <form enctype="multipart/form-data" action="" method="post">
+	    {{ form.as_p }}
+	    <input type="submit" value="Submit"/>
+	 </form>
+{% endblock %}

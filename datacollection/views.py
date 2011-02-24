@@ -92,6 +92,30 @@ def new_dataset_form(request):
                               context_instance=RequestContext(request))
 
 @login_required
+def upload_dataset_form(request, dataset_id):
+    """Given a dataset_id, generate or handle a form that will allow users
+    to upload the files associated with it
+    """
+    if request.method == "POST":
+        dset = models.Datasets.objects.get(pk=dataset_id)
+        #we want to only update the record, not add a new one--hence instance
+        form = forms.UploadDatasetForm(request.POST, request.FILES,
+                                       instance=dset)
+        if form.is_valid():
+            tmp = form.save(commit=False)
+            tmp.upload_date = datetime.datetime.now()
+            tmp.uploader = request.user
+            tmp.save()
+            return HttpResponseRedirect(reverse('home'))
+        else:
+            print "INVALID UPLOAD DATASET FORM"
+    else:
+        form = forms.UploadDatasetForm()
+    return render_to_response('datacollection/upload_dataset_form.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
+@login_required
 def new_replicate_form(request):
     if request.method == "POST":
         form = forms.ReplicateForm(request.POST, request.FILES)

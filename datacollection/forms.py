@@ -56,10 +56,26 @@ class DatasetForm(forms.ModelForm):
      class Meta:
          model = models.Datasets
          exclude = ('date_collected', 'user', 'paper',
-                    'file', 'raw_file_type', 'raw_file_url', 'description',
-                    'comments', 'status')
+                    'raw_file', 'raw_file_type', 'raw_file_url',
+                    'peak_file', 'wig_file', 'qc_file','ceas_file','venn_file',
+                    'assembly', 'description', 'comments', 'status',
+                    'uploader', 'upload_date')
 
 class ReplicateForm(forms.ModelForm):
     class Meta:
         model = models.Replicates
         exclude = ('user', 'paper', 'datasets')
+
+#Used by the data team to upload dataset files
+class UploadDatasetForm(forms.ModelForm):
+    class Meta:
+        model = models.Datasets
+        #NOTE: for some reason fields isn't working, try exclude instead
+        #fields = ('raw_file', 'peak_file', 'wig_file', 'qc_file', 'ceas_file'
+        #          'venn_file')
+        exclude = ('gsmid', 'name', 'chip_page', 'control_gsmid',
+                   'control_page', 'date_collected', 'raw_file_url',
+                   'raw_file_type', 'user', 'paper', 'factor', 'platform',
+                   'species', 'assembly', 'description', 'cell_type',
+                   'cell_line', 'cell_pop', 'strain', 'condition', 'status',
+                   'comments', 'uploader', 'upload_date')
