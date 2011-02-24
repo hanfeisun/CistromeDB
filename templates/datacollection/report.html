@@ -18,28 +18,79 @@
 {% block content %}
 <h2>Weekly Student Report</h2>
 <h4>Week of: {{week.begin}} to {{week.end}}</h4>
-<span>Paper Team:</span>
-<table>
-    <tr>
-        <th>Student</th>
-	<th>Papers</th>
-	<th>Total Papers</th>
-	<th>Datasets</th>
-	<th>Total Datasets</th>
-    </tr>
+<section>
+    <header>Paper Team Summary:</header>
+    <table>
+        <tr>
+            <th>Student</th>
+	    <th>Papers</th>
+	    <th>Total Papers</th>
+	    <th>Datasets</th>
+	    <th>Total Datasets</th>
+	</tr>
+	{% for u in paperTeam %}
+        <tr>
+            <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
+            <td><a href="{% url weekly_papers u.user.id %}">{{ u.weekPapers|length }}</a></td>
+            <td><a href="{% url all_papers %}{{u.user.id}}/">{{ u.allPapers|length }}</a></td>
+            <td><a href="{% url weekly_datasets u.user.id %}">{{ u.weekDatasets|length }}</a></td>
+            <td><a href="{% url datasets %}{{u.user.id}}/">{{ u.allDatasets|length }}</a></td>
+        </tr>
+        {% endfor %}    
+    </table>
+</section>
+<section>
+    <header>Data Team Summary:</header>
+    <table>
+        <tr>
+            <th>Student</th>
+	    <th>Datasets</th>
+	    <th>Total Datasets</th>
+        </tr>
+	{% for u in dataTeam %}
+        <tr>
+            <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
+            <td><a href="{% url weekly_datasets u.user.id %}">{{ u.weekDatasets|length }}</a></td>
+            <td><a href="{% url datasets %}{{u.user.id}}/">{{ u.allDatasets|length }}</a></td>
+        </tr>
+        {% endfor %}    
+    </table>
+</section>
+<section>
+    <header>Paper Team Details:</header>
     {% for u in paperTeam %}
-    <tr>
-        <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
-        <td><a href="{% url weekly_papers u.user.id %}">{{ u.weekPapers|length }}</a></td>
-        <td><a href="{% url all_papers %}{{u.user.id}}/">{{ u.allPapers|length }}</a></td>
-        <td><a href="{% url weekly_datasets u.user.id %}">{{ u.weekDatasets|length }}</a></td>
-        <td><a href="{% url datasets %}{{u.user.id}}/">{{ u.allDatasets|length }}</a></td>
-    </tr>
-    {% endfor %}    
-</table>
-
-{% for u in dataTeam %}
-<p>{{ u.user.username }}</p>
-{% endfor %}
+    <a name="{{u.user.username}}">{{u.user.username}}</a>
+    <table>
+        <tr><th>Papers</th></tr>
+	{% for p in u.weekPapers %}
+	{% cycle '<tr>' '' '' %}
+	   <td><a href="{% url paper_profile p.id %}">{{p.pmid}}</a></td>
+	{% cycle '' '' '</tr>' %}
+	{% endfor %}
+    </table>
+    <table>
+        <tr><th>Datasets</th></tr>
+	{% for d in u.weekDatasets %}
+	{% cycle '<tr>' '' '' %}
+	   <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
+	{% cycle '' '' '</tr>' %}
+	{% endfor %}
+    </table>
+    {% endfor %}
+</section>
+<section>
+    <header>Data Team Details:</header>
+    {% for u in dataTeam %}
+    <a name="{{u.user.username}}">{{u.user.username}}</a>
+    <table>
+        <tr><th>Datasets</th></tr>
+	{% for d in u.weekDatasets %}
+	{% cycle '<tr>' '' '' %}
+	   <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
+	{% cycle '' '' '</tr>' %}
+	{% endfor %}
+    </table>
+    {% endfor %}
+</section>
 {% endblock %}
 
