@@ -2,6 +2,7 @@ import os
 import sys
 import datetime
 import subprocess
+import re
 
 from django.shortcuts import render_to_response, Http404
 from django.contrib import auth
@@ -28,6 +29,7 @@ FIRST_PMID = 11125145
 #a trick to get the current module
 _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
+_datePattern = "^\d{4}-\d{1,2}-\d{1,2}$"
 
 def no_view(request):
     """
@@ -157,12 +159,24 @@ def all_papers(request, user_id):
     return render_to_response('datacollection/all_papers.html', locals(),
                               context_instance=RequestContext(request))
 
-def weekly_papers(request, user_id, year, month, day):
-    """Returns all of the papers that the user worked on since the given date
+def weekly_papers(request, user_id):
+    """Returns all of the papers that the user worked on since the given date,
+    IF date is not given as a param, then assumes date = beginning of the week
     """
     papers = models.Papers.objects.filter(user=user_id)
-    papers = papers.filter(date_collected__gte=\
-                           datetime.date(int(year), int(month), int(day)))
+    today = datetime.date.today()
+    begin = today - datetime.timedelta(today.weekday())
+    if "date" in request.GET:
+        if re.match(_datePattern, request.GET['date']):
+            tmp = request.GET['date'].split("-")
+            d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
+        else:
+            d = begin
+        papers = papers.filter(date_collected__gte=d)
+    else:
+        #No date param, take the beginning of the week
+        papers = papers.filter(date_collected__gte=begin)
+        
     return render_to_response('datacollection/all_papers.html', locals(),
                               context_instance=RequestContext(request))
 # def login_view(request):
@@ -188,12 +202,24 @@ def datasets(request, user_id):
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
-def weekly_datasets(request, user_id, year, month, day):
+def weekly_datasets(request, user_id):
     """Returns all of the datasets that the user worked on since the given date
+    IF date is not given as a param, then assumes date = beginning of the week
     """
     datasets = models.Datasets.objects.filter(user=user_id)
-    datasets = datasets.filter(date_collected__gte=\
-                               datetime.date(int(year), int(month), int(day)))
+    today = datetime.date.today()
+    begin = today - datetime.timedelta(today.weekday())
+    if "date" in request.GET:
+        if re.match(_datePattern, request.GET['date']):
+            tmp = request.GET['date'].split("-")
+            d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
+        else:
+            d = begin
+        datasets = datasets.filter(date_collected__gte=d)
+    else:
+        #No date param, take the beginning of the week
+        datasets = datasets.filter(date_collected__gte=begin)
+
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
