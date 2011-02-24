@@ -140,7 +140,7 @@ def new_replicate_form(request):
 #------------------------------------------------------------------------------
 #GENERIC FORMS section
 def form_view_factory(title_in, form_class):
-#    @login_required
+#    @login_required--see return
     def generic_form_view(request):
         title = title_in
         if request.method == "POST":
@@ -154,7 +154,7 @@ def form_view_factory(title_in, form_class):
                 next = request.GET['next']
         return render_to_response('datacollection/generic_form.html', locals(),
                                   context_instance=RequestContext(request))
-    return generic_form_view
+    return login_required(generic_form_view)
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
@@ -188,7 +188,7 @@ def update_form_factory(title_in, form_class):
                 next = request.GET['next']
         return render_to_response('datacollection/generic_form.html', locals(),
                                   context_instance=RequestContext(request))
-    return generic_update_view
+    return login_required(generic_update_view)
 
 #add papers,
 generic_update_list = generic_forms_list + ['paper']
