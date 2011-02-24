@@ -503,6 +503,10 @@ def report(request):
         u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin)
         
     dataTeam = models.UserProfiles.objects.filter(team="data")
+    for u in dataTeam:
+        u.allDatasets = models.Datasets.objects.filter(uploader=u.user)
+        u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin)
+        
 
     return render_to_response('datacollection/report.html',
                               locals(),
