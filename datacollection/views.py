@@ -4,7 +4,7 @@ import datetime
 import subprocess
 import re
 
-from django.shortcuts import render_to_response, Http404
+from django.shortcuts import render_to_response, Http404, get_object_or_404
 from django.contrib import auth
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -137,7 +137,7 @@ def new_replicate_form(request):
     return render_to_response('datacollection/new_replicate_form.html',
                               locals(),
                               context_instance=RequestContext(request))
-
+#------------------------------------------------------------------------------
 #GENERIC FORMS section
 def form_view_factory(title_in, form_class):
 #    @login_required
@@ -158,7 +158,7 @@ def form_view_factory(title_in, form_class):
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
-                      'strain', 'condition', 'journal', 'species',
+                      'strain', 'condition', 'journal', 'species', 'filetype',
                       'assembly']
 #new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
 #Generate the generic form views
@@ -167,6 +167,36 @@ for name in generic_forms_list:
     tmp_view = form_view_factory('%s Form' % name.capitalize(), form)
     setattr(_this_mod, "new_%s_form" % name.lower(), tmp_view)
 
+#Generic Update section; does not work w/ FILE upload!--i.e. datasets and
+#replicates model
+def update_form_factory(title_in, form_class):
+    def generic_update_view(request, id):
+        title = title_in
+        if request.method == "POST":
+            #Should use get_object_or_404
+            #tmp = get_object_or_404(form_class.Meta.model, id)
+            tmp = form_class.Meta.model.objects.get(pk=id)
+            form = form_class(request.POST, instance=tmp)
+            if form.is_valid():
+                tmp2 = form.save()
+                return HttpResponseRedirect(request.POST['next'])
+        else:
+            #tmp = get_object_or_404(form_class.Meta.model, id)
+            tmp = form_class.Meta.model.objects.get(pk=id)
+            form = form_class(instance=tmp)
+            if 'next' in request.GET:
+                next = request.GET['next']
+        return render_to_response('datacollection/generic_form.html', locals(),
+                                  context_instance=RequestContext(request))
+    return generic_update_view
+
+#add papers,
+generic_update_list = generic_forms_list + ['paper']
+for name in generic_update_list:
+    form = getattr(forms, "%sForm" % name.capitalize())
+    tmp_view = update_form_factory('%s Update Form' % name.capitalize(), form)
+    setattr(_this_mod, "update_%s_form" % name.lower(), tmp_view)
+#------------------------------------------------------------------------------
 
 def all_papers(request, user_id):
     """If given a user_id, shows all of the papers imported by the user,
@@ -203,14 +233,6 @@ def weekly_papers(request, user_id):
         
     return render_to_response('datacollection/all_papers.html', locals(),
                               context_instance=RequestContext(request))
-# def login_view(request):
-#     redirect_to = request.REQUEST.get('next','')
-#     if not redirect_to:
-#         request.GET["next"] = "/datasets/"
-#     #if request.method == "GET":
-#     #    if not 'next' in request.GET:
-#     #        request.GET["next"] = "/datasets/"
-#    login(request)
 
 def datasets(request, user_id):
     """View all of the datasets in an excel like table; as with all_papers
@@ -258,31 +280,6 @@ def get_datasets(request, paper_id):
     
     dlist = ",".join([jsrecord.views.jsonify(d) for d in datasets])
     return HttpResponse("[%s]" % dlist)
-#     for d in datasets:
-#         tmp = {}
-#         tmp['gsmid'] = d.gsmid
-#         tmp['factor'] = d.factor.name
-#         tmp['file'] = d.file.url
-#         if d.platform:
-#             tmp['platform'] = d.platform.name
-#             tmp['exp_type'] = d.platform.experiment_type
-#         else:
-#             tmp['platform'] = paper.platform.name
-#             tmp['exp_type'] = paper.platform.experiment_type
-#         #NOTE: species is a fixed choice, so it should be set
-#         if d.species:
-#             tmp['species'] = d.species
-#         else:
-#             tmp['species'] = paper.species
-#         if d.cell_type:
-#             tmp['cell_type'] = d.cell_type.name
-#         else:
-#             tmp['cell_type'] = paper.cell_type.name
-#         dlist.append(tmp)
-
-#     ret = json.dumps(dlist)
-#     #print ret
-#     return HttpResponse(ret)   
 
 #DROP the FOLLOWING fn/view?
 def register(request):

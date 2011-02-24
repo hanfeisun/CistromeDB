@@ -53,14 +53,20 @@ urlpatterns = patterns('',
 generic_views_list = ['paper', 'dataset',
                       'platform','factor','celltype','cellline', 'cellpop',
                       'strain', 'condition', 'journal',
-                      'species', 'assembly', 'replicate']
+                      'species', 'filetype', 'assembly', 'replicate']
 
 for v in generic_views_list:
     urlpatterns += patterns('',
                            url(r'^new_%s_form/$' % v,
                                getattr(views, "new_%s_form" % v),
                                name="new_%s_form" % v),)
-    
+
+#add generic update
+for v in views.generic_update_list:
+    urlpatterns += patterns('',
+                            url(r'^update_%s_form/(\d+)/$' % v,
+                                getattr(views, "update_%s_form" % v),
+                                name="update_%s_form" % v),)
 
 if settings.DEBUG:
     urlpatterns += patterns('',
