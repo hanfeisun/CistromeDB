@@ -29,9 +29,11 @@
 	     <th>GSMID</th>
 	     <th>Paper</th>
 	     <th>Factor</th>
+	     <th>Antibody</th>
 	     <th>Platform</th>
 	     <th>Species</th>
 	     <th>Cell Type</th>
+	     <th>Tissue Type</th>
 	     <th>Cell Line</th>
 	     <th>Cell Pop</th>
 	     <th>Strain</th>
@@ -47,9 +49,11 @@
 	     <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
 	     <td><a href="{% url paper_profile d.paper.id %}">{{d.paper.pmid}}</a></td>
 	     <td>{{ d.factor }}</td>
+	     <td>{{ d.factor.antibody }}</td>
 	     <td>{{ d.platform }}</td>
 	     <td>{{ d.species }}</td>
 	     <td>{{ d.cell_type }}</td>
+	     <td>{{ d.cell_type.tissue_type }}</td>
 	     <td>{{ d.cell_line }}</td>
 	     <td>{{ d.cell_pop }}</td>
 	     <td>{{ d.strain }}</td>
