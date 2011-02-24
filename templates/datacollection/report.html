@@ -30,9 +30,9 @@
     {% for u in paperTeam %}
     <tr>
         <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
-        <td><a href="{% url weekly_papers u.user.id week.begin.year week.begin.month week.begin.day %}">{{ u.weekPapers|length }}</a></td>
+        <td><a href="{% url weekly_papers u.user.id %}">{{ u.weekPapers|length }}</a></td>
         <td><a href="{% url all_papers %}{{u.user.id}}/">{{ u.allPapers|length }}</a></td>
-        <td><a href="{% url weekly_datasets u.user.id week.begin.year week.begin.month week.begin.day %}">{{ u.weekDatasets|length }}</a></td>
+        <td><a href="{% url weekly_datasets u.user.id %}">{{ u.weekDatasets|length }}</a></td>
         <td><a href="{% url datasets %}{{u.user.id}}/">{{ u.allDatasets|length }}</a></td>
     </tr>
     {% endfor %}    
