@@ -118,7 +118,7 @@ class Papers(DCModel):
         dsets = Datasets.objects.filter(paper=self.id)
         for d in dsets:
             if d.species.name not in tmp:
-                tmp.append(d.species)
+                tmp.append(d.species.name)
         return tmp
 
     def factors(self):
@@ -128,7 +128,7 @@ class Papers(DCModel):
         dsets = Datasets.objects.filter(paper=self.id)
         for d in dsets:
             if d.factor.name not in tmp:
-                tmp.append(d.factor)
+                tmp.append(d.factor.name)
         return tmp
 
     def __str__(self):
