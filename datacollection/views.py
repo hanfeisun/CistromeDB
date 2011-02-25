@@ -240,11 +240,15 @@ def datasets(request, user_id):
     by the user
     IF given species and/or factor_type url params, then we further filter the
     results accordingly
+    IF url param uploader is sent, we use uploader instead of user
     """
     if user_id:
         if user_id.endswith("/"):
             user_id = user_id[:-1]
-        datasets = models.Datasets.objects.filter(user=user_id)
+        if 'uploader' in request.GET:
+            datasets = models.Datasets.objects.filter(uploader=user_id)
+        else:
+            datasets = models.Datasets.objects.filter(user=user_id)
     else:
         datasets = models.Datasets.objects.all()
 
@@ -262,8 +266,13 @@ def datasets(request, user_id):
 def weekly_datasets(request, user_id):
     """Returns all of the datasets that the user worked on since the given date
     IF date is not given as a param, then assumes date = beginning of the week
+    IF a url param uploader is given, then we use uploader instead of user to
+    get the datasets
     """
-    datasets = models.Datasets.objects.filter(user=user_id)
+    if 'uploader' in request.GET:
+        datasets = models.Datasets.objects.filter(uploader=user_id)
+    else:
+        datasets = models.Datasets.objects.filter(user=user_id)
     today = datetime.date.today()
     begin = today - datetime.timedelta(today.weekday())
     if "date" in request.GET:

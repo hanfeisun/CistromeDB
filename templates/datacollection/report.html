@@ -50,8 +50,8 @@
 	{% for u in dataTeam %}
         <tr>
             <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
-            <td><a href="{% url weekly_datasets u.user.id %}">{{ u.weekDatasets|length }}</a></td>
-            <td><a href="{% url datasets %}{{u.user.id}}/">{{ u.allDatasets|length }}</a></td>
+            <td><a href="{% url weekly_datasets u.user.id %}?uploader=true">{{ u.weekDatasets|length }}</a></td>
+            <td><a href="{% url datasets %}{{u.user.id}}/?uploader=true">{{ u.allDatasets|length }}</a></td>
         </tr>
         {% endfor %}    
     </table>
@@ -110,12 +110,12 @@
 	     <td>Mouse</td>
 	 </tr>
 	 <tr><td>Transcription Factor</td>
-             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf">{{u.humanTF|length}}</a></td>
-             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=tf">{{u.mouseTF|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf&uploader=true">{{u.humanTF|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=tf&uploader=true">{{u.mouseTF|length}}</a></td>
 	 </tr>
 	 <tr><td>Histone Mark</td>
-             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=hm">{{u.humanHM|length}}</a></td>
-             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=hm">{{u.mouseHM|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=hm&uploader=true">{{u.humanHM|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=hm&uploader=true">{{u.mouseHM|length}}</a></td>
 	 </tr>
     </table>
     {% endfor %}
