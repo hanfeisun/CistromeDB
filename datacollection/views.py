@@ -514,8 +514,15 @@ def replicate_profile(request, replicate_id):
 
 @login_required
 def report(request):
-    """Generates the weekly report page"""
+    """Generates the weekly report page
+    Takes an optional url param date that tells us which date to generate the
+    report from
+    """
     today = datetime.date.today()
+    if "date" in request.GET:
+        if re.match(_datePattern, request.GET['date']):
+            tmp = request.GET['date'].split("-")
+            today = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
     #to get to Monday, subtract the current day of the week from the date
     begin = today - datetime.timedelta(today.weekday())
     end = begin + datetime.timedelta(days=6);
@@ -525,10 +532,10 @@ def report(request):
     #Get all of the papers and datasets the user created for the week
     for u in paperTeam:
         u.allPapers = models.Papers.objects.filter(user=u.user)
-        u.weekPapers = u.allPapers.filter(date_collected__gte=begin)
+        u.weekPapers = u.allPapers.filter(date_collected__gte=begin).filter(date_collected__lte=end)
 
         u.allDatasets = models.Datasets.objects.filter(user=u.user)
-        u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin)
+        u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin).filter(date_collected__lte=end)
 
         u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
         u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
@@ -541,7 +548,7 @@ def report(request):
     dataTeam = models.UserProfiles.objects.filter(team="data")
     for u in dataTeam:
         u.allDatasets = models.Datasets.objects.filter(uploader=u.user)
-        u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin)
+        u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin).filter(upload_date__lte=end)
 
         u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
         u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
