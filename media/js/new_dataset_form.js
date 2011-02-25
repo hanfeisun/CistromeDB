@@ -3,7 +3,7 @@ var containers;
 function init(paperId) {
     containers = ModelFormHooks("Datasets");
 
-    fields = ["factor", "platform", "species", "assembly",
+    fields = ["factor", "platform", "species", //"assembly",
 	      "cell_type", "cell_line", "cell_pop",
 	      "strain", "condition"];
     exceptions = ["cell_type", "cell_line", "cell_pop"]
