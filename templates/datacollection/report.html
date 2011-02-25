@@ -76,6 +76,20 @@
 	{% cycle '' '' '</tr>' %}
 	{% endfor %}
     </table>
+    <table>
+         <tr><td>Factor Type</td>
+	     <td>Human</td>
+	     <td>Mouse</td>
+	 </tr>
+	 <tr><td>Transcription Factor</td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf">{{u.humanTF|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=tf">{{u.mouseTF|length}}</a></td>
+	 </tr>
+	 <tr><td>Histone Mark</td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=hm">{{u.humanHM|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=hm">{{u.mouseHM|length}}</a></td>
+	 </tr>
+    </table>
     {% endfor %}
 </section>
 <section>
@@ -89,6 +103,20 @@
 	   <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
 	{% cycle '' '' '</tr>' %}
 	{% endfor %}
+    </table>
+    <table>
+         <tr><td>Factor Type</td>
+	     <td>Human</td>
+	     <td>Mouse</td>
+	 </tr>
+	 <tr><td>Transcription Factor</td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf">{{u.humanTF|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=tf">{{u.mouseTF|length}}</a></td>
+	 </tr>
+	 <tr><td>Histone Mark</td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=hm">{{u.humanHM|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=hm">{{u.mouseHM|length}}</a></td>
+	 </tr>
     </table>
     {% endfor %}
 </section>

@@ -238,6 +238,8 @@ def datasets(request, user_id):
     """View all of the datasets in an excel like table; as with all_papers
     if given a user_id, it will return a page of all of the datsets collected
     by the user
+    IF given species and/or factor_type url params, then we further filter the
+    results accordingly
     """
     if user_id:
         if user_id.endswith("/"):
@@ -245,6 +247,15 @@ def datasets(request, user_id):
         datasets = models.Datasets.objects.filter(user=user_id)
     else:
         datasets = models.Datasets.objects.all()
+
+    if 'species' in request.GET:
+        dict = {'hs':'Homo Sapien', 'mm':'Mus Musculus'}
+        if request.GET['species'] in dict:
+            datasets = datasets.filter(species__name=\
+                                       dict[request.GET['species']])
+    if 'ftype' in request.GET:
+        datasets = datasets.filter(factor__type=request.GET['ftype'])
+    
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -501,12 +512,27 @@ def report(request):
 
         u.allDatasets = models.Datasets.objects.filter(user=u.user)
         u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin)
+
+        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
+        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
+        #categories - NOTE: how we SPAN relationships w/ __
+        u.humanTF = u.allHuman.filter(factor__type="tf")
+        u.humanHM = u.allHuman.filter(factor__type="hm")
+        u.mouseTF = u.allMouse.filter(factor__type="tf")
+        u.mouseHM = u.allMouse.filter(factor__type="hm")
         
     dataTeam = models.UserProfiles.objects.filter(team="data")
     for u in dataTeam:
         u.allDatasets = models.Datasets.objects.filter(uploader=u.user)
         u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin)
-        
+
+        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
+        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
+        #categories
+        u.humanTF = u.allHuman.filter(factor__type="tf")
+        u.humanHM = u.allHuman.filter(factor__type="hm")
+        u.mouseTF = u.allMouse.filter(factor__type="tf")
+        u.mouseHM = u.allMouse.filter(factor__type="hm")
 
     return render_to_response('datacollection/report.html',
                               locals(),

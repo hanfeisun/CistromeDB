@@ -44,6 +44,12 @@ TEAMS = (
     (u'data', u'data collection team'),
     )
 
+FACTOR_TYPES = (
+    (u'tf', u'transcription factor'),
+    (u'hm', u'histone mark'),
+    (u'other', u'other'),
+    )
+
 #pending is the default submission status
 DEFAULT_SUBMISSION_STATUS = SUBMISSION_STATUS[0][0]
 
@@ -97,19 +103,7 @@ class Papers(DCModel):
     date_collected = models.DateTimeField()
     authors = models.CharField(max_length=255)
     #last_auth_email = models.EmailField()
-    
-    #MAY DROP the fields below!
-#     disease_state = models.CharField(max_length=255, blank=True)
-#     #platform_id = models.IntegerField(default=0) #change this to ForeignKey
-#     platform = models.ForeignKey('Platforms', default=0)
-#     species = models.CharField(max_length=2, choices=SPECIES_CHOICES,
-#                                blank=True)
-#     cell_type = models.ForeignKey('CellTypes', default=0)
-#     cell_line = models.ForeignKey('CellLines', default=0)
-#     cell_pop = models.ForeignKey('CellPops', default=0)
-#     strain = models.ForeignKey('Strains', default=0)
-#     condition = models.ForeignKey('Conditions', default=0)
-    
+        
     journal = models.ForeignKey('Journals',
                                 null=True, blank=True, default=None)
     status = models.CharField(max_length=255, choices=PAPER_STATUS,
@@ -271,6 +265,8 @@ class Factors(DCModel):
     """The factors applied to the sample, e.g. PolII, H3K36me3, etc."""
     name = models.CharField(max_length=255)
     antibody = models.CharField(max_length=255, blank=True)
+    type = models.CharField(max_length=255, choices=FACTOR_TYPES,
+                            default="other")
     def __str__(self):
         return self.name
 
