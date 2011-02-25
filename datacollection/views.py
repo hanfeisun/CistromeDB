@@ -191,11 +191,19 @@ def update_form_factory(title_in, form_class):
     return login_required(generic_update_view)
 
 #add papers,
-generic_update_list = generic_forms_list + ['paper']
+generic_update_list = generic_forms_list + ['paper', 'replicate', 'dataset']
 for name in generic_update_list:
     form = getattr(forms, "%sForm" % name.capitalize())
     tmp_view = update_form_factory('%s Update Form' % name.capitalize(), form)
     setattr(_this_mod, "update_%s_form" % name.lower(), tmp_view)
+
+#OVERRIDE the generated views
+update_paper_form = update_form_factory('Paper Update Form',
+                                          forms.UpdatePaperForm)
+update_dataset_form = update_form_factory('Dataset Update Form',
+                                          forms.UpdateDatasetForm)
+update_replicate_form = update_form_factory('Replicate Update Form',
+                                          forms.UpdateReplicateForm)
 #------------------------------------------------------------------------------
 
 def all_papers(request, user_id):

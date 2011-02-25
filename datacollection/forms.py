@@ -86,3 +86,16 @@ class UploadDatasetForm(forms.ModelForm):
                    'species', 'assembly', 'description', 'cell_type',
                    'cell_line', 'cell_pop', 'strain', 'condition', 'status',
                    'comments', 'uploader', 'upload_date')
+
+#We want full control over ALL fields for the update forms
+class UpdatePaperForm(forms.ModelForm):
+    class Meta:
+        model = models.Papers
+
+class UpdateDatasetForm(forms.ModelForm):
+    class Meta:
+        model = models.Datasets
+
+class UpdateReplicateForm(forms.ModelForm):
+    class Meta:
+        model = models.Replicates
