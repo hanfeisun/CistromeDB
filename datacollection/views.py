@@ -12,6 +12,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 
 import models
 import forms
@@ -545,7 +546,9 @@ def report(request):
         u.mouseTF = u.allMouse.filter(factor__type="tf")
         u.mouseHM = u.allMouse.filter(factor__type="hm")
         
-    dataTeam = models.UserProfiles.objects.filter(team="data")
+    #dataTeam = models.UserProfiles.objects.filter(team="data")
+    #The paper team can both create datasets and upload dataset data
+    dataTeam = models.UserProfiles.objects.filter(Q(team="data") | Q(team="paper"))
     for u in dataTeam:
         u.allDatasets = models.Datasets.objects.filter(uploader=u.user)
         u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin).filter(upload_date__lte=end)
