@@ -40,6 +40,7 @@ DATASET_STATUS = (
     )
 
 TEAMS = (
+    (u'admin', u'Administrators'),
     (u'paper', u'paper collection team'),
     (u'data', u'data collection team'),
     )
