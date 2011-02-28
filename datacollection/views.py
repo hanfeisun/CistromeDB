@@ -526,7 +526,7 @@ def report(request):
     if "date" in request.GET:
         if re.match(_datePattern, request.GET['date']):
             tmp = request.GET['date'].split("-")
-            today = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
+            date = today = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
     #to get to Monday, subtract the current day of the week from the date
     begin = today - datetime.timedelta(today.weekday())
     end = begin + datetime.timedelta(days=6);
