@@ -22,6 +22,7 @@ onload="init();"
         <p class="info"><span class="label">Pubmed ID:</span><span id="pmid" class="value">{{ paper.pmid }}</span></p>
 	<p class="info"><span class="label">GEO Series ID:</span><span id="gseid" class="value">{{ paper.gseid }} </span></p>
 	<p class="info"><span class="label">Published:</span><span id="published" class="value">{{ paper.journal}} {{ paper.pub_date|date:"M Y" }}</span></p>
+	<p class="info"><span class="label">Factors:</span><span id="factors" class="value">{% for f in paper.factors %}{{f}} {% endfor %}</span></p>
     </section>
     <section id="dataset_info">
         <table id="dataset_tbl">
