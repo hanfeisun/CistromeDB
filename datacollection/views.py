@@ -247,8 +247,8 @@ def datasets(request, user_id):
     """View all of the datasets in an excel like table; as with all_papers
     if given a user_id, it will return a page of all of the datsets collected
     by the user
-    IF given species and/or factor_type url params, then we further filter the
-    results accordingly
+    IF given species, factor_type, and/or paper url params, then we further
+    filter the results accordingly; 
     IF url param uploader is sent, we use uploader instead of user
     """
     if user_id:
@@ -268,6 +268,9 @@ def datasets(request, user_id):
                                        dict[request.GET['species']])
     if 'ftype' in request.GET:
         datasets = datasets.filter(factor__type=request.GET['ftype'])
+
+    if 'paper' in request.GET:
+        datasets = datasets.filter(paper=request.GET['paper'])
     
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
@@ -534,6 +537,8 @@ def report(request):
     for u in paperTeam:
         u.allPapers = models.Papers.objects.filter(user=u.user)
         u.weekPapers = u.allPapers.filter(date_collected__gte=begin).filter(date_collected__lte=end)
+        for p in u.weekPapers:
+            p.datasets = models.Datasets.objects.filter(paper=p.id)
 
         u.allDatasets = models.Datasets.objects.filter(user=u.user)
         u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin).filter(date_collected__lte=end)

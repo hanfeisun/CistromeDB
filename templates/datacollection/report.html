@@ -75,28 +75,28 @@
 <section>
     <header>Paper Collection Details:</header>
     {% for u in paperTeam %}
+    {% if u.weekPapers|length or u.weekDatasets|length %}
     <a name="{{u.user.username}}">{{u.user.username}}</a>
+    {% if u.weekPapers|length %}
     <table>
-        <tr><th>Papers</th></tr>
+        <tr><th>Papers (# Datasets)</th>
+	    <!--<th>Assoc. Datasets</th>-->
+	</tr>	
 	{% for p in u.weekPapers %}
-	{% cycle '<tr>' '' '' %}
-	   <td><a href="{% url paper_profile p.id %}">{{p.pmid}}</a></td>
-	{% cycle '' '' '</tr>' %}
+	<tr>
+	    <td><a href="{% url paper_profile p.id %}">{{p.pmid}}</a> (<a href="{% url datasets %}{{u.user.id}}/?paper={{p.id}}">{{p.datasets|length}}</a>)</td>
+	    <!--<td><a href="{% url datasets %}{{u.user.id}}/?paper={{p.id}}">{{p.datasets|length}}</a></td>-->
+	</tr>
 	{% endfor %}
     </table>
-    <table>
-        <tr><th>Datasets</th></tr>
-	{% for d in u.weekDatasets %}
-	{% cycle '<tr>' '' '' %}
-	   <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
-	{% cycle '' '' '</tr>' %}
-	{% endfor %}
-    </table>
+    {% endif %}
+    {% endif %}
     {% endfor %}
 </section>
 <section>
     <header>Data Collection Details:</header>
     {% for u in dataTeam %}
+    {% if u.weekDatasets|length %}
     <a name="{{u.user.username}}">{{u.user.username}}</a>
     <table>
         <tr><th>Datasets</th></tr>
@@ -106,6 +106,7 @@
 	{% cycle '' '' '</tr>' %}
 	{% endfor %}
     </table>
+    {% endif %}
     {% endfor %}
 </section>
 {% endblock %}
