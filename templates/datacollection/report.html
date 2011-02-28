@@ -19,7 +19,7 @@
 <h2>Weekly Student Report</h2>
 <h4>Week of: {{week.begin}} to {{week.end}}</h4>
 <section>
-    <header>Paper Team Summary:</header>
+    <header>Paper Collection Summary:</header>
     <table>
         <tr>
             <th>Student</th>
@@ -40,7 +40,7 @@
     </table>
 </section>
 <section>
-    <header>Data Team Summary:</header>
+    <header>Data Collection Summary:</header>
     <table>
         <tr>
             <th>Student</th>
@@ -57,7 +57,7 @@
     </table>
 </section>
 <section>
-    <header>Paper Team Details:</header>
+    <header>Paper Collection Details:</header>
     {% for u in paperTeam %}
     <a name="{{u.user.username}}">{{u.user.username}}</a>
     <table>
@@ -93,7 +93,7 @@
     {% endfor %}
 </section>
 <section>
-    <header>Data Team Details:</header>
+    <header>Data Collection Details:</header>
     {% for u in dataTeam %}
     <a name="{{u.user.username}}">{{u.user.username}}</a>
     <table>
