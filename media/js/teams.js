@@ -22,12 +22,16 @@ function init() {
 		    var select = $D('select');
 		    select.appendChild($D('option', {'value':'', 
 						  'innerHTML':'None'}));
+		    select.appendChild($D('option', {'value':'admin',
+						  'innerHTML':'admin',
+						  'selected':(u.team=='admin')?
+						  "selected":""}));
 		    select.appendChild($D('option', {'value':'paper',
-						  'innerHTML':'Paper',
+						  'innerHTML':'paper',
 						  'selected':(u.team=='paper')?
 						  "selected":""}));
 		    select.appendChild($D('option', {'value':'data',
-						  'innerHTML':'Data',
+						  'innerHTML':'data',
 						  'selected':(u.team=='data')?
 						  "selected":""}));
 		    if (teamTd.childNodes.length > 0) {
