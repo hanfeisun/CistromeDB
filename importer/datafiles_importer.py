@@ -32,7 +32,7 @@ Options:
               DEFAULT: /data/aspuserfiles/dcdropbox/
 """
 
-DEFAULT_DIR = "/data/aspuserfiles/dcdropbox/"
+DEFAULT_DIR = "/data/liulab_aspera_dropbox/dcdropbox"
 
 def mktmpdir():
     """Tries to make a temporary working directory; if successful returns
