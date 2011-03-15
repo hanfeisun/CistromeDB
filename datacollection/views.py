@@ -415,6 +415,36 @@ def _auto_dataset_import(paper, user, gsmids):
         (tmp.species, created) = models.Species.objects.get_or_create(name=geoQuery.species)
         tmp.save()
 
+def _import_paper(gseid, user):
+    """Given a gseid, tries to import all of the information associated
+    with that geo entry and create a Paper model object
+    this is a helper fn to the auto_paper_import;
+    returns the paper model object"""
+    geoQuery = entrez.PaperAdapter(gseid)
+    attrs = ['pmid', 'gseid', 'title', 'abstract', 'pub_date']
+
+    #try to create a new paper
+    tmp = models.Papers()
+    for a in attrs:
+        #tmp.a = geoQuery.a
+        setattr(tmp, a, getattr(geoQuery, a))
+        
+    #deal with authors
+    tmp.authors = ",".join(geoQuery.authors)
+
+    #set the journal
+    JM = models.Journals
+    (journal,created) = JM.objects.get_or_create(name=geoQuery.journal)
+    tmp.journal = journal
+            
+    #add automatic info
+    tmp.user = user
+    tmp.date_collected = datetime.datetime.now()
+    
+    tmp.save()
+    return tmp
+    
+
 @login_required
 def auto_paper_import(request):
     """View of auto_paper importer where curators can try to fetch GEO
@@ -422,27 +452,29 @@ def auto_paper_import(request):
     if request.method == "POST":
         #the user is trying to autoimport a paper
         if request.POST['gseid']:
-            geoQuery = entrez.PaperAdapter(request.POST['gseid'])
-            attrs = ['pmid', 'gseid', 'title', 'abstract', 'pub_date']
+            # geoQuery = entrez.PaperAdapter(request.POST['gseid'])
+#             attrs = ['pmid', 'gseid', 'title', 'abstract', 'pub_date']
 
-            #try to create a new paper
-            tmp = models.Papers()
-            for a in attrs:
-                #tmp.a = geoQuery.a
-                setattr(tmp, a, getattr(geoQuery, a))
-            #deal with authors
-            tmp.authors = ",".join(geoQuery.authors)
+#             #try to create a new paper
+#             tmp = models.Papers()
+#             for a in attrs:
+#                 #tmp.a = geoQuery.a
+#                 setattr(tmp, a, getattr(geoQuery, a))
+#             #deal with authors
+#             tmp.authors = ",".join(geoQuery.authors)
 
-            #set the journal
-            JM = models.Journals
-            (journal,created) = JM.objects.get_or_create(name=geoQuery.journal)
-            tmp.journal = journal
+#             #set the journal
+#             JM = models.Journals
+#             (journal,created) = JM.objects.get_or_create(name=geoQuery.journal)
+#             tmp.journal = journal
             
-            #add automatic info
-            tmp.user = request.user
-            tmp.date_collected = datetime.datetime.now()
+#             #add automatic info
+#             tmp.user = request.user
+#             tmp.date_collected = datetime.datetime.now()
 
-            tmp.save()
+#             tmp.save()
+             tmp = _import_paper(request.POST['gseid'], request.user)
+             
 #            _auto_dataset_import(tmp.id, request.user, geoQuery.datasets)
 # TURN THIS ON IF you want it to work with the paper importer 
 #             try: 
