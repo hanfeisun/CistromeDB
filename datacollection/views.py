@@ -262,7 +262,7 @@ def datasets(request, user_id):
         datasets = models.Datasets.objects.all()
 
     if 'species' in request.GET:
-        dict = {'hs':'Homo Sapien', 'mm':'Mus Musculus'}
+        dict = {'hs':'Homo sapiens', 'mm':'Mus Musculus'}
         if request.GET['species'] in dict:
             datasets = datasets.filter(species__name=\
                                        dict[request.GET['species']])
