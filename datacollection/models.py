@@ -269,7 +269,10 @@ class Factors(DCModel):
     type = models.CharField(max_length=255, choices=FACTOR_TYPES,
                             default="other")
     def __str__(self):
-        return self.name
+        if self.antibody:
+            return "%s:%s" % (self.name, self.antibody)
+        else:
+            return self.name
 
 class CellTypes(DCModel):
     """Sample's tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
@@ -277,7 +280,10 @@ class CellTypes(DCModel):
     name = models.CharField(max_length=255)
     tissue_type = models.CharField(max_length=255, blank=True)
     def __str__(self):
-        return self.name
+        if self.tissue_type:
+            return "%s:%s" % (self.name, self.tissue_type)
+        else:
+            return self.name
 
 class CellLines(DCModel):
     """Sample's cell lines.  I really don't know what distinguishes

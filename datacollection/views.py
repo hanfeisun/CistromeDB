@@ -608,3 +608,42 @@ def teams(request):
     return render_to_response('datacollection/teams.html',
                               locals(),
                               context_instance=RequestContext(request))
+
+def _allSameOrNone(objs, attr):
+    """If the all of the objects.attr are the same, return that attr,
+    else return None
+    """
+    if len(objs) > 0:
+        tmp = getattr(objs[0], attr)
+        for o in objs:
+            if tmp != getattr(o, attr):
+                return None
+        return tmp
+    else:
+        return None
+    
+@login_required
+def batch_update_datasets(request):
+    """A page that allows the user to make batch updates to a set of datasets.
+    the datasets are specified in the 'dataset' url
+    """
+    title = "Batch Update Datasets"
+    fields = forms.BatchUpdateDatasetsForm.Meta.fields
+    if request.method == "POST":
+        dsets = [models.Datasets.objects.get(pk=id) \
+                 for id in request.GET['datasets'].split(',')]
+        for d in dsets:
+            form = forms.BatchUpdateDatasetsForm(request.POST, instance=d)
+            if form.is_valid():
+                tmp = form.save()
+        return HttpResponseRedirect(reverse('datasets'))
+    else:
+        if 'datasets' in request.GET:
+            dsets = [models.Datasets.objects.get(pk=id) \
+                     for id in request.GET['datasets'].split(',')]
+            tmp = models.Datasets()
+            for f in fields:
+                setattr(tmp, f, _allSameOrNone(dsets, f))
+            form = forms.BatchUpdateDatasetsForm(instance=tmp)
+    return render_to_response('datacollection/generic_form.html', locals(),
+                              context_instance=RequestContext(request))
