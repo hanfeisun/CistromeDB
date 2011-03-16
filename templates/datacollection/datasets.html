@@ -2,11 +2,9 @@
 {% block title %}Cistrome Paper Collection - Datasets{% endblock %}
 {% block include %}
 <link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
-<!--
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
-<script src="{% url static_url %}js/papers.js" type="text/javascript"></script>
--->
+<script src="{% url static_url %}js/datasets.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block login_form %}
@@ -23,9 +21,19 @@
       {% endif %}
 {% endblock %}
 
+{% block onload %}
+onload="init();"
+{% endblock %}
+
 {% block content %}
+      {% if user.is_authenticated %}
+      <input type="button" id="batchEdit" value="batch edit"/>
+      {% endif %}
       <table>
-         <tr><th>ID</th>
+         <tr>{% if user.is_authenticated %}
+	     <th><input type="checkbox" id="masterCheckbox"/></th>
+	     {% endif %}
+	     <th>ID</th>
 	     <th>GSMID</th>
 	     <th>Paper</th>
 	     <th>Factor</th>
@@ -45,6 +53,9 @@
 	 </tr>
 	 {% for d in datasets %}
 	 <tr>
+	     {% if user.is_authenticated %}
+	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/></td>
+	     {% endif %}
 	     <td><a href="{% url dataset_profile d.id %}">{{d.id}}</a></td>
 	     <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
 	     <td>

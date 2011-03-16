@@ -78,14 +78,16 @@ class UploadDatasetForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
         #NOTE: for some reason fields isn't working, try exclude instead
-        #fields = ('raw_file', 'peak_file', 'wig_file', 'qc_file', 'ceas_file'
-        #          'venn_file')
-        exclude = ('gsmid', 'name', 'chip_page', 'control_gsmid',
-                   'control_page', 'date_collected', 'raw_file_url',
-                   'raw_file_type', 'user', 'paper', 'factor', 'platform',
-                   'species', 'assembly', 'description', 'cell_type',
-                   'cell_line', 'cell_pop', 'strain', 'condition', 'status',
-                   'comments', 'uploader', 'upload_date')
+        fields = ('raw_file', 'peak_file', 'wig_file', 'qc_file', 'ceas_file',
+                  'venn_file')
+        exclude = tuple([f.name for f in model._meta.fields \
+                         if f.name not in fields])
+        #exclude = ('gsmid', 'name', 'chip_page', 'control_gsmid',
+        #           'control_page', 'date_collected', 'raw_file_url',
+        #           'raw_file_type', 'user', 'paper', 'factor', 'platform',
+        #           'species', 'assembly', 'description', 'cell_type',
+        #           'cell_line', 'cell_pop', 'strain', 'condition', 'status',
+        #           'comments', 'uploader', 'upload_date')
 
 #We want full control over ALL fields for the update forms
 class UpdatePaperForm(forms.ModelForm):
@@ -99,3 +101,13 @@ class UpdateDatasetForm(forms.ModelForm):
 class UpdateReplicateForm(forms.ModelForm):
     class Meta:
         model = models.Replicates
+
+class BatchUpdateDatasetsForm(forms.ModelForm):
+    class Meta:
+        model = models.Datasets
+        fields = ('factor', 'platform', 'species', 'cell_type', 'cell_line',
+                  'cell_pop', 'strain', 'condition', 'user', 'comments',
+                  'description')
+        exclude = tuple([f.name for f in model._meta.fields \
+                         if f.name not in fields])
+
