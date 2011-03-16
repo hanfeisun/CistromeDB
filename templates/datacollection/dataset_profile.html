@@ -17,7 +17,7 @@ onload="init();"
 {% block content %}
     <!--ripped from paper_profile.html-->
     <section id="dataset_focus">
-        <header>Dataset info:</header>
+        <!--<header>Dataset info:</header>-->
         <table id="focus_tbl">
 	    <tr><td colspan="2">
 	            <span class="label2">Dataset:</span>
@@ -99,6 +99,8 @@ onload="init();"
 		    {% if dataset.venn_file %}
 	            <span class="value2"><a href="{{dataset.venn_file.url}}">download</a></span>
 		    {% endif %}
+		</td>
+		<td>
 		</td>
 	    </tr>
         </table>

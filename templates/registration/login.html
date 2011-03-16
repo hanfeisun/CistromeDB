@@ -1,6 +1,9 @@
 {% extends "datacollection/base.html" %}
 
 {% block title %}Login Page{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
 {% block content %}
    <!--<div id="content_div">-->
    {% if form.errors %} 
@@ -11,7 +14,7 @@
       <input type="text" name="username" value="" id="username"/> </p>
       <p><label for="password">Password:</label> 
       <input type="password" name="password" value="" id="password"/></p>
-      <p><input type="submit" value="login" /></p>
+      <p><input type="submit" value="login" id="submitBtn"/></p>
       <input type="hidden" name="next" value="{{ next|escape }}" /> 
    </form>
    <!--</div>-->
