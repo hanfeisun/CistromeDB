@@ -1,10 +1,23 @@
 table {
     width:100%;
-    border: 2px solid #000;
+    border: 2px solid #626cac;
     border-collapse: collapse;
     margin-bottom:20px;
+    font-size:10pt;
+    color:#093955;
 }
 
 td, th {
     border: 1px dotted #000;
+}
+
+h2 {
+    margin:0;
+}
+h4 {
+    margin:0;
+    padding-left:65%;
+}
+body {
+    color:#2f2f2f;
 }

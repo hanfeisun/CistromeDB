@@ -1,9 +1,11 @@
 
 table {
     width:100%;
-    border: 2px solid #000;
+    border: 2px solid #626cac;
     border-collapse: collapse;
     margin-bottom:20px;
+    font-size:8pt;
+    color:#093955;
 }
 
 td, th {
