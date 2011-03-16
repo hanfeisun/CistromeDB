@@ -639,11 +639,13 @@ def batch_update_datasets(request):
         return HttpResponseRedirect(reverse('datasets'))
     else:
         if 'datasets' in request.GET:
+            datasets = request.GET['datasets']
             dsets = [models.Datasets.objects.get(pk=id) \
-                     for id in request.GET['datasets'].split(',')]
+                     for id in datasets.split(',')]
             tmp = models.Datasets()
             for f in fields:
                 setattr(tmp, f, _allSameOrNone(dsets, f))
             form = forms.BatchUpdateDatasetsForm(instance=tmp)
-    return render_to_response('datacollection/generic_form.html', locals(),
+    return render_to_response('datacollection/batch_update_datasets_form.html',
+                              locals(),
                               context_instance=RequestContext(request))
