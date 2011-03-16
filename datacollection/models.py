@@ -198,14 +198,36 @@ class Datasets(DCModel):
 
     peak_file = models.FileField(upload_to=upload_factory("peak"),
                                  null=True, blank=True)
+    peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
+                                     null=True, blank=True)
+    summit_file = models.FileField(upload_to=upload_factory("summit"),
+                                   null=True, blank=True)
     wig_file = models.FileField(upload_to=upload_factory("wig"),
                                 null=True, blank=True)
+    control_wig_file = models.FileField(upload_to=upload_factory("wig"),
+                                        null=True, blank=True)
+    bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
+                                      null=True, blank=True)
+    control_bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
+                                              null=True, blank=True)
+    conservation_file = models.FileField(upload_to=upload_factory("conservation"),
+                                    null=True, blank=True)
+    conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
+                                      null=True, blank=True)
     qc_file = models.FileField(upload_to=upload_factory("qc"),
                                null=True, blank=True)
+    qc_r_file = models.FileField(upload_to=upload_factory("qc"),
+                                 null=True, blank=True)
     ceas_file = models.FileField(upload_to=upload_factory("ceas"),
                                  null=True, blank=True)
+    ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
+                                   null=True, blank=True)
     venn_file = models.FileField(upload_to=upload_factory("venn"),
                                  null=True, blank=True)
+    venn_dhs_file = models.FileField(upload_to=upload_factory("venn"),
+                                     null=True, blank=True)
+    seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
+                                   null=True, blank=True)
     
     #IF everything is done by auto import we might not need this
     user = models.ForeignKey(User)
