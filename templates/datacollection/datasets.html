@@ -29,6 +29,19 @@ onload="init();"
       {% if user.is_authenticated %}
       <input type="button" id="batchEdit" value="batch edit"/>
       {% endif %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if datasets.has_previous %}
+              <a href="?page={{ datasets.previous_page_number }}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
+
+              {% if datasets.has_next %}
+              <a href="?page={{ datasets.next_page_number }}">next</a>
+              {% endif %}
+          </span>
+      </div>
       <table>
          <tr>{% if user.is_authenticated %}
 	     <th><input type="checkbox" id="masterCheckbox"/></th>
@@ -51,7 +64,7 @@ onload="init();"
 	     <th>Curator</th>
 	     <th>Date Collected</th>
 	 </tr>
-	 {% for d in datasets %}
+	 {% for d in datasets.object_list %}
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/></td>
@@ -93,5 +106,19 @@ onload="init();"
 	 </tr>
 	 {% endfor %}
       </table>
+<!-- from http://docs.djangoproject.com/en/1.1/topics/pagination/-->
+      <div class="pagination">
+          <span class="step-links">
+              {% if datasets.has_previous %}
+              <a href="?page={{ datasets.previous_page_number }}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
+
+              {% if datasets.has_next %}
+              <a href="?page={{ datasets.next_page_number }}">next</a>
+              {% endif %}
+          </span>
+      </div>
 {% endblock %}
 
