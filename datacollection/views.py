@@ -13,6 +13,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, InvalidPage
 
 import models
 import forms
@@ -271,7 +272,19 @@ def datasets(request, user_id):
 
     if 'paper' in request.GET:
         datasets = datasets.filter(paper=request.GET['paper'])
-    
+
+    #control things w/ paginator
+    #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
+    paginator = Paginator(datasets, 25) #25 dataset per page
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        datasets = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        datasets = paginator.page(paginator.num_pages)
+        
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
