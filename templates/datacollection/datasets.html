@@ -75,22 +75,16 @@ onload="init();"
 	      <a href="{% url datasets %}?paper={{d.paper.id}}">{{d.paper.pmid}}</a></br></br>
 	      <a href="{% url paper_profile d.paper.id %}">paper profile</a>
 	     </td>
-	     <td>{{ d.factor }}</td>
-	     <td>{{ d.factor.antibody }}</td>
-	     <td>{{ d.platform }}</td>
-	     {% ifequal d.species.name "Mus Musculus" %}
-	     <td><a href="{% url datasets %}?species=mm">{{ d.species }}</a></td>
-	     {% else %} {% ifequal d.species.name "Homo sapiens" %}
-	     <td><a href="{% url datasets %}?species=hs">{{ d.species }}</a></td>
-	     {% else %}
-	     <td>{{ d.species }}</td>
-	     {% endifequal %}{% endifequal %}
-	     <td>{{ d.cell_type }}</td>
-	     <td>{{ d.cell_type.tissue_type }}</td>
-	     <td>{{ d.cell_line }}</td>
-	     <td>{{ d.cell_pop }}</td>
-	     <td>{{ d.strain }}</td>
-	     <td>{{ d.condition }}</td>
+	     <td><a href="{% url datasets %}?factor={{d.factor.id}}">{{d.factor.name}}</a></td>
+	     <td><a href="{% url datasets %}?antibody={{d.factor.id}}">{{d.factor.antibody}}</a></td>
+	     <td><a href="{%url datasets %}?platform={{d.platform.id}}">{{d.platform.name}}</a></td>
+	     <td><a href="{% url datasets %}?species={{d.species.id}}">{{d.species}}</a></td>
+	     <td><a href="{% url datasets %}?celltype={{d.cell_type.id}}">{{d.cell_type.name}}</a></td>
+	     <td><a href="{% url datasets %}?tissuetype={{d.cell_type.id}}">{{d.cell_type.tissue_type}}</a></td>
+	     <td><a href="{% url datasets %}?cellline={{d.cell_line.id}}">{{d.cell_line.name}}</a></td>
+	     <td><a href="{% url datasets %}?cellpop={{d.cell_pop.id}}">{{d.cell_pop.name}}</a></td>
+	     <td><a href="{% url datasets %}?strain={{d.strain.id}}">{{d.strain.name}}</a></td>
+	     <td><a href="{% url datasets %}?condition={{d.condition.id}}">{{d.condition.name}}</a></td>
 	     {% ifequal d.status "imported" %}
 	     <td class="imported_row">{{ d.get_status_display }}</td>
 	     {% else %} {% ifequal d.status "downloaded" %}
