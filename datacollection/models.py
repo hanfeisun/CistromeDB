@@ -263,6 +263,9 @@ class Datasets(DCModel):
                                  related_name="uploader")
     upload_date = models.DateTimeField(blank=True, null=True, default=None)
     
+    disease_state = models.ForeignKey('DiseaseStates',
+                                      null=True, blank=True, default=None)
+    
 Datasets._meta._donotSerialize = ['user', 'uploader']
 
 class Platforms(DCModel):
@@ -435,3 +438,6 @@ class UserProfiles(DCModel):
 #UserProfiles._meta._donotSerialize = ['user']
 
     
+class DiseaseStates(DCModel):
+    """Information field for datasets"""
+    name = models.CharField(max_length=255)
