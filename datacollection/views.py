@@ -697,3 +697,9 @@ def batch_update_datasets(request):
     return render_to_response('datacollection/batch_update_datasets_form.html',
                               locals(),
                               context_instance=RequestContext(request))
+
+def search(request):
+    """the search page"""
+    return render_to_response('datacollection/search.html',
+                              locals(),
+                              context_instance=RequestContext(request))
