@@ -25,7 +25,7 @@ SUBMISSION_STATUS = (
     )
 
 PAPER_STATUS = (
-    (u'imported', u'imported awaiting datasets'),
+    (u'imported', u'paper entered awaiting datasets'),
     (u'datasets', u'datasets imported awaiting download'),
     (u'transfer', u'datasets download in progress'),
     (u'downloaded', u'datasets downloaded awaiting analysis'),
@@ -34,7 +34,9 @@ PAPER_STATUS = (
     )
 
 DATASET_STATUS = (
-    (u'imported', u'imported awaiting file download'),
+    (u'imported', u'imported awaiting meta-info'),
+    (u'info', u'meta-info inputted awaiting validation'),
+    (u'valid', u'meta-info validated awaiting file download'),    
     (u'downloaded', u'downloaded/closed'),
     (u'error', u'error/hold- see comments'),
     )
