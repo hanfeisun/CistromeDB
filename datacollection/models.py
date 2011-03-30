@@ -267,6 +267,9 @@ class Datasets(DCModel):
     
     disease_state = models.ForeignKey('DiseaseStates',
                                       null=True, blank=True, default=None)
+    #curator = the person who double checks the info
+    curator = models.ForeignKey(User, null=True, blank=True, default=None,
+                                related_name="curator")
     
 Datasets._meta._donotSerialize = ['user', 'uploader']
 
