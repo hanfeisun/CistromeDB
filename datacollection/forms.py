@@ -106,8 +106,8 @@ class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
         fields = ('factor', 'platform', 'species', 'cell_type', 'cell_line',
-                  'cell_pop', 'strain', 'condition', 'user', 'comments',
-                  'description', 'status')
+                  'cell_pop', 'strain', 'condition', 'status', 'comments',
+                  'user', 'uploader', 'curator', 'description',)
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
 

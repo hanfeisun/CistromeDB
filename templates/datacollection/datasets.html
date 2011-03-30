@@ -61,6 +61,8 @@ onload="init();"
 	     <th>Condition</th>
 	     <th>Status</th>
 	     <th>Comments</th>
+	     <th>User</th>
+	     <th>Uploader</th>
 	     <th>Curator</th>
 	     <th>Date Collected</th>
 	 </tr>
@@ -99,7 +101,9 @@ onload="init();"
 	     <td>{{ d.get_status_display }}</td>
 	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
 	     <td>{{ d.comments }}</td>
-	     <td><a href="{% url datasets %}{{d.user.id}}/">{{ d.user }}</a></td>
+	     <td><a href="{% url datasets %}{{d.user.id}}/">{{ d.user.username }}</a></td>
+	     <td>{{d.uploader.username}}</td>
+	     <td>{{d.curator.username}}</td>
 	     <td>{{ d.date_collected|date:"Y-m-d"}}</td>
 	 </tr>
 	 {% endfor %}
