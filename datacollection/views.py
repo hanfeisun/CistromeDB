@@ -264,49 +264,65 @@ def datasets(request, user_id):
     else:
         datasets = models.Datasets.objects.all()
 
+    #note: we have to keep track of these URL params so that we can feed them
+    #into the paginator, e.g. if we click on platform=1, then when we paginate
+    #we want the platform param to be carried through
+    rest = ""
     if 'species' in request.GET:
         #dict = {'hs':'Homo sapiens', 'mm':'Mus Musculus'}
         #if request.GET['species'] in dict:
         #    datasets = datasets.filter(species__name=\
         #                               dict[request.GET['species']])
         datasets = datasets.filter(species=request.GET['species'])
+        rest += "&species=%s" % request.GET['species']
         
     if 'ftype' in request.GET:
         datasets = datasets.filter(factor__type=request.GET['ftype'])
+        rest += "&ftype=%s" % request.GET['ftype']
 
     if 'paper' in request.GET:
         datasets = datasets.filter(paper=request.GET['paper'])
+        rest += "&paper=%s" % request.GET['paper']
 
     if 'factor' in request.GET:
         factor = models.Factors.objects.get(pk=request.GET['factor'])
         datasets = datasets.filter(factor__name=factor.name)
+        rest += "&factor=%s" % request.GET['factor']
 
     if 'antibody' in request.GET:
         factor = models.Factors.objects.get(pk=request.GET['antibody'])
         datasets = datasets.filter(factor__antibody=factor.antibody)
+        rest += "&antibody=%s" % request.GET['antibody']
 
     if 'platform' in request.GET:
         datasets = datasets.filter(platform=request.GET['platform'])
+        rest += "&platform=%s" % request.GET['platform']
         
     if 'celltype' in request.GET:
         celltype = models.CellTypes.objects.get(pk=request.GET['celltype'])
         datasets = datasets.filter(cell_type__name=celltype.name)
+        rest += "&celltype=%s" % request.GET['celltype']
 
     if 'tissuetype' in request.GET:
         celltype = models.CellTypes.objects.get(pk=request.GET['tissuetype'])
         datasets = datasets.filter(cell_type__tissue_type=celltype.tissue_type)
+        rest += "&tissuetype=%s" % request.GET['tissuetype']
 
     if 'cellline' in request.GET:
         datasets = datasets.filter(cell_line=request.GET['cellline'])
+        rest += "&cellline=%s" % request.GET['cellline']
 
     if 'cellpop' in request.GET:
         datasets = datasets.filter(cell_pop=request.GET['cellpop'])
-        
+        rest += "&cellpop=%s" % request.GET['cellpop']
+                
     if 'strain' in request.GET:
         datasets = datasets.filter(strain=request.GET['strain'])
+        rest += "&strain=%s" % request.GET['strain']
 
     if 'condition' in request.GET:
         datasets = datasets.filter(condition=request.GET['condition'])
+        rest += "&condition=%s" % request.GET['condition']
         
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/

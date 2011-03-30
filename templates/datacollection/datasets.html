@@ -32,13 +32,13 @@ onload="init();"
       <div class="pagination">
           <span class="step-links">
               {% if datasets.has_previous %}
-              <a href="?page={{ datasets.previous_page_number }}">previous</a>
+              <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
               <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
 
               {% if datasets.has_next %}
-              <a href="?page={{ datasets.next_page_number }}">next</a>
+              <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
               {% endif %}
           </span>
       </div>
@@ -112,13 +112,13 @@ onload="init();"
       <div class="pagination">
           <span class="step-links">
               {% if datasets.has_previous %}
-              <a href="?page={{ datasets.previous_page_number }}">previous</a>
+              <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
               <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
 
               {% if datasets.has_next %}
-              <a href="?page={{ datasets.next_page_number }}">next</a>
+              <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
               {% endif %}
           </span>
       </div>
