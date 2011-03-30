@@ -125,29 +125,44 @@ def main():
 
             cl = e['Cell Line']
             if cl:
-                (cell_line, created) = models.CellLines.objects.get_or_create(name=cl.strip())
-                d.cell_line = cell_line
+                try:
+                    (cell_line, created) = models.CellLines.objects.get_or_create(name=cl.strip())
+                    d.cell_line = cell_line
+                except:
+                    pass
 
             cp = e['Cell Population']
             if cp:
-                (cell_pop, created) = models.CellPops.objects.get_or_create(name=cp.strip())
-                d.cell_pop = cell_pop
+                try:
+                    (cell_pop, created) = models.CellPops.objects.get_or_create(name=cp.strip())
+                    d.cell_pop = cell_pop
+                except:
+                    pass
 
             s = e['Strain and mutation']
             if s:
-                (strain, created) = models.Strains.objects.get_or_create(name=s.strip())
-                d.strain = strain
+                try:
+                    (strain, created) = models.Strains.objects.get_or_create(name=s.strip())
+                    d.strain = strain
+                except:
+                    pass
 
             #disease state here!
             ds = e['Disease state']
             if ds:
-                (disease_state, created) = models.DiseaseStates.objects.get_or_create(name=ds.strip())
-                d.disease_state = disease_state
+                try:
+                    (disease_state, created) = models.DiseaseStates.objects.get_or_create(name=ds.strip())
+                    d.disease_state = disease_state
+                except:
+                    pass
 
             cnd = e['Condition']
             if cnd:
-                (condition, created) = models.Conditions.objects.get_or_create(name=cnd.strip())
-                d.condition = condition
+                try:
+                    (condition, created) = models.Conditions.objects.get_or_create(name=cnd.strip())
+                    d.condition = condition
+                except:
+                    pass
 
             chip_page = e['ChIP page']
             if chip_page:
@@ -169,7 +184,7 @@ def main():
 
     f = open("not_processed.txt", "w")
     for n in not_processed:
-        f.write(n)
+        f.write("%s\n" % n)
     f.close()
     
 if __name__ == "__main__":

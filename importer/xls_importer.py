@@ -12,6 +12,7 @@ import os
 import sys
 import optparse
 import traceback
+import re
 
 import importer_settings
 sys.path.insert(0,importer_settings.DEPLOY_DIR)
@@ -69,45 +70,55 @@ def main():
                 "Su Wang": "suwang",
                 "Luying Wang": "luyingwang",
                 "Mingyang Wang": "mingyangwang",
-                "Chenyang Wang": "chenyangwang",
-                "Xikun Duan": "xinkunduan",
+                "Chengyang Wang": "chengyangwang",
+                "Xikun Duan": "xikunduan",
                 "Hongtao Sun": "hongtaosun",
                 "Qixuan Wang": "qixuanwang",
                 "Bo Qin": "boqin",
                 "Haiyang Zheng": "haiyangzheng",
+                "Chenfei Wang": "chenfeiwang",
+                "JunshengChen": "junshengchen",
                 }
 
-    gsm_pattern = "^GSM\d{6}$"
+    gse_pattern = "^GSE\d{5}$"
     #another pass through the data
     not_processed = []
     for (i, e) in enumerate(entries):
         #try to get the paper associated with the dataset
         try:
-            p = models.Papers.objects.filter(gseid=e['GSEID'])
-            if not p:
-                #need to create a new paper
-                username = userDict[e['Student Name']]
-                if username:
-                    user = User.objects.filter(username=username)[0]
-                else:
-                    #default to lentaing/shirleyliu
-                    user = User.objects.get(pk=1)
-                #create the paper
-                p = views._import_paper(e['GSEID'], user)
-                #import the datasets
-                geoQuery = entrez.PaperAdapter(p.gseid)
-                views._auto_dataset_import(p, user, geoQuery.datasets)
+            gseid = e['GSEID'].strip()
+            if re.match(gse_pattern, gseid):
+                p = models.Papers.objects.filter(gseid=gseid)
+                if not p:
+                    #need to create a new paper
+                    username = userDict[e['Student Name'].strip()]
+                    if username:
+                        user = User.objects.filter(username=username)[0]
+                    else:
+                        #default to lentaing/shirleyliu
+                        user = User.objects.get(pk=1)
+                    #create the paper
+                    p = views._import_paper(gseid, user)
+                    #import the datasets
+                    geoQuery = entrez.PaperAdapter(p.gseid)
+                    views._auto_dataset_import(p, user, geoQuery.datasets)
+            else:
+                if gseid not in not_processed:
+                    not_processed.append(gseid)
         except:
-            print "Exception in user code:"
+            print "Exception in user code: " 
             print '-'*60
             traceback.print_exc(file=sys.stdout)
             print '-'*60
-            not_processed.append(i)
+            if e['GSEID'].strip() not in not_processed:
+                not_processed.append(e['GSEID'])
+            print "GSEID: %s" % e['GSEID']
+            print "User: %s" % e['Student Name']
             #sys.exit(-1)
 
     f = open("not_processed.txt", "w")
     for n in not_processed:
-        f.write(n)
+        f.write("%s\n" % n)
     f.close()
     
 if __name__ == "__main__":
