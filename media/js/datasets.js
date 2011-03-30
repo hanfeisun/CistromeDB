@@ -43,6 +43,7 @@ function init() {
     dsetModel = new model();
     rowSelects = $$('input.rowSelect');
     for (var i = 0; i < rowSelects.length; i++) {
+	//rowSelects[i].checked=false; --maybe i don't want this
 	rowSelects[i].onclick = function(chkbox, id) {
 	    return function(event) {
 		clickHandler(chkbox, id);
@@ -58,6 +59,12 @@ function init() {
     var btn = $('batchEdit');
     btn.onclick = function(event) {
 	//redirect
-	window.location = SUB_SITE + "batch_update_datasets/?datasets="+ dsetModel.dsets;
+	if (dsetModel.dsets.length > 0) { //check for empty list
+	    window.location = SUB_SITE + "batch_update_datasets/?datasets="+ dsetModel.dsets;
+	}
+	//NOTE: TODO--acutally the best way to do it is to just run down the 
+	//list of selected rows--i.e. generate dsetModel IN/AFTER onclick
+	//and not rely on dsetModel, b/c if you hit the back btn, the 
+	//item will still be checked but dsetModel is not populated.
     }
 }

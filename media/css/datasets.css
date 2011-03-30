@@ -17,12 +17,12 @@ td, th {
     background-color:#ffff00;
 }
 
-.info_row { /*purple*/
-    background-color:#7109aa;
+.info_row {
+    background-color:#ff9900;
 }
 
 .valid_row {
-    background-color:#0000cc;
+    background-color:#ff5500;
 }
 
 .downloaded_row {
