@@ -36,15 +36,15 @@
         <tr>
             <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
 	    {% if date %}
-            <td><a href="{% url weekly_papers u.user.id %}?date={{date}}">{{ u.weekPapers|length }}</a></td>
+            <td><a href="{% url weekly_papers %}{{u.user.id}}/?date={{date}}">{{ u.weekPapers|length }}</a></td>
 	    {% else %}
-	    <td><a href="{% url weekly_papers u.user.id %}">{{ u.weekPapers|length }}</a></td>
+	    <td><a href="{% url weekly_papers %}{{u.user.id}}/">{{ u.weekPapers|length }}</a></td>
 	    {% endif %}
             <td><a href="{% url all_papers %}{{u.user.id}}/">{{ u.allPapers|length }}</a></td>
 	    {% if date %}
-            <td><a href="{% url weekly_datasets u.user.id %}?date={{date}}">{{ u.weekDatasets|length }}</a></td>
+            <td><a href="{% url weekly_datasets %}{{u.user.id}}/?date={{date}}">{{ u.weekDatasets|length }}</a></td>
 	    {% else %}
-            <td><a href="{% url weekly_datasets u.user.id %}">{{ u.weekDatasets|length }}</a></td>
+            <td><a href="{% url weekly_datasets %}{{u.user.id}}/">{{ u.weekDatasets|length }}</a></td>
 	    {% endif %}
             <td><a href="{% url datasets %}{{u.user.id}}/">{{ u.allDatasets|length }}</a></td>
 	    <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf">{{u.humanTF|length}}</a></td>
@@ -71,9 +71,9 @@
         <tr>
             <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
 	    {% if date %}
-	    <td><a href="{% url weekly_datasets u.user.id %}?uploader=true&date={{date}}">{{ u.weekDatasets|length }}</a></td>
+	    <td><a href="{% url weekly_datasets %}{{u.user.id}}/?uploader=true&date={{date}}">{{ u.weekDatasets|length }}</a></td>
 	    {% else %}
-            <td><a href="{% url weekly_datasets u.user.id %}?uploader=true">{{ u.weekDatasets|length }}</a></td>
+            <td><a href="{% url weekly_datasets %}{{u.user.id}}/?uploader=true">{{ u.weekDatasets|length }}</a></td>
 	    {% endif %}
             <td><a href="{% url datasets %}{{u.user.id}}/?uploader=true">{{ u.allDatasets|length }}</a></td>
 	    <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf&uploader=true">{{u.humanTF|length}}</a></td>

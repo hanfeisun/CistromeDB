@@ -24,6 +24,9 @@ onload="init();"
 
 {% block content %}
 <!-- NOTE: the content is created in javascript -->
+      {% if user.is_authenticated %}
+      <a href="{% url new_paper_form %}" style="float:right">add new paper</a>
+      {% endif %}
       <table class="datatable" id="papers_table">
          <tr><th>ID</th>
 	     <th>Pubmed ID</th>

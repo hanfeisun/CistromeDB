@@ -42,7 +42,8 @@ def no_view(request):
     raise Http404
 
 def papers(request):
-    papers = models.Papers.objects.all()
+    #show the 10 newest papers
+    papers = models.Papers.objects.order_by('-date_collected')[:10]
     return render_to_response('datacollection/papers.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -226,23 +227,37 @@ def all_papers(request, user_id):
 def weekly_papers(request, user_id):
     """Returns all of the papers that the user worked on since the given date,
     IF date is not given as a param, then assumes date = beginning of the week
+    IF NO user_id is given, returns a page allowing the user to select which
+    user to view
     """
-    papers = models.Papers.objects.filter(user=user_id)
-    today = datetime.date.today()
-    begin = today - datetime.timedelta(today.weekday())
-    if "date" in request.GET:
-        if re.match(_datePattern, request.GET['date']):
-            tmp = request.GET['date'].split("-")
-            d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
-        else:
-            d = begin
-        papers = papers.filter(date_collected__gte=d)
-    else:
-        #No date param, take the beginning of the week
-        papers = papers.filter(date_collected__gte=begin)
+    if user_id:
+        #NOTE: the current url regex doesn't parse out the / from the user_id
+        if user_id.endswith("/"):
+            user_id = user_id[:-1]
         
-    return render_to_response('datacollection/all_papers.html', locals(),
-                              context_instance=RequestContext(request))
+        papers = models.Papers.objects.filter(user=user_id)
+        today = datetime.date.today()
+        begin = today - datetime.timedelta(today.weekday())
+        if "date" in request.GET:
+            if re.match(_datePattern, request.GET['date']):
+                tmp = request.GET['date'].split("-")
+                d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
+            else:
+                d = begin
+            papers = papers.filter(date_collected__gte=d)
+        else:
+            #No date param, take the beginning of the week
+            papers = papers.filter(date_collected__gte=begin)
+        
+        return render_to_response('datacollection/all_papers.html', locals(),
+                                  context_instance=RequestContext(request))
+    else:
+        #list users
+        title = "Weekly Papers"
+        users = auth.models.User.objects.all()
+        url = reverse('weekly_papers')
+        return render_to_response('datacollection/list_users.html', locals(),
+                                  context_instance=RequestContext(request))
 
 def datasets(request, user_id):
     """View all of the datasets in an excel like table; as with all_papers
@@ -344,27 +359,40 @@ def weekly_datasets(request, user_id):
     IF date is not given as a param, then assumes date = beginning of the week
     IF a url param uploader is given, then we use uploader instead of user to
     get the datasets
+    IF NO user_id is given, returns a page allowing the user to select which
+    user to view
     """
-    if 'uploader' in request.GET:
-        datasets = models.Datasets.objects.filter(uploader=user_id)
-    else:
-        datasets = models.Datasets.objects.filter(user=user_id)
-    today = datetime.date.today()
-    begin = today - datetime.timedelta(today.weekday())
-    if "date" in request.GET:
-        if re.match(_datePattern, request.GET['date']):
-            tmp = request.GET['date'].split("-")
-            d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
+    if user_id:
+        #NOTE: the current url regex doesn't parse out the / from the user_id
+        if user_id.endswith("/"):
+            user_id = user_id[:-1]
+        if 'uploader' in request.GET:
+            datasets = models.Datasets.objects.filter(uploader=user_id)
         else:
-            d = begin
-        datasets = datasets.filter(date_collected__gte=d)
+            datasets = models.Datasets.objects.filter(user=user_id)
+        today = datetime.date.today()
+        begin = today - datetime.timedelta(today.weekday())
+        if "date" in request.GET:
+            if re.match(_datePattern, request.GET['date']):
+                tmp = request.GET['date'].split("-")
+                d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
+            else:
+                d = begin
+            datasets = datasets.filter(date_collected__gte=d)
+        else:
+            #No date param, take the beginning of the week
+            datasets = datasets.filter(date_collected__gte=begin)
+
+        return render_to_response('datacollection/datasets.html', locals(),
+                                  context_instance=RequestContext(request))
     else:
-        #No date param, take the beginning of the week
-        datasets = datasets.filter(date_collected__gte=begin)
-
-    return render_to_response('datacollection/datasets.html', locals(),
-                              context_instance=RequestContext(request))
-
+        #list users
+        title = "Weekly Datasets"
+        users = auth.models.User.objects.all()
+        url = reverse('weekly_datasets')
+        return render_to_response('datacollection/list_users.html', locals(),
+                                  context_instance=RequestContext(request))
+    
 def get_datasets(request, paper_id):
     """return all of the datasets associated w/ paper_id in json
     Fields: gsmid, *platform, (platform)experiment_type, *species,

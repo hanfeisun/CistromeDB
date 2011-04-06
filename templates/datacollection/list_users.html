@@ -1,0 +1,18 @@
+{% extends "datacollection/base.html" %}
+{% block title %}Cistrome Paper Collection - {{title}}{% endblock %}
+{% block include %}
+{% endblock %}
+{% block login_form %}
+      {% if user.is_authenticated %}
+      <span id="login">Welcome, {{ user.username }}. <a href="{% url logout %}">logout</a></span>
+      {% endif %}
+{% endblock %}
+
+{% block content %}
+    <span>Choose a user</span>
+    <ul>
+       {% for u in users %}
+       <li><a href="{{url}}{{u.id}}/">{{u.username}}</a></li>
+       {% endfor %}
+    </ul>
+{% endblock %}

@@ -11,6 +11,21 @@ td, th {
     border: 1px dotted #626cac;
 }
 
+h3 {
+    color:#093955;
+    margin:0;
+    padding:0;
+    padding-right:50%;
+    display:inline;
+}
+
+#sidebar nav ul {
+    list-style:none;
+    margin:0;
+    padding:0;
+    font-size:12pt;
+}
+
 /*
 #nav_div {
    position:relative;
