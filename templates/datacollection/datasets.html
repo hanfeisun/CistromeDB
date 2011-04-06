@@ -29,6 +29,7 @@ onload="init();"
       {% if user.is_authenticated %}
       <input type="button" id="batchEdit" value="batch edit"/>
       {% endif %}
+      {% if datasets.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
               {% if datasets.has_previous %}
@@ -42,6 +43,7 @@ onload="init();"
               {% endif %}
           </span>
       </div>
+      {% endif %}
       <table>
          <tr>{% if user.is_authenticated %}
 	     <th><input type="checkbox" id="masterCheckbox"/></th>
@@ -109,6 +111,7 @@ onload="init();"
 	 {% endfor %}
       </table>
 <!-- from http://docs.djangoproject.com/en/1.1/topics/pagination/-->
+      {% if datasets.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
               {% if datasets.has_previous %}
@@ -122,5 +125,6 @@ onload="init();"
               {% endif %}
           </span>
       </div>
+      {% endif %}
 {% endblock %}
 
