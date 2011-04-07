@@ -33,6 +33,9 @@ onload="init();"
       <div class="pagination">
           <span class="step-links">
               {% if datasets.has_previous %}
+	      {% ifnotequal datasets.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
               <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
@@ -40,6 +43,9 @@ onload="init();"
 
               {% if datasets.has_next %}
               <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal datasets.next_page_number datasets.paginator.num_pages %}
+	      <a href="?page={{datasets.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
               {% endif %}
           </span>
       </div>
@@ -117,6 +123,9 @@ onload="init();"
       <div class="pagination">
           <span class="step-links">
               {% if datasets.has_previous %}
+	      {% ifnotequal datasets.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
               <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
@@ -124,6 +133,9 @@ onload="init();"
 
               {% if datasets.has_next %}
               <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal datasets.next_page_number datasets.paginator.num_pages %}
+	      <a href="?page={{datasets.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
               {% endif %}
           </span>
       </div>
