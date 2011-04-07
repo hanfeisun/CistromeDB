@@ -11,6 +11,7 @@ import sys
 import optparse
 import traceback
 import re
+import datetime
 
 import importer_settings
 sys.path.insert(0,importer_settings.DEPLOY_DIR)
@@ -63,15 +64,29 @@ def main():
     #note we assume that xls_importer has alread been run; so all we need to
     #do is to add the associated info
     gsm_pattern = "^GSM\d{6}$"
+    gse_pattern = "^GSE\d{5}$"
     #another pass through the data
     processed = []
     not_processed = []
     for (i, e) in enumerate(entries):
+        #try to get associated paper
+        p = None
+        gseid = e['GSEID'].strip()
+        if (re.match(gse_pattern, gseid)):
+            p = models.Papers.objects.filter(gseid=gseid)
+        if p:
+            p = p[0]
+            if not p.last_auth_email:
+                last_auth_email = e['Email']
+                if last_auth_email:
+                    p.last_auth_email = last_auth_email
+                    p.save()
+
         #try to get the associated dataset
         d = None
-        gsmid = e['ChIP GSMID']
+        gsmid = e['ChIP GSMID'].strip()
         if (re.match(gsm_pattern, gsmid)):
-            d = models.Datasets.objects.filter(gsmid=e['ChIP GSMID'])
+            d = models.Datasets.objects.filter(gsmid=gsmid)
         if d:
             #d is a queryset, we have to get the first item--which is a 
             #dataset model obj
@@ -175,6 +190,11 @@ def main():
             control_page = e['Control page']
             if control_page:
                 d.control_page = control_page.strip()
+
+            #date_collected = e['Collected date']
+            #if date_collected:
+            #    #print date_collected
+            #    d.date_collected = date_collected
 
             #save here
             #processed.append(e['ChIP GSMID'])
