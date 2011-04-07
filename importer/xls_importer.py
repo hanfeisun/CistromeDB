@@ -83,6 +83,10 @@ def main():
     gse_pattern = "^GSE\d{5}$"
     #another pass through the data
     not_processed = []
+    #we only want to import AB and Illumina platforms
+    ok_platforms = ['GPL9185', 'GPL7139', 'GPL6333', 'GPL6103', #illumina mm
+                    'GPL9052', 'GPL9115', 'GPL10999', #illumina hs
+                    'GPL9138', 'GPL10279', 'GPL9318', 'GPL10010'] #AB
     for (i, e) in enumerate(entries):
         #try to get the paper associated with the dataset
         try:
@@ -97,11 +101,16 @@ def main():
                     else:
                         #default to lentaing/shirleyliu
                         user = User.objects.get(pk=1)
-                    #create the paper
-                    p = views._import_paper(gseid, user)
-                    #import the datasets
-                    geoQuery = entrez.PaperAdapter(p.gseid)
-                    views._auto_dataset_import(p, user, geoQuery.datasets)
+                    gplid = e['Platform ID'].strip()
+                    if gplid in ok_platforms:
+                        #create the paper
+                        p = views._import_paper(gseid, user)
+                        #import the datasets
+                        geoQuery = entrez.PaperAdapter(p.gseid)
+                        views._auto_dataset_import(p, user, geoQuery.datasets)
+                    else:
+                        if gseid not in not_processed:
+                            not_processed.append(gseid)
             else:
                 if gseid not in not_processed:
                     not_processed.append(gseid)
