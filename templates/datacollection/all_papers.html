@@ -1,4 +1,5 @@
 {% extends "datacollection/base.html" %}
+{% load dc_extras %}
 
 {% block title %}Cistrome Paper Collection{% endblock %}
 {% block include %}
@@ -33,6 +34,8 @@ onload="init();"
 	     <th>GSEID</th>
 	     <th>Species</th>
 	     <th>Factors</th>
+	     <th>Last Author</th>
+	     <th>Email</th>
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>Curator</th>
@@ -51,6 +54,8 @@ onload="init();"
 	         {{ f }}
 		 {% endfor %}
 	     </td>
+	     <td>{{p.authors|split:","|last}}</td>
+	     <td>{{p.last_auth_email}}</td>
 	     {% ifequal p.status "imported" %}
 	     <td class="imported_row">{{ p.get_status_display }}</td>
 	     {% else %} {% ifequal p.status "datasets" %}
@@ -72,47 +77,3 @@ onload="init();"
       </table>
 {% endblock %}
 
-<!--
-<html>
-<head>
-   <link href="{% url static_url %}css/all_papers.css" rel="stylesheet" type="text/css"/>
-   <script>
-
-{% autoescape off %}
-//this needs to be converted--i.e. the nodes need to be made into Motif objs.
-var papersList_json = {{ papersList }}
-
-function helper(i) {
-   parent.papersModel.setCurrentPaperID(i);
-}
-
-{% endautoescape %} 
-   </script>
-</head>
-<body onload="parent.initPage(papersList_json);">
-   <div id="papers_div">
-      <table class="datatable" id="papers_table">
-         <tr><th>Pubmed ID</th>
-	     <th>Title</th>
-	     <th>Authors</th>
-	     <th>Journal</th>
-	     <th>Published</th>
-	 </tr>
-	 {% for p in papers %}
-	 {% if forloop.counter0|divisibleby:2 %}
-	 <tr class="row" onclick="helper({{ forloop.counter0 }});">
-	 {% else %}
-	 <tr class="altrow" onclick="helper({{ forloop.counter0 }});">
-	 {% endif %}
-	     <td>{{ p.pmid }}</td>
-	     <td>{{ p.title|truncatewords:5 }}</td>
-	     <td>{{ p.authors|truncatewords:4 }}</td>
-	     <td>{{ p.journal }}</td>
-	     <td>{{ p.pub_date|date:"M Y" }}</td>
-	 </tr>
-	 {% endfor %}
-      </table>
-   </div>
-</body>
-</html>
--->

@@ -220,6 +220,7 @@ def all_papers(request, user_id):
         papers = models.Papers.objects.filter(user=user_id)
     else:
         papers = models.Papers.objects.all()
+
     #papersList = "[%s]" % ",".join(map(lambda p: p.to_json(), papers))
     return render_to_response('datacollection/all_papers.html', locals(),
                               context_instance=RequestContext(request))
@@ -747,3 +748,4 @@ def search(request):
     return render_to_response('datacollection/search.html',
                               locals(),
                               context_instance=RequestContext(request))
+#------------------------------------------------------------------------------
