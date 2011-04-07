@@ -53,6 +53,7 @@ onload="init();"
 	     <th>Paper</th>
 	     <th>Factor</th>
 	     <th>Antibody</th>
+	     <th>Experiment Type</th>
 	     <th>Platform</th>
 	     <th>Species</th>
 	     <th>Cell Type</th>
@@ -81,6 +82,7 @@ onload="init();"
 	     </td>
 	     <td><a href="{% url datasets %}?factor={{d.factor.id}}">{{d.factor.name}}</a></td>
 	     <td><a href="{% url datasets %}?antibody={{d.factor.id}}">{{d.factor.antibody}}</a></td>
+	     <td>{{d.platform.get_experiment_type_display}}</td>
 	     <td><a href="{%url datasets %}?platform={{d.platform.id}}">{{d.platform.name}}</a></td>
 	     <td><a href="{% url datasets %}?species={{d.species.id}}">{{d.species}}</a></td>
 	     <td><a href="{% url datasets %}?celltype={{d.cell_type.id}}">{{d.cell_type.name}}</a></td>
