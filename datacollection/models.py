@@ -105,7 +105,7 @@ class Papers(DCModel):
     pub_date = models.DateField()
     date_collected = models.DateTimeField()
     authors = models.CharField(max_length=255)
-    #last_auth_email = models.EmailField()
+    last_auth_email = models.EmailField()
         
     journal = models.ForeignKey('Journals',
                                 null=True, blank=True, default=None)
@@ -286,8 +286,9 @@ class Platforms(DCModel):
     name = models.CharField(max_length=255, blank=True)
     technology = models.CharField(max_length=255, blank=True)
     company = models.CharField(max_length=255, blank=True)
-    #experiment_type = models.CharField(max_length=10,
-    #choices=EXPERIMENT_TYPE_CHOICES)
+    experiment_type = models.CharField(max_length=10, blank=True,
+                                       choices=EXPERIMENT_TYPE_CHOICES)
+                                       
     def __str__(self):
         return self.name
 
