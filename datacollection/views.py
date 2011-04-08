@@ -743,6 +743,38 @@ def batch_update_datasets(request):
                               locals(),
                               context_instance=RequestContext(request))
 
+# NOT USEFUL
+# @login_required
+# def batch_update_papers(request):
+#     """See batch edit datasets--similar idea but for papers"""
+#     title = "Batch Update Papers"
+#     fields = forms.BatchUpdatePapersForm.Meta.fields
+#     if request.method == "POST":
+#         papers = [models.Papers.objects.get(pk=id) \
+#                   for id in request.GET['papers'].split(',')]
+#         for p in papers:
+#             form = forms.BatchUpdatePaperForm(request.POST, instance=p)
+#             if form.is_valid():
+#                 tmp = form.save()
+#         return HttpResponseRedirect(reverse('all_papers'))
+#     else:
+#         if 'papers' in request.GET:
+#             paperList = request.GET['papers']
+#             papers = [models.Papers.objects.get(pk=id)\
+#                       for id in paperList.split(",")]
+#             tmp = models.Papers()
+#             for f in fields:
+#                 #have to make exception for user b/c it can't be set to None
+#                 if f == "user" and not _allSameOrNone(papers, f):
+#                     setattr(tmp, f, auth.models.User.objects.get(pk=1))
+#                 else:
+#                     setattr(tmp, f, _allSameOrNone(papers, f))
+#             form = forms.BatchUpdatePapersForm(instance=tmp)
+#     return render_to_response('datacollection/batch_update_papers_form.html',
+#                               locals(),
+#                               context_instance=RequestContext(request))
+            
+
 def search(request):
     """the search page"""
     return render_to_response('datacollection/search.html',
@@ -761,4 +793,16 @@ def delete_datasets(request):
         for d in dsets:
             d.delete()
     return HttpResponseRedirect(reverse('datasets'))
+
+@login_required
+def delete_papers(request):
+    """Given a url param defining which papers to delete, this view
+    tries to delete the papers
+    """
+    if 'papers' in request.GET:
+        papers = [models.Papers.objects.get(pk=id) \
+                 for id in request.GET['papers'].split(',')]
+        for p in papers:
+            p.delete()
+    return HttpResponseRedirect(reverse('all_papers'))
 #------------------------------------------------------------------------------
