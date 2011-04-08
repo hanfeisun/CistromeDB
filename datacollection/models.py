@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.encoding import smart_str, smart_unicode
 import os
 
 try:
@@ -339,7 +340,7 @@ class Conditions(DCModel):
     """Experiment/sample conditions, e.g. PTIP-knockout, wild-type"""
     name = models.CharField(max_length=255)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class Journals(DCModel):
     """Journals that the papers are published in"""
