@@ -111,3 +111,13 @@ class BatchUpdateDatasetsForm(forms.ModelForm):
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
 
+#realized that this doesn't have much usefulness
+# class BatchUpdatePapersForm(forms.ModelForm):
+#     class Meta:
+#         model = models.Papers
+#         fields = ('user',
+#                   'title', 'abstract', 'pub_date',
+#                   'date_collected', 'authors', 'last_auth_email',
+#                   'journal', 'status', 'comments')
+#         exclude = tuple([f.name for f in model._meta.fields \
+#                          if f.name not in fields])
