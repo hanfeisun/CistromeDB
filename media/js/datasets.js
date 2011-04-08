@@ -67,4 +67,13 @@ function init() {
 	//and not rely on dsetModel, b/c if you hit the back btn, the 
 	//item will still be checked but dsetModel is not populated.
     }
+
+    var deleteBtn = $('deleteBtn');
+    deleteBtn.onclick = function(event) {
+	//confirm
+	var resp = confirm("Are you sure you want to DELETE these datasets?");
+	if (resp && dsetModel.dsets.length > 0) {
+	    window.location = SUB_SITE+"delete_datasets/?datasets="+dsetModel.dsets;
+	}
+    }
 }
