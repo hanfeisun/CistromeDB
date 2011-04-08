@@ -748,4 +748,17 @@ def search(request):
     return render_to_response('datacollection/search.html',
                               locals(),
                               context_instance=RequestContext(request))
+
+@login_required
+def delete_datasets(request):
+    """Given a url param defining which datasets to delete, this view
+    tries to delete the datasets
+    """
+    if 'datasets' in request.GET:
+        datasets = request.GET['datasets']
+        dsets = [models.Datasets.objects.get(pk=id) \
+                 for id in datasets.split(',')]
+        for d in dsets:
+            d.delete()
+    return HttpResponseRedirect(reverse('datasets'))
 #------------------------------------------------------------------------------
