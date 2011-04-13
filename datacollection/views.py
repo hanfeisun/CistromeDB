@@ -32,6 +32,7 @@ FIRST_PMID = 11125145
 _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
 _datePattern = "^\d{4}-\d{1,2}-\d{1,2}$"
+_items_per_page = 25
 
 def no_view(request):
     """
@@ -221,7 +222,18 @@ def all_papers(request, user_id):
     else:
         papers = models.Papers.objects.all()
 
-    #papersList = "[%s]" % ",".join(map(lambda p: p.to_json(), papers))
+    #control things w/ paginator
+    #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
+    paginator = Paginator(papers, _items_per_page) #25 dataset per page
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        pg = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        pg = paginator.page(paginator.num_pages)
+
     return render_to_response('datacollection/all_papers.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -342,7 +354,7 @@ def datasets(request, user_id):
         
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
-    paginator = Paginator(datasets, 25) #25 dataset per page
+    paginator = Paginator(datasets, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
