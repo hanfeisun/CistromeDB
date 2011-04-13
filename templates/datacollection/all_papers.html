@@ -34,6 +34,27 @@ onload="init();"
       <!--<input type="button" id="batchEdit" value="batch edit"/>-->
       <input type="button" id="deleteBtn" value="delete"/>
       {% endif %}
+      {% if pg.paginator.num_pages %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if pg.has_previous %}
+	      {% ifnotequal pg.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
+              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+
+              {% if pg.has_next %}
+              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
+	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
+              {% endif %}
+          </span>
+      </div>
+      {% endif %}
       <table class="datatable" id="papers_table">
          <tr>{% if user.is_authenticated %}
 	     <th><input type="checkbox" id="masterCheckbox"/></th>
@@ -52,7 +73,7 @@ onload="init();"
 	     <th>User</th>
 	     <th>Date Added</th>
 	 </tr>
-	 {% for p in papers %}
+	 {% for p in pg.object_list %}
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{p.id}}"/>
@@ -93,5 +114,26 @@ onload="init();"
 	 </tr>
 	 {% endfor %}
       </table>
+      {% if pg.paginator.num_pages %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if pg.has_previous %}
+	      {% ifnotequal pg.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
+              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+
+              {% if pg.has_next %}
+              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
+	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
+              {% endif %}
+          </span>
+      </div>
+      {% endif %}
 {% endblock %}
 
