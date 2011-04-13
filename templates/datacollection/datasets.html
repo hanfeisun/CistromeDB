@@ -82,9 +82,9 @@ onload="init();"
 	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/></td>
 	     {% endif %}
 	     <td><a href="{% url dataset_profile d.id %}">{{d.id}}</a></td>
-	     <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
+	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{d.gsmid}}" target="_blank">{{d.gsmid}}</a></td>
 	     <td>
-	      <a href="{% url datasets %}?paper={{d.paper.id}}">{{d.paper.pmid}}</a></br></br>
+	      <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{d.paper.pmid}}" target="_blank">{{d.paper.pmid}}</a></br></br>
 	      <a href="{% url paper_profile d.paper.id %}">paper profile</a>
 	     </td>
 	     <td><a href="{% url datasets %}?factor={{d.factor.id}}">{{d.factor.name}}</a></td>
