@@ -17,6 +17,17 @@ var Conditions = loadJSRecord('Conditions');
  */
 function helper(list, field, selectName) {
     var MAXLENGTH = 50;
+
+    //sort the drop down menu by field name -- alphabetical order
+    list.sort(function(a, b) {
+		  if (a[field] < b[field]) {
+		      return -1;
+		  } else if (a[field] == b[field]) {
+		      return 0;
+		  } else {
+		      return 1;
+		  }});
+		  
     var p = $D('p');
     p.appendChild($D('label', {'for':'id_'+selectName, 
 			     'innerHTML':upperCase1stLtr(selectName)+":"}));
