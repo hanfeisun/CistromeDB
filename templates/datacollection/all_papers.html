@@ -60,8 +60,8 @@ onload="init();"
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url paper_profile p.id %}">{{ p.id }}</a></td>
-	     <td><a href="{% url paper_profile p.id %}">{{ p.pmid }}</a></td>
-	     <td><a href="{% url paper_profile p.id %}">{{ p.gseid }}</a></td>
+	     <td><a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{p.pmid}}" target="_blank">{{ p.pmid }}</a></td>
+	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{p.gseid}}" target="_blank">{{ p.gseid }}</a></td>
 	     <td>{{ p.title }}</td>
 	     <td>{{ p.journal.name }} {{ p.pub_date|date:"M Y"}}</td>
 	     <td>{% for s in p.species %}
