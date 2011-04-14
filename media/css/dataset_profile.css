@@ -5,7 +5,7 @@
 }
 
 /*for the focus_tbl*/
-#focus_tbl {
+table {
     border:1px solid #000;
     border: 2px solid #626cac;
     border-collapse: collapse;
@@ -14,7 +14,7 @@
     color:#093955;
 }
 
-#focus_tbl td {
+table td {
     border: 1px dotted #000;
     padding-right: 15px;
 }
