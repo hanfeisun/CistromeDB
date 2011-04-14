@@ -227,8 +227,9 @@ class Datasets(DCModel):
                                    null=True, blank=True)
     venn_file = models.FileField(upload_to=upload_factory("venn"),
                                  null=True, blank=True)
-    venn_dhs_file = models.FileField(upload_to=upload_factory("venn"),
-                                     null=True, blank=True)
+    #Moved this to an information table--DatasetDHSStats below
+    #venn_dhs_file = models.FileField(upload_to=upload_factory("venn"),
+    #                                 null=True, blank=True)
     seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
                                    null=True, blank=True)
     
@@ -448,3 +449,9 @@ class UserProfiles(DCModel):
 class DiseaseStates(DCModel):
     """Information field for datasets"""
     name = models.CharField(max_length=255)
+
+class DatasetDhsStats(DCModel):
+    """Stats about the dataset"""
+    dataset = models.ForeignKey('Datasets', unique=True)
+    total_peaks = models.IntegerField(default=0)
+    peaks_in_dhs = models.IntegerField(default=0)
