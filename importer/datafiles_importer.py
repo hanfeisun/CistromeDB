@@ -138,7 +138,7 @@ def main():
                 config = read_config(tmpdir+"_summary.txt")
                 #print config
                 #for k in config.keys():
-                #    if k.startswith("sample"):
+                #    if k.startswith("summary"):
                 #        print k
 
                 if ("sample.sample_id" not in config) or \
@@ -152,11 +152,24 @@ def main():
                 d.uploader=u
                 d.upload_date=datetime.datetime.now()
                 
-                #try to set the fields
+                #try to set the dataset fields
                 for f in _Pipe2Datasets_Dict:
                     if "sample."+f[0] in config:
                         setattr(d, f[1], File(open(config["sample."+f[0]])))
                 d.save()
+
+                #try to store the summary info                
+                if ('summary.total_peaks' in config) and \
+                   ('summary.peaks_overlapped_with_dhss' in config):
+                    #print config['summary.total_peaks']
+                    #print config['summary.peaks_overlapped_with_dhss']
+                    dhs = models.DatasetDhsStats()
+                    dhs.dataset = d
+                    dhs.total_peaks = config['summary.total_peaks']
+                    dhs.peaks_in_dhs = config['summary.peaks_overlapped_with_dhss']
+                    dhs.save()
+                
+                
                 os.chdir(opts.dir)
                 shutil.rmtree(tmpdir) #remove the tmp dir
 
