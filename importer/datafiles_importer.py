@@ -9,12 +9,14 @@ NOTE: the packages must have a manifest.txt file
 import os
 import sys
 import optparse
+import ConfigParser
 import re
 import tarfile
 import time
 import shutil
 import datetime
 import traceback
+import string
 
 import importer_settings
 from django.core.files import File
@@ -34,6 +36,29 @@ Options:
 
 DEFAULT_DIR = "/data/liulab_aspera_dropbox/dcdropbox"
 
+def read_config(configFile):
+    """Read configuration file and parse it into a dictionary.
+    
+    In the dictionary, the key is the section name plus option name like:
+    data.data.treatment_seq_file_path.
+    NOTE: this is ripped directly from Tao's ChIP-Seq_Pipeline1.py script
+    """
+    configs = {}
+    
+    configParser = ConfigParser.ConfigParser()
+    
+    if len(configParser.read(configFile)) == 0:
+        raise IOError("%s not found!" % configFile)
+    
+    for sec in configParser.sections():
+        secName = string.lower(sec)
+        for opt in configParser.options(sec):
+            optName = string.lower(opt)
+            configs[secName + "." + optName] = \
+                            string.strip(configParser.get(sec, opt))
+
+    return configs
+                                                                
 def mktmpdir():
     """Tries to make a temporary working directory; if successful returns
     the directory name"""
@@ -62,6 +87,23 @@ def readManifest():
     f.close()
     return tmp
 
+#A mapping from summary.txt file fields to dataset model file fields
+#NOTE: missing raw file!
+_Pipe2Datasets_Dict = [("macs_peaks", "peak_file"),
+                       ("macs_xls", "peak_xls_file"),
+                       ("macs_summits", "summit_file"),
+                       ("macs_treat_wig", "wig_file"),
+                       ("macs_control_wig", "control_wig_file"),
+                       ("conservation_bmp", "conservation_file"),
+                       ("conservation_r", "conservation_r_file"),
+                       ("correlation_pdf", "qc_file"),
+                       ("correlation_r", "qc_r_file"),
+                       ("ceas_pdf", "ceas_file"),
+                       ("ceas_r", "ceas_r_file"),
+                       ("venn_diagram_png", "venn_file"),
+                       ("seqpos_zip", "seqpos_file"),
+                       ]
+
 def main():
     parser = optparse.OptionParser(usage=USAGE)
     parser.add_option("-d", "--dir", default=DEFAULT_DIR,
@@ -82,36 +124,45 @@ def main():
             os.chdir(opts.dir)
             try:
                 filepath = os.path.join(opts.dir, p)
+                #print filepath
                 tfile = tarfile.open(filepath)
-                if "manifest.txt" not in tfile.getnames():
-                    failed(filepath)
-                    continue
-                tmpdir = mktmpdir()
-                os.chdir(tmpdir)
                 tfile.extractall()
-                #read in manifest as a dict
-                manifest = readManifest()
-                if ("dataset" not in manifest) or ("username" not in manifest):
+                #NOTE: **important- the tar ball names are ALWAYS assumed to
+                #be in this form: sampleN.tar.gz--where N is the sample id;
+                #AND the tar ball extracts to a dir called sampleN
+                #AND the summary is ALWAYS sampleN_summary.txt
+                tmpdir = p.split(".")[0]
+                os.chdir(tmpdir)
+                
+                #read in sampleN_summary.txt
+                config = read_config(tmpdir+"_summary.txt")
+                #print config
+                #for k in config.keys():
+                #    if k.startswith("sample"):
+                #        print k
+
+                if ("sample.sample_id" not in config) or \
+                   ("sample.username" not in config):
                     failed(filepath)
                     continue
+
                 #try to get the dataset model
-                d = models.Datasets.objects.get(pk=manifest['dataset'])
-                u = User.objects.get(username=manifest['username'])
+                d = models.Datasets.objects.get(pk=config['sample.sample_id'])
+                u = User.objects.get(username=config['sample.username'])
                 d.uploader=u
                 d.upload_date=datetime.datetime.now()
-                for f in manifest:
-                    if (f != "dataset") and (f != "username"):
-                        #save the files
-                        tmp = File(open(manifest[f]))
-                        setattr(d, f+"_file", tmp)
+                
+                #try to set the fields
+                for f in _Pipe2Datasets_Dict:
+                    if "sample."+f[0] in config:
+                        setattr(d, f[1], File(open(config["sample."+f[0]])))
                 d.save()
                 os.chdir(opts.dir)
                 shutil.rmtree(tmpdir) #remove the tmp dir
-                os.remove(filepath)
 
-                #tmp = File(open(manifest['raw']))
-                #d.raw_file = tmp
-                #d.save()
+                #move the filepath to tar.gz.processed
+                shutil.move(filepath, filepath+".processed")
+                        
             except: 
                 #something went wrong
                 #NOTE: if the import breaks, mv the file to .tar.gz.failed
