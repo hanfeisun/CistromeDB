@@ -6,6 +6,7 @@ var CellLines = loadJSRecord('CellLines');
 var CellPops = loadJSRecord('CellPops');
 var Strains = loadJSRecord('Strains');
 var Conditions = loadJSRecord('Conditions');
+var DiseaseStates = loadJSRecord('DiseaseStates');
 /** 
  * Params:
  * list - list of objects to make the select out of
@@ -61,7 +62,8 @@ function init() {
     var cellTypes = CellTypes.all();
     var modelDict = {'platform':Platforms.all(), 'cellline':CellLines.all(),
 		     'cellpop':CellPops.all(), 'strain':Strains.all(),
-		     'condition':Conditions.all()}
+		     'condition':Conditions.all(), 
+		     'disease_state':DiseaseStates.all()}
     form.appendChild(helper(species, 'name', 'species'));
     form.appendChild(helper(factors, 'name', 'factor'));
     form.appendChild(helper(factors, 'antibody', 'antibody'));
@@ -81,7 +83,8 @@ function init() {
 
 function submit() {
     var fields=['species', 'factor', 'antibody', 'celltype', 'tissuetype', 
-		'platform', 'cellline', 'cellpop', 'strain', 'condition'];
+		'platform', 'cellline', 'cellpop', 'strain', 'condition',
+		'disease_state'];
     var urlStr = "";
     var first = true;
     //skip the first
