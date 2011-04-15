@@ -644,6 +644,11 @@ def download_datasets(request, paper_id):
 def dataset_profile(request, dataset_id):
     """View of the paper_profile page"""
     dataset = models.Datasets.objects.get(id=dataset_id)
+    try:
+        summary = models.DatasetDhsStats.objects.get(dataset=dataset)
+    except:
+        pass
+    
     return render_to_response('datacollection/dataset_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
