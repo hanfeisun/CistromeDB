@@ -69,6 +69,7 @@ onload="init();"
 	     <th>Cell Pop</th>
 	     <th>Strain</th>
 	     <th>Condition</th>
+	     <th>Disease State</th>
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>User</th>
@@ -98,6 +99,7 @@ onload="init();"
 	     <td><a href="{% url datasets %}?cellpop={{d.cell_pop.id}}">{{d.cell_pop.name}}</a></td>
 	     <td><a href="{% url datasets %}?strain={{d.strain.id}}">{{d.strain.name}}</a></td>
 	     <td><a href="{% url datasets %}?condition={{d.condition.id}}">{{d.condition.name}}</a></td>
+	     <td><a href="{% url datasets %}?diseasestate={{d.disease_state.id}}">{{d.disease_state.name}}</a></td>
 	     {% ifequal d.status "imported" %}
 	     <td class="imported_row">{{ d.get_status_display }}</td>
 	     {% else %} {% ifequal d.status "info" %}

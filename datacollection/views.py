@@ -351,6 +351,10 @@ def datasets(request, user_id):
     if 'condition' in request.GET:
         datasets = datasets.filter(condition=request.GET['condition'])
         rest += "&condition=%s" % request.GET['condition']
+
+    if 'diseasestate' in request.GET:
+        datasets = datasets.filter(disease_state=request.GET['diseasestate'])
+        rest += "&diseasestate=%s" % request.GET['diseasestate']
         
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
