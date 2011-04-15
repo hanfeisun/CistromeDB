@@ -28,7 +28,9 @@ onload="init();"
 {% block content %}
       {% if user.is_authenticated %}
       <input type="button" id="batchEdit" value="batch edit"/>
+      {% ifequal user.get_profile.team "admin" %}
       <input type="button" id="deleteBtn" value="delete"/>
+      {% endifequal %}
       {% endif %}
       {% if datasets.paginator.num_pages %}
       <div class="pagination">
