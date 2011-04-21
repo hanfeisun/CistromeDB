@@ -135,6 +135,10 @@ class Papers(DCModel):
                 tmp.append(d.factor.name)
         return tmp
 
+    def lab(self):
+        """Returns the last author in the authors list"""
+        return self.authors.split(",")[-1:][0]
+
     def __str__(self):
         return self.title
 

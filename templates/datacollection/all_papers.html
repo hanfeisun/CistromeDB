@@ -93,7 +93,7 @@ onload="init();"
 	         {{ f }}
 		 {% endfor %}
 	     </td>
-	     <td>{{p.authors|split:","|last}}</td>
+	     <td>{{p.lab}}</td>
 	     <td>{{p.last_auth_email}}</td>
 	     {% ifequal p.status "imported" %}
 	     <td class="imported_row">{{ p.get_status_display }}</td>

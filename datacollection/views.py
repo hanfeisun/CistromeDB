@@ -12,7 +12,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
 from django.core.urlresolvers import reverse
-from django.db.models import Q
+from django.db.models import Q, Count, Max, Min, Avg
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 
 import models
@@ -33,6 +33,8 @@ _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
 _datePattern = "^\d{4}-\d{1,2}-\d{1,2}$"
 _items_per_page = 25
+#when the oldest/newest paper was published
+_dateRange = models.Papers.objects.aggregate(Min('pub_date'),Max('pub_date'))
 
 def no_view(request):
     """
@@ -826,4 +828,77 @@ def delete_papers(request):
         for p in papers:
             p.delete()
     return HttpResponseRedirect(reverse('all_papers'))
-#------------------------------------------------------------------------------
+
+def stats(request):
+    """Our stats engine--queries the db and returns info that the users might
+    want.
+    There are two supported types: sum and time.
+    An example of a sum count is when you want to know the number of
+    datasets by disease state:
+    URL: count?type=sum&model=Datasets&field=disease_state
+    Ret: [{label:'AML', count:22}, {label:'normal', count:594}...]
+    NOTE: there is no guarantee on the ordering
+
+    A time count is when you are interested in the growth of something over
+    time, e.g. how many HK4ME datasets are there over time?
+    URL: count?type=time&model=Datasets&field=factor&value=HK4ME3
+    Ret: [{year:2005, by_month:[1,2,3,4,5,6,7,8,9,10,11,12], total:78},
+          {year:2006, ...}]
+
+    With this info, the client should be able to generate an appropriate graph
+    """
+    if 'type' in request.GET and request.GET['type'] == 'sum':
+        model = getattr(models, request.GET['model'])
+        field = request.GET['field']
+        tmp = model.objects.values("%s__name" % field).annotate(count=Count(field)).order_by('-count')
+        #want to assign the field__name to label
+        #NOTE: this won't work
+        #tmp2 = [setattr(x, 'label', getattr(x,'%s__name'%field)) for x in tmp]
+        tmp2 = []
+        for x in tmp:
+            x['label'] = x["%s__name" % field]
+            tmp2.append(x)
+        return HttpResponse(json.dumps(tmp2))
+    elif 'type' in request.GET and request.GET['type'] == 'time':
+        return HttpResponse(json.dumps([]))
+#         #NOTE: this always references the paper.pub_date--for date_collected,
+#         #i.e. stats about our db, we'll have to make another stat type
+        
+#         #Get the date ranges for our datasets
+#         start = _dateRange['pub_date__min']
+#         end = _dateRange['pub_date__max']
+#         #print start.year
+#         #print end.year
+#         model = getattr(models, request.GET['model'])
+#         field = request.GET['field']
+#         val = request.GET['value']
+
+#         ret = []
+#         for y in range(start.year, end.year + 1):
+#             tmp = {'year':y}
+#             by_month = []
+#             for m in range(1, 13):
+#                 q = model.objects.filter(disease_state=1)#"%s=%s" % (field,val))
+#                 if request.GET['model'] == 'Datasets':
+#                     prefix = "paper__"
+#                 else:
+#                     prefix = ""
+                    
+#                 q.filter("%spub_date__year=%s" % (prefix, y),
+#                          "%spub_date__month=%s" % (prefix, m))
+                
+                             
+#                 #.filter(paper__pub_date__year=y, paper__pub_date__month=m).aggregate(count=Count(field))
+#                 #by_month.append(c['count'])
+#             #tmp['by_month'] = by_month
+#             #tmp['total'] = sum(by_month)
+#             ret.append(tmp)
+#         print ret
+#         return HttpResponse(json.dumps(ret))
+
+
+def dcstats(request):
+    """the stats page"""
+    return render_to_response('datacollection/dcstats.html',
+                              locals(),
+                              context_instance=RequestContext(request))
