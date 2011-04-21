@@ -115,7 +115,7 @@ class Papers(DCModel):
     #a place for curators to add comments
     comments = models.TextField(blank=True)
 
-    def species(self):
+    def _get_species(self):
         """Returns a list of the species objs associated with the papers, i.e.
         the set of species that are found in the paper's datasets"""
         tmp = []
@@ -125,7 +125,7 @@ class Papers(DCModel):
                 tmp.append(d.species.name)
         return tmp
 
-    def factors(self):
+    def _get_factors(self):
         """Returns a list of the factors associated w/ the paper, i.e.
         returns the set of factors that are found in the paper's datasets"""
         tmp = []
@@ -135,10 +135,14 @@ class Papers(DCModel):
                 tmp.append(d.factor.name)
         return tmp
 
-    def lab(self):
+    def _get_lab(self):
         """Returns the last author in the authors list"""
-        return self.authors.split(",")[-1:][0]
+        return smart_str(self.authors.split(",")[-1:][0])
 
+    species = property(_get_species)
+    factors = property(_get_factors)
+    lab = property(_get_lab)
+    
     def __str__(self):
         return self.title
 

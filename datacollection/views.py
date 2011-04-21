@@ -12,7 +12,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
 from django.core.urlresolvers import reverse
-from django.db.models import Q, Count, Max, Min, Avg
+from django.db.models import Q, Count, Max, Min, Avg, query, manager
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 
 import models
@@ -859,6 +859,33 @@ def stats(request):
             x['label'] = x["%s__name" % field]
             tmp2.append(x)
         return HttpResponse(json.dumps(tmp2))
+    elif 'type' in request.GET and request.GET['type'] == 'ssum':
+        #really just used for Papers by labs
+        #special sum type--like sum but for doesn't rely on django--can be slow
+        #fields can also reference foreign keys, e.g. model = Dataset,
+        #field = paper__lab --using django __ as separator
+        model = getattr(models, request.GET['model'])
+        field = request.GET['field'].split("__")
+        tmp = model.objects.all()
+        #build up a dictionary
+        count = {}
+        for x in tmp:
+            val = x
+            for f in field:
+                if val:
+                    val = getattr(val, f)
+            if val:
+                #if it's not a string
+                if type(val) != type(''):
+                    val = val.__str__()
+                if val in count:
+                    count[val] = count[val] + 1
+                else:
+                    count[val] = 1
+        ret = [{'label':f, 'count':count[f]} for f in count]
+        
+        return HttpResponse(json.dumps(sorted(ret, key=lambda x: x['count'],
+                                              reverse=True)))
     elif 'type' in request.GET and request.GET['type'] == 'time':
         return HttpResponse(json.dumps([]))
 #         #NOTE: this always references the paper.pub_date--for date_collected,
@@ -902,3 +929,4 @@ def dcstats(request):
     return render_to_response('datacollection/dcstats.html',
                               locals(),
                               context_instance=RequestContext(request))
+

@@ -1,4 +1,5 @@
 var cutoff = 0.015;
+var topCut = 20;
 
 function prepareData(d) {
     var total = 0;
@@ -20,6 +21,17 @@ function prepareData(d) {
 	foo.push(['other', Math.round(other/total*10000)/100]);
     }
     return foo;
+}
+
+function prepareBarData(d) {
+    var categories = [];
+    var vals = [];
+    for (var i = 0; i < d.length; i++) {
+	categories.push(d[i].label);
+	vals.push(d[i].count);
+    }
+    return {categories:categories, values:vals};
+	
 }
 
 function pieChartFactory(container, title, data) {
@@ -58,7 +70,65 @@ function pieChartFactory(container, title, data) {
 		});
 }
 
-function helper(container, title, model, field) {
+function barChartFactory(container, title, data) {
+    //data: {categories:['foo','bar'],values[21, 22]}
+
+    var chart = new Highcharts.Chart({
+	    chart: {
+		renderTo: container,
+		    defaultSeriesType: 'column',
+		    margin: [ 50, 50, 100, 80]
+		    },
+		title: {
+		text: title,
+		    },
+		xAxis: {
+		categories: data.categories,
+		    labels: {
+		    rotation: -45,
+			align: 'right',
+			style: {
+			font: 'normal 13px Verdana, sans-serif'
+			    }
+		}
+	    },
+		yAxis: {
+		min: 0,
+		    title: {
+		    text: '', //'Population (millions)'
+			}
+	    },
+		legend: {
+		enabled: false
+		    },
+		tooltip: {
+		formatter: function() {
+		    return '<b>'+ this.x +'</b>: '+ this.y;
+		}
+	    },
+		series: [{
+		name: title,
+		    data: data.values,
+		    dataLabels: {
+		    enabled: true,
+			rotation: -90,
+			color: '#FFFFFF', //Highcharts.theme.dataLabelsColor || '#FFFFFF',
+			align: 'right',
+			x: -3,
+			y: 10,
+			formatter: function() {
+			return this.y;
+		    },
+			style: {
+			font: 'normal 13px Verdana, sans-serif'
+			    }
+		}         
+	    }]
+		});
+		
+}
+
+function helper(container, title, type, model, field) {
     function cb(req) {
 	//alert(req);
 	var json = eval("("+req+")");
@@ -66,45 +136,74 @@ function helper(container, title, model, field) {
 	pieChartFactory(container, title, data);
     }
     var tmp = $.ajax({
-	    url: SUB_SITE+"stats/?type=sum&model="+model+"&field="+field,
+	    url: SUB_SITE+"stats/?type="+type+"&model="+model+"&field="+field,
+		context: document.body,
+		success: cb	    
+		});
+}
+
+function barHelper(container, title, type, model, field, cutoff) {
+    //IF cutoff, then only take the top 20
+    function cb(req) {
+	//alert(req);
+	var json = eval("("+req+")");
+	var data = prepareBarData(json);
+	if (cutoff) {
+	    var size = data.categories.length;
+	    data.categories.splice(topCut, size - topCut);
+	    data.values.splice(topCut, size - topCut);
+	}
+	barChartFactory(container, title, data);
+    }
+    var tmp = $.ajax({
+	    url: SUB_SITE+"stats/?type="+type+"&model="+model+"&field="+field,
 		context: document.body,
 		success: cb	    
 		});
 }
 
 function init() {
-    /*
-    function cb(req) {
-	//alert(req);
-	var json = eval("("+req+")");
-	var data = prepareData(json);
-	pieChartFactory('disease_state_div', 'Datasets by Disease State', data);
-    }
-    var tmp = $.ajax({
-	    url: SUB_SITE+"stats/?type=sum&model=Datasets&field=disease_state",
-		context: document.body,
-		success: cb	    
-		});
-    */
-    /*
-    helper('disease_state_div', 'Datasets by Disease State', 'Datasets', 
-	   'disease_state');
-    helper('factor_div', 'Datasets by Factor', 'Datasets', 
-	   'factor');
-    helper('platform_div', 'Datasets by Platform', 'Datasets', 
-	   'platform');
-    */
-    fields = ['factor', 'platform', 'species', 'cell_type',
+    var graphs = document.getElementById('graphs');
+
+    //top labs by datasets
+    var div = $D('div', {'id':'dataset_lab_div'});
+    graphs.appendChild(div);
+    barHelper('dataset_lab_div', 'Top Labs by Datasets', 'ssum', 'Datasets', 'paper__lab', true);
+
+    var fields = ['factor', 'platform', 'species', 'cell_type',
 	      'cell_line', 'cell_pop', 'strain','condition',
 	      'disease_state'];
-    var graphs = document.getElementById('graphs');
     for (var i = 0; i < fields.length; i++) {
 	var id = fields[i]+"_div";
 	var div = $D('div', {'id':id});
 	graphs.appendChild(div);
-	helper(id, 'Datasets by '+fields[i], 'Datasets', fields[i]);
+	helper(id, 'Datasets by '+fields[i], 'sum', 'Datasets', fields[i]);
     }
 
-    //alert($('graphs'));
+    //top labs by datasets
+    var div = $D('div', {'id':'dataset_antibody_div'});
+    graphs.appendChild(div);
+    helper('dataset_antibody_div', 'Datasets by Antibody', 'ssum', 'Datasets', 'factor__antibody');
+
+    //tissue types
+    var div = $D('div', {'id':'dataset_tissue_type_div'});
+    graphs.appendChild(div);
+    helper('dataset_tissue_type_div', 'Datasets by Tissue Type', 'ssum', 'Datasets', 'cell_type__tissue_type');
+
+    //papers by journals
+    var div = $D('div', {'id':'paper_journals_div'});
+    graphs.appendChild(div);
+    helper('paper_journals_div', 'Papers by Journals', 'sum', 'Papers', 
+	   'journal');
+
+    //a little more difficult b/c lab is a virtual field
+    var div = $D('div', {'id':'paper_lab_div'});
+    graphs.appendChild(div);
+    helper('paper_lab_div', 'Papers by Labs', 'ssum', 'Papers', 'lab');
+    
+    //top journals by datasets
+    var div = $D('div', {'id':'dataset_journal_div'});
+    graphs.appendChild(div);
+    barHelper('dataset_journal_div', 'Top Journals by Datasets', 'ssum', 'Datasets', 'paper__journal', true);
 	
 }
