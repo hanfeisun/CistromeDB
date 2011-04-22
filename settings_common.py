@@ -85,3 +85,5 @@ INSTALLED_APPS = (
 )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
+
+CACHE_BACKEND = 'db://newdc_cache'
