@@ -8,12 +8,14 @@ from django.shortcuts import render_to_response, Http404, get_object_or_404
 from django.contrib import auth
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Count, Max, Min, Avg, query, manager
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from django.core.cache import cache
 
 import models
 import forms
@@ -829,6 +831,8 @@ def delete_papers(request):
             p.delete()
     return HttpResponseRedirect(reverse('all_papers'))
 
+#cache it for a hour
+#@cache_page(60 * 60 * 1)
 def stats(request):
     """Our stats engine--queries the db and returns info that the users might
     want.
@@ -847,7 +851,14 @@ def stats(request):
 
     With this info, the client should be able to generate an appropriate graph
     """
+    _timeout = 60*60 #1 hour
     if 'type' in request.GET and request.GET['type'] == 'sum':
+        #try the cache
+        key = "%s_%s_%s" % (request.GET['type'], request.GET['model'],
+                            request.GET['field'])
+        if cache.get(key):
+            return HttpResponse(json.dumps(cache.get(key)))
+        
         model = getattr(models, request.GET['model'])
         field = request.GET['field']
         tmp = model.objects.values("%s__name" % field).annotate(count=Count(field)).order_by('-count')
@@ -858,12 +869,23 @@ def stats(request):
         for x in tmp:
             x['label'] = x["%s__name" % field]
             tmp2.append(x)
-        return HttpResponse(json.dumps(tmp2))
+
+        #save to cache
+        cache.set(key, tmp2, _timeout)
+        
+        return HttpResponse(json.dumps(cache.get(key)))
     elif 'type' in request.GET and request.GET['type'] == 'ssum':
         #really just used for Papers by labs
         #special sum type--like sum but for doesn't rely on django--can be slow
         #fields can also reference foreign keys, e.g. model = Dataset,
         #field = paper__lab --using django __ as separator
+
+        #try the cache
+        key = "%s_%s_%s" % (request.GET['type'], request.GET['model'],
+                            request.GET['field'])
+        if cache.get(key):
+            return HttpResponse(json.dumps(cache.get(key)))
+
         model = getattr(models, request.GET['model'])
         field = request.GET['field'].split("__")
         tmp = model.objects.all()
@@ -883,10 +905,15 @@ def stats(request):
                 else:
                     count[val] = 1
         ret = [{'label':f, 'count':count[f]} for f in count]
+        tmp2 = sorted(ret, key=lambda x: x['count'], reverse=True)
         
-        return HttpResponse(json.dumps(sorted(ret, key=lambda x: x['count'],
-                                              reverse=True)))
+        #save to cache
+        cache.set(key, tmp2, _timeout)
+        
+        return HttpResponse(json.dumps(cache.get(key)))
     elif 'type' in request.GET and request.GET['type'] == 'time':
+        return HttpResponse(json.dumps([]))
+    else:
         return HttpResponse(json.dumps([]))
 #         #NOTE: this always references the paper.pub_date--for date_collected,
 #         #i.e. stats about our db, we'll have to make another stat type
