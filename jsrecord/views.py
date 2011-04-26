@@ -8,6 +8,7 @@ from django.core import serializers
 from django.db.models.base import ModelBase
 from django.forms import ModelForm
 from django.db import models
+from django.views.decorators.cache import cache_page
 
 from new import classobj
 from datetime import date, datetime
@@ -35,6 +36,9 @@ MODEL_TYPES = []
 _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
 
+#timeout = 15 mins
+_timeout = 60*15
+
 try:
     import json
 except ImportError:
@@ -49,14 +53,17 @@ for m in dir(MODELS):
                        {'Meta': classobj('Meta',(),{'model':model})})
         _MODELFORMS[model] = tmp
 
+@cache_page(_timeout)
 def All(request, model):
     tmp = [jsonify(o) for o in model.objects.all()]    
     return HttpResponse("[%s]" % ",".join(tmp))
 
+@cache_page(_timeout)
 def Get(request, model, id):
     m = model.objects.get(pk=id)
     return HttpResponse(jsonify(m))
 
+@cache_page(_timeout)
 def Find(request, model, options):
     #we need to do this b/c request.GET is an invalid dict to pass in
     opts = dict([(str(x),request.GET[x]) for x in request.GET.keys()])
@@ -93,6 +100,8 @@ def Delete(request, _model, id):
         return HttpResponse("{\"success\":false, \"err\":\"%s:%s\"}" %
                             (sys.exc_type, sys.exc_value))
 
+#NOTE: after testing--caching seems to just be slower!!!
+#@cache_page(_timeout)
 def loader(request, model):
     """Given a django model as a url param, this returns the meta information
     so that an equivalent javascript class can be constructed"""
