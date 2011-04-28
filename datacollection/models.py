@@ -387,7 +387,7 @@ class Samples(DCModel):
             is going to be stored in: samples/gse20/852/578/[peak, wig,etc]
             """
             return os.path.join('samples','gse%s' % self.paper.gseid[3:5],
-                                self.paper.gseid[5:], self.id, sub_dir,
+                                self.paper.gseid[5:], str(self.id), sub_dir,
                                 filename)
         return upload_to_path
     
@@ -433,6 +433,12 @@ class Samples(DCModel):
     seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
                                    null=True, blank=True)
 
+    #uploader = the person who uploaded the files (data team)
+    uploader = models.ForeignKey(User, null=True, blank=True, default=None,
+                                 related_name="sample_uploader")
+    upload_date = models.DateTimeField(blank=True, null=True, default=None)
+
+
     def __str__(self):
         """Tries to print the GSMID of the datasets"""
         if self.datasets:
@@ -455,9 +461,12 @@ class SampleControls(DCModel):
             """Returns the upload_to path for this sample.
             NOTE: we are going to store the files by the paper's gseid and
             the sample id, e.g. gseid = GSE20852, sample id = 578
-            is going to be stored in: controls/578/[peak, wig,etc]
+            is going to be stored in: controls/gse20/852/578/[peak, wig,etc]
             """
-            return os.path.join('controls', self.id, sub_dir, filename)
+            return os.path.join('controls','gse%s' % \
+                                self.sample.paper.gseid[3:5],
+                                self.sample.paper.gseid[5:],
+                                str(self.sample.id), sub_dir, filename)
         return upload_to_path
     
     sample = models.ForeignKey('Samples')
