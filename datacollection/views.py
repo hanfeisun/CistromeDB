@@ -124,9 +124,9 @@ def upload_dataset_form(request, dataset_id):
                               context_instance=RequestContext(request))
 
 @login_required
-def new_replicate_form(request):
+def new_sample_form(request):
     if request.method == "POST":
-        form = forms.ReplicateForm(request.POST, request.FILES)
+        form = forms.SampleForm(request.POST, request.FILES)
         if form.is_valid():
             tmp = form.save(commit=False)
             tmp.user = request.user
@@ -137,12 +137,12 @@ def new_replicate_form(request):
             tmp.save()
             return HttpResponseRedirect(reverse('home'))
         else:
-            print "INVALID REPLICATE FORM"
+            print "INVALID Sample FORM"
     else:
-        form = forms.ReplicateForm()
+        form = forms.SampleForm()
         if 'p' in request.GET:
             paper = request.GET['p']
-    return render_to_response('datacollection/new_replicate_form.html',
+    return render_to_response('datacollection/new_sample_form.html',
                               locals(),
                               context_instance=RequestContext(request))
 #------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ def update_form_factory(title_in, form_class):
     return login_required(generic_update_view)
 
 #add papers,
-generic_update_list = generic_forms_list + ['paper', 'replicate', 'dataset']
+generic_update_list = generic_forms_list + ['paper', 'sample', 'dataset']
 for name in generic_update_list:
     form = getattr(forms, "%sForm" % name.capitalize())
     tmp_view = update_form_factory('%s Update Form' % name.capitalize(), form)
@@ -210,8 +210,8 @@ update_paper_form = update_form_factory('Paper Update Form',
                                           forms.UpdatePaperForm)
 update_dataset_form = update_form_factory('Dataset Update Form',
                                           forms.UpdateDatasetForm)
-update_replicate_form = update_form_factory('Replicate Update Form',
-                                          forms.UpdateReplicateForm)
+update_sample_form = update_form_factory('Sample Update Form',
+                                          forms.UpdateSampleForm)
 #------------------------------------------------------------------------------
 
 def all_papers(request, user_id):
@@ -616,7 +616,7 @@ def paper_profile(request, paper_id):
     """View of the paper_profile page"""
     paper = models.Papers.objects.get(id=paper_id)
     datasets = models.Datasets.objects.filter(paper=paper_id)
-    replicates = models.Replicates.objects.filter(paper=paper_id)
+    samples = models.Samples.objects.filter(paper=paper_id)
     return render_to_response('datacollection/paper_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
@@ -657,12 +657,12 @@ def dataset_profile(request, dataset_id):
                               locals(),
                               context_instance=RequestContext(request))
 
-def replicate_profile(request, replicate_id):
+def sample_profile(request, sample_id):
     """View of the paper_profile page"""
-    replicate = models.Replicates.objects.get(id=replicate_id)
-    dsets = replicate.datasets.split(",")
+    sample = models.Samples.objects.get(id=sample_id)
+    dsets = sample.datasets.split(",")
     datasets = [models.Datasets.objects.get(id=d) for d in dsets]
-    return render_to_response('datacollection/replicate_profile.html',
+    return render_to_response('datacollection/sample_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
 

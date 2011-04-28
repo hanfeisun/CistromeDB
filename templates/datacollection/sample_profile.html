@@ -17,7 +17,7 @@ onload="init();"
 {% block content %}
     <!--ripped from paper_profile.html-->
     <section id="dataset_focus">
-        <header>Replicate info:</header>
+        <header>Sample info:</header>
 	{% for dataset in datasets %}
         <table id="focus_tbl">
 	    <tr><td colspan="2">
@@ -98,28 +98,28 @@ onload="init();"
         <header>Analysis:</header>
 	<table id="analysis_tbl">
 	    <tr><td>Peak file:</td>
-	        {% if replicate.peak_file %}
-	        <td><a href="{{replicate.peak_file.url}}">download</a></td>
+	        {% if sample.peak_file %}
+	        <td><a href="{{sample.peak_file.url}}">download</a></td>
 		{% endif %}
 	    </tr>
 	    <tr><td>Wig file:</td>
-	        {% if replicate.wig_file %}
-	        <td><a href="{{replicate.wig_file.url}}">download</a></td>
+	        {% if sample.wig_file %}
+	        <td><a href="{{sample.wig_file.url}}">download</a></td>
 		{% endif %}
 	    </tr>
 	    <tr><td>QC file:</td>
-	        {% if replicate.qc_file %}
-	        <td><a href="{{replicate.qc_file.url}}">download</a></td>
+	        {% if sample.qc_file %}
+	        <td><a href="{{sample.qc_file.url}}">download</a></td>
 		{% endif %}
 	    </tr>
 	    <tr><td>CEAS file:</td>
-	        {% if replicate.ceas_file %}
-	        <td><a href="{{replicate.ceas_file.url}}">download</a></td>
+	        {% if sample.ceas_file %}
+	        <td><a href="{{sample.ceas_file.url}}">download</a></td>
 		{% endif %}
 	    </tr>
 	    <tr><td>Venn Diagram file:</td>
-	        {% if replicate.venn_file %}
-	        <td><a href="{{replicate.venn_file.url}}">download</a></td>
+	        {% if sample.venn_file %}
+	        <td><a href="{{sample.venn_file.url}}">download</a></td>
 		{% endif %}
 	    </tr>
 	</table>

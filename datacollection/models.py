@@ -206,40 +206,14 @@ class Datasets(DCModel):
     raw_file_url = models.URLField(max_length=255, blank=True)
     raw_file_type = models.ForeignKey('FileTypes',
                                       null=True, blank=True, default=None)
-
+    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
+                                      null=True, blank=True)
     peak_file = models.FileField(upload_to=upload_factory("peak"),
                                  null=True, blank=True)
-    peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
-                                     null=True, blank=True)
-    summit_file = models.FileField(upload_to=upload_factory("summit"),
-                                   null=True, blank=True)
     wig_file = models.FileField(upload_to=upload_factory("wig"),
                                 null=True, blank=True)
-    control_wig_file = models.FileField(upload_to=upload_factory("wig"),
-                                        null=True, blank=True)
-    bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
-                                      null=True, blank=True)
-    control_bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
-                                              null=True, blank=True)
-    conservation_file = models.FileField(upload_to=upload_factory("conservation"),
-                                    null=True, blank=True)
-    conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
-                                      null=True, blank=True)
-    qc_file = models.FileField(upload_to=upload_factory("qc"),
-                               null=True, blank=True)
-    qc_r_file = models.FileField(upload_to=upload_factory("qc"),
-                                 null=True, blank=True)
-    ceas_file = models.FileField(upload_to=upload_factory("ceas"),
-                                 null=True, blank=True)
-    ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
-                                   null=True, blank=True)
-    venn_file = models.FileField(upload_to=upload_factory("venn"),
-                                 null=True, blank=True)
-    #Moved this to an information table--DatasetDHSStats below
-    #venn_dhs_file = models.FileField(upload_to=upload_factory("venn"),
-    #                                 null=True, blank=True)
-    seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
-                                   null=True, blank=True)
+    bw_file = models.FileField(upload_to=upload_factory("bw"),
+                                null=True, blank=True)
     
     #IF everything is done by auto import we might not need this
     user = models.ForeignKey(User)
@@ -398,21 +372,21 @@ class Assemblies(DCModel):
     def __str__(self):
         return self.name
 
-class Replicates(DCModel):
-    """a table to store all of the replicate information: a replicate is a
+class Samples(DCModel):
+    """a table to store all of the sample information: a sample is a
     set of one or more datasets; it is associated with a paper (one paper to
-    many replicates)"""
+    many samples)"""
     def upload_factory(sub_dir):
         """a factory for generating upload_to_path fns--e.g. use to generate
         the various sub-directories we use to store the info associated w/
-        a replicate"""
+        a sample"""
         def upload_to_path(self, filename):
-            """Returns the upload_to path for this dataset.
+            """Returns the upload_to path for this sample.
             NOTE: we are going to store the files by the paper's gseid and
-            the replicate id, e.g. gseid = GSE20852, replicate id = 578
-            is going to be stored in: replicates/gse20/852/578/[peak, wig,etc]
+            the sample id, e.g. gseid = GSE20852, sample id = 578
+            is going to be stored in: samples/gse20/852/578/[peak, wig,etc]
             """
-            return os.path.join('replicates','gse%s' % self.paper.gseid[3:5],
+            return os.path.join('samples','gse%s' % self.paper.gseid[3:5],
                                 self.paper.gseid[5:], self.id, sub_dir,
                                 filename)
         return upload_to_path
@@ -420,16 +394,44 @@ class Replicates(DCModel):
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
     datasets = models.CommaSeparatedIntegerField(max_length=255)
+    #FileFields
+    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
+                                      null=True, blank=True)
     peak_file = models.FileField(upload_to=upload_factory("peak"),
                                  null=True, blank=True)
+    peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
+                                     null=True, blank=True)
+    summit_file = models.FileField(upload_to=upload_factory("summit"),
+                                   null=True, blank=True)
     wig_file = models.FileField(upload_to=upload_factory("wig"),
                                 null=True, blank=True)
+    #control_wig_file = models.FileField(upload_to=upload_factory("wig"),
+    #                                    null=True, blank=True)
+    bw_file = models.FileField(upload_to=upload_factory("bw"),
+                                null=True, blank=True)
+    bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
+                                      null=True, blank=True)
+    control_bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
+                                              null=True, blank=True)
+    conservation_file = models.FileField(upload_to=upload_factory("conservation"),
+                                    null=True, blank=True)
+    conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
+                                      null=True, blank=True)
     qc_file = models.FileField(upload_to=upload_factory("qc"),
                                null=True, blank=True)
+    qc_r_file = models.FileField(upload_to=upload_factory("qc"),
+                                 null=True, blank=True)
     ceas_file = models.FileField(upload_to=upload_factory("ceas"),
                                  null=True, blank=True)
+    ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
+                                   null=True, blank=True)
     venn_file = models.FileField(upload_to=upload_factory("venn"),
                                  null=True, blank=True)
+    #Moved this to an information table--DatasetDHSStats below
+    #venn_dhs_file = models.FileField(upload_to=upload_factory("venn"),
+    #                                 null=True, blank=True)
+    seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
+                                   null=True, blank=True)
 
     def __str__(self):
         """Tries to print the GSMID of the datasets"""
@@ -440,6 +442,32 @@ class Replicates(DCModel):
         else:
             return "None"
 
+class SampleControls(DCModel):
+    """a table to store all of the control files for a given sample.
+    The replicates of each sample uses the same control--so this is the
+    central repository.
+    """
+    def upload_factory(sub_dir):
+        """a factory for generating upload_to_path fns--e.g. use to generate
+        the various sub-directories we use to store the info associated w/
+        a samplecontrol"""
+        def upload_to_path(self, filename):
+            """Returns the upload_to path for this sample.
+            NOTE: we are going to store the files by the paper's gseid and
+            the sample id, e.g. gseid = GSE20852, sample id = 578
+            is going to be stored in: controls/578/[peak, wig,etc]
+            """
+            return os.path.join('controls', self.id, sub_dir, filename)
+        return upload_to_path
+    
+    sample = models.ForeignKey('Samples')
+    bam_file = models.FileField(upload_to=upload_factory("bam"),
+                                null=True, blank=True)
+    wig_file = models.FileField(upload_to=upload_factory("wig"),
+                                null=True, blank=True)
+    bw_file = models.FileField(upload_to=upload_factory("bw"),
+                               null=True, blank=True)
+    
 class UserProfiles(DCModel):
     """We want to add additional fields to the auth user model.  So creating
     this UserProfile model is the django way of doing it.
@@ -458,8 +486,8 @@ class DiseaseStates(DCModel):
     """Information field for datasets"""
     name = models.CharField(max_length=255)
 
-class DatasetDhsStats(DCModel):
-    """Stats about the dataset"""
-    dataset = models.ForeignKey('Datasets', unique=True)
+class SampleDhsStats(DCModel):
+    """Stats about the sample"""
+    sample = models.ForeignKey('Samples', unique=True)
     total_peaks = models.IntegerField(default=0)
     peaks_in_dhs = models.IntegerField(default=0)

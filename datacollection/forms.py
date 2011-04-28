@@ -43,7 +43,7 @@ form_dict = {'Paper': models.Papers, 'Dataset': models.Datasets,
              'Strain': models.Strains, 'Condition':models.Conditions,
              'Journal': models.Journals, 'Species':models.Species,
              'Filetype': models.FileTypes,
-             'Assembly': models.Assemblies, 'Replicate':models.Replicates}
+             'Assembly': models.Assemblies, 'Sample':models.Samples}
 
 
 for k in form_dict:
@@ -68,9 +68,9 @@ class DatasetForm(forms.ModelForm):
                     'assembly', 'description', 'comments', 'status',
                     'uploader', 'upload_date')
 
-class ReplicateForm(forms.ModelForm):
+class SampleForm(forms.ModelForm):
     class Meta:
-        model = models.Replicates
+        model = models.Samples
         exclude = ('user', 'paper', 'datasets')
 
 #Used by the data team to upload dataset files
@@ -98,9 +98,9 @@ class UpdateDatasetForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
 
-class UpdateReplicateForm(forms.ModelForm):
+class UpdateSampleForm(forms.ModelForm):
     class Meta:
-        model = models.Replicates
+        model = models.Samples
 
 class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:

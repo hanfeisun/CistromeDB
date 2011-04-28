@@ -18,7 +18,7 @@ onload="init({{paper}});"
       {% if form.errors %}
          <p>Please correct the error{{ form.errors|pluralize }} below.</p>
       {% endif %}
-         <h2 class="section_hdr">Replicate Form:</h2>
+         <h2 class="section_hdr">Sample Form:</h2>
 	 <form enctype="multipart/form-data" action="" method="post" id="rep_form" name="rep_form">
 	    <p id="paper_p">
 	    {% if paper %}
@@ -31,7 +31,7 @@ onload="init({{paper}});"
 	    </p>
 	    <p id="dataset_p">
 	    </p>
-	    {{ form.as_p }}
+	    <!--{{ form.as_p }}-->
 	    <!--<input type="submit" value="Submit"/>-->
 	    <button type="button" onclick="mySubmit();">Submit</button>
 	 </form>
