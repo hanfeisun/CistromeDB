@@ -21,8 +21,8 @@ urlpatterns = patterns('',
                   name="paper_profile"),
               url(r'^dataset_profile/(\d+)/$', views.dataset_profile,
                   name="dataset_profile"),
-              url(r'^replicate_profile/(\d+)/$', views.replicate_profile,
-                  name="replicate_profile"),
+              url(r'^sample_profile/(\d+)/$', views.sample_profile,
+                  name="sample_profile"),
               url(r'^get_datasets/(\d+)/$', views.get_datasets, 
                   name="get_datasets"),
               url(r'^paper_submission/$', views.paper_submission,
@@ -64,7 +64,7 @@ urlpatterns = patterns('',
 generic_views_list = ['paper', 'dataset',
                       'platform','factor','celltype','cellline', 'cellpop',
                       'strain', 'condition', 'journal',
-                      'species', 'filetype', 'assembly', 'replicate']
+                      'species', 'filetype', 'assembly', 'sample']
 
 for v in generic_views_list:
     urlpatterns += patterns('',

@@ -38,16 +38,16 @@ onload="init();"
 	   {% endfor %}
 	</table>
     </section>
-    <section id="replicate_info">
-        <table id="replicate_tbl">
-	   <tr><td>Replicates:</td>
+    <section id="sample_info">
+        <table id="sample_tbl">
+	   <tr><td>Samples:</td>
 	       {% if user.is_authenticated %}
-	       <td><a href="{% url new_replicate_form %}?p={{paper.id}}">add new replicate</a></td>
+	       <td><a href="{% url new_sample_form %}?p={{paper.id}}">add new sample</a></td>
 	       {% endif %}
 	   </tr>
-	   {% for r in replicates %}
+	   {% for s in samples %}
 	   {% cycle '<tr>' '' '' %}
-	       <td><a href="{% url replicate_profile r.id %}">{{ r }}</a></td>
+	       <td><a href="{% url sample_profile s.id %}">{{ s }}</a></td>
 	   {% cycle '' '' '</tr>' %}
 	   {% endfor %}
 	</table>
