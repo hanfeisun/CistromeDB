@@ -4,7 +4,7 @@ Synopsis: this script checks a given directory for tar or zip packages,
 and tries to automatically import the files contained within each package.
 This script can/should be set as a cron job that runs every night.
 
-NOTE: the packages must have a manifest.txt file
+NOTE: the packages must have a *_summary.txt file
 """
 import os
 import sys
@@ -89,20 +89,33 @@ def readManifest():
 
 #A mapping from summary.txt file fields to dataset model file fields
 #NOTE: missing raw file!
-_Pipe2Datasets_Dict = [("macs_peaks", "peak_file"),
-                       ("macs_xls", "peak_xls_file"),
-                       ("macs_summits", "summit_file"),
-                       ("macs_treat_wig", "wig_file"),
-                       ("macs_control_wig", "control_wig_file"),
-                       ("conservation_bmp", "conservation_file"),
-                       ("conservation_r", "conservation_r_file"),
-                       ("correlation_pdf", "qc_file"),
+_Pipe2Samples_Dict = [("treat_bam", "treatment_file"),
+                      ("macs_peaks", "peak_file"),
+                      ("macs_xls", "peak_xls_file"),
+                      ("macs_summits", "summit_file"),
+                      ("macs_treat_wig", "wig_file"),
+                      ("macs_treat_bw", "bw_file"),
+                      ("macs_control_wig", "control_wig_file"),
+                      ("conservation_bmp", "conservation_file"),
+                      ("conservation_r", "conservation_r_file"),
+                      ("correlation_pdf", "qc_file"),
                        ("correlation_r", "qc_r_file"),
-                       ("ceas_pdf", "ceas_file"),
-                       ("ceas_r", "ceas_r_file"),
-                       ("venn_diagram_png", "venn_file"),
-                       ("seqpos_zip", "seqpos_file"),
+                      ("ceas_pdf", "ceas_file"),
+                      ("ceas_r", "ceas_r_file"),
+                      ("venn_diagram_png", "venn_file"),
+                      ("seqpos_zip", "seqpos_file"),
+                      ]
+
+_Pipe2Datasets_Dict = [("treatment_bam", "treatment_file"),
+                       ("macs_peaks", "peak_file"),
+                       ("macs_treat_wig", "wig_file"),
+                       ("macs_treat_bw", "bw_file"),
                        ]
+
+_Pipe2SampleControls_Dict = [("control_bam", "bam_file"),
+                             ("macs_control_wig", "wig_file"),
+                             ("macs_control_bw", "bw_file"),
+                             ]
 
 def main():
     parser = optparse.OptionParser(usage=USAGE)
@@ -133,6 +146,7 @@ def main():
                 #AND the summary is ALWAYS sampleN_summary.txt
                 tmpdir = p.split(".")[0]
                 os.chdir(tmpdir)
+                #print os.getcwd()
                 
                 #read in sampleN_summary.txt
                 config = read_config(tmpdir+"_summary.txt")
@@ -146,25 +160,45 @@ def main():
                     failed(filepath)
                     continue
 
-                #try to get the dataset model
-                d = models.Datasets.objects.get(pk=config['sample.sample_id'])
+                #try to get the sample model
+                s = models.Samples.objects.get(pk=config['sample.sample_id'])
                 u = User.objects.get(username=config['sample.username'])
-                d.uploader=u
-                d.upload_date=datetime.datetime.now()
+                s.uploader=u
+                s.upload_date=datetime.datetime.now()
                 
-                #try to set the dataset fields
-                for f in _Pipe2Datasets_Dict:
+                #try to set the sample fields
+                for f in _Pipe2Samples_Dict:
                     if "sample."+f[0] in config:
-                        setattr(d, f[1], File(open(config["sample."+f[0]])))
-                d.save()
+                        setattr(s, f[1], File(open(config["sample."+f[0]])))
+                s.save()
+
+                #try to store the dataset files
+                dsets = [models.Datasets.objects.get(pk=id) \
+                         for id in s.datasets.split(",")]
+                for (i,d) in enumerate(dsets):
+                    for f in _Pipe2Datasets_Dict:
+                        if "replicates."+f[0] in config:
+                            reps = config["replicates."+f[0]].split(",")
+                            setattr(d, f[1], File(open(reps[i])))
+                    d.uploader = u
+                    d.upload_date = datetime.datetime.now()
+                    d.save()
+
+                #try to save the control files
+                sc = models.SampleControls()
+                sc.sample = s
+                for f in _Pipe2SampleControls_Dict:
+                    if "sample."+f[0] in config:
+                        setattr(sc, f[1], File(open(config["sample."+f[0]])))
+                sc.save()
 
                 #try to store the summary info                
                 if ('summary.total_peaks' in config) and \
                    ('summary.peaks_overlapped_with_dhss' in config):
                     #print config['summary.total_peaks']
                     #print config['summary.peaks_overlapped_with_dhss']
-                    dhs = models.DatasetDhsStats()
-                    dhs.dataset = d
+                    dhs = models.SampleDhsStats()
+                    dhs.sample = s
                     dhs.total_peaks = config['summary.total_peaks']
                     dhs.peaks_in_dhs = config['summary.peaks_overlapped_with_dhss']
                     dhs.save()
@@ -183,6 +217,10 @@ def main():
                 print '-'*60
                 traceback.print_exc(file=sys.stdout)
                 print '-'*60
+                os.chdir(opts.dir)
+                tmpdir = p.split(".")[0]
+                if os.path.exists(tmpdir):
+                    shutil.rmtree(tmpdir)
                 failed(filepath)
     
 
