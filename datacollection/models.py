@@ -182,10 +182,10 @@ class Datasets(DCModel):
         def upload_to_path(self, filename):
             """Returns the upload_to path for this dataset.
             NOTE: we are going to store the files by gsmid, e.g. GSM566957
-            is going to be stored in: datasets/gsm566/957.
+            is going to be stored in: data/datasets/gsm566/957.
             I'm not sure if this is the place to validate gsmids, but it maybe
             """
-            return os.path.join('datasets','gsm%s' % self.gsmid[3:6],
+            return os.path.join('data', 'datasets','gsm%s' % self.gsmid[3:6],
                                 self.gsmid[6:], sub_dir, filename)
         return upload_to_path
 
@@ -384,9 +384,10 @@ class Samples(DCModel):
             """Returns the upload_to path for this sample.
             NOTE: we are going to store the files by the paper's gseid and
             the sample id, e.g. gseid = GSE20852, sample id = 578
-            is going to be stored in: samples/gse20/852/578/[peak, wig,etc]
+            is going to be stored in: data/samples/gse20/852/578/[peak,wig,etc]
             """
-            return os.path.join('samples','gse%s' % self.paper.gseid[3:5],
+            return os.path.join('data', 'samples',
+                                'gse%s' % self.paper.gseid[3:5],
                                 self.paper.gseid[5:], str(self.id), sub_dir,
                                 filename)
         return upload_to_path
@@ -461,17 +462,17 @@ class SampleControls(DCModel):
             """Returns the upload_to path for this sample.
             NOTE: we are going to store the files by the paper's gseid and
             the sample id, e.g. gseid = GSE20852, sample id = 578
-            is going to be stored in: controls/gse20/852/578/[peak, wig,etc]
+            is going to be stored in:data/controls/gse20/852/578/[peak,wig,etc]
             """
-            return os.path.join('controls','gse%s' % \
+            return os.path.join('data', 'controls','gse%s' % \
                                 self.sample.paper.gseid[3:5],
                                 self.sample.paper.gseid[5:],
                                 str(self.sample.id), sub_dir, filename)
         return upload_to_path
     
     sample = models.ForeignKey('Samples')
-    bam_file = models.FileField(upload_to=upload_factory("bam"),
-                                null=True, blank=True)
+    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
+                                      null=True, blank=True)
     wig_file = models.FileField(upload_to=upload_factory("wig"),
                                 null=True, blank=True)
     bw_file = models.FileField(upload_to=upload_factory("bw"),

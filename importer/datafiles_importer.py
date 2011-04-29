@@ -112,7 +112,7 @@ _Pipe2Datasets_Dict = [("treatment_bam", "treatment_file"),
                        ("macs_treat_bw", "bw_file"),
                        ]
 
-_Pipe2SampleControls_Dict = [("control_bam", "bam_file"),
+_Pipe2SampleControls_Dict = [("control_bam", "treatment_file"),
                              ("macs_control_wig", "wig_file"),
                              ("macs_control_bw", "bw_file"),
                              ]
@@ -185,8 +185,7 @@ def main():
                     d.save()
 
                 #try to save the control files
-                sc = models.SampleControls()
-                sc.sample = s
+                (sc, created) = models.SampleControls.objects.get_or_create(sample=s)
                 for f in _Pipe2SampleControls_Dict:
                     if "sample."+f[0] in config:
                         setattr(sc, f[1], File(open(config["sample."+f[0]])))
