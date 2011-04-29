@@ -21,7 +21,7 @@ var paperIdLstnr = function() {
 
     container.appendChild($D('label', {'innerHTML':'.'}));
     
-    var tmp = $D('span', {'className':'a', 'innerHTML':'add a replicate'});
+    var tmp = $D('span', {'className':'a', 'innerHTML':'add a dataset'});
     tmp.onclick = function(event) {
 	addReplicate();
     }

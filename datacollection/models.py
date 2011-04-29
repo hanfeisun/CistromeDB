@@ -203,7 +203,8 @@ class Datasets(DCModel):
     #FILES--maybe these should be in a different table, but for now here they r
     raw_file = models.FileField(upload_to=upload_factory("raw"),
                                 null=True, blank=True)
-    raw_file_url = models.URLField(max_length=255, blank=True)
+    raw_file_url = models.URLField(max_length=255,
+                                   null=True, blank=True)
     raw_file_type = models.ForeignKey('FileTypes',
                                       null=True, blank=True, default=None)
     treatment_file = models.FileField(upload_to=upload_factory("treatment"),
