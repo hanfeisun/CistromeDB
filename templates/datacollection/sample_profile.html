@@ -69,7 +69,7 @@ onload="init();"
 	    <tr>
 		<td><span class="label2">Conservation File:</span>
 		    {% if sample.conservation_file %}
-	            <span class="value2"><a href="{{sample.conservation_file.url}}">download</a></span>
+	            <span class="value2"><a href="{{sample.conservation_file.url}}"><img src="{{sample.conservation_file.url}}"/></a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">Conservation R File:</span>
@@ -105,7 +105,7 @@ onload="init();"
 	    <tr>
 	        <td><span class="label2">Venn Diagram:</span>
 		    {% if sample.venn_file %}
-	            <span class="value2"><a href="{{sample.venn_file.url}}">download</a></span>
+	            <span class="value2"><a href="{{sample.venn_file.url}}"><img src="{{sample.venn_file.url}}"/></a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">Seqpos Files:</span>
