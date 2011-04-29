@@ -1,13 +1,13 @@
 {% extends "datacollection/base.html" %}
 
-{% block title %}New Replicate Form{% endblock %}
+{% block title %}New Sample Form{% endblock %}
 {% block include %}
 <link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/Models.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/Utils.js" type="text/javascript"></script>
-<script src="{% url static_url %}js/new_replicate_form.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/new_sample_form.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block onload %}
@@ -34,5 +34,6 @@ onload="init({{paper}});"
 	    <!--{{ form.as_p }}-->
 	    <!--<input type="submit" value="Submit"/>-->
 	    <button type="button" onclick="mySubmit();">Submit</button>
+            <input type="hidden" name="next" value="{{ next|escape }}" /> 
 	 </form>
 {% endblock %}

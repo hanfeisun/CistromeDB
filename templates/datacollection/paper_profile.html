@@ -28,7 +28,7 @@ onload="init();"
         <table id="dataset_tbl">
 	   <tr><td>Datasets:</td>
 	       {% if user.is_authenticated %}
-	       <td><a href="{% url new_dataset_form %}?p={{paper.id}}">add new dataset</a></td>
+	       <td><a href="{% url new_dataset_form %}?p={{paper.id}}&next={% url paper_profile paper.id %}">add new dataset</a></td>
 	       {% endif %}
 	   </tr>
 	   {% for d in datasets %}
@@ -42,7 +42,7 @@ onload="init();"
         <table id="sample_tbl">
 	   <tr><td>Samples:</td>
 	       {% if user.is_authenticated %}
-	       <td><a href="{% url new_sample_form %}?p={{paper.id}}">add new sample</a></td>
+	       <td><a href="{% url new_sample_form %}?p={{paper.id}}&next={% url paper_profile paper.id %}">add new sample</a></td>
 	       {% endif %}
 	   </tr>
 	   {% for s in samples %}

@@ -69,7 +69,7 @@ def new_paper_form(request):
             tmp.date_collected = datetime.datetime.now()
             tmp.user = request.user
             tmp.save()
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse('all_papers'))
     else:
         form = forms.PaperForm()
     return render_to_response('datacollection/new_paper_form.html', locals(),
@@ -86,13 +86,15 @@ def new_dataset_form(request):
             #I'm not sure why the form isn't finding paper in request.POST
             tmp.paper = models.Papers.objects.get(id=request.POST['paper'])
             tmp.save()
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(request.POST['next'])
         else:
             print "INVALID DATASET FORM"
     else:
         form = forms.DatasetForm()
         #NOTE: we can't pass in the param as paper b/c when we post, it
         #clobbers the hidden input in our form
+        if 'next' in request.GET:
+            next = request.GET['next']
         if 'p' in request.GET:
             #paper = models.Papers.objects.get(id=request.GET['paper'])
             paper = request.GET['p']
@@ -135,11 +137,13 @@ def new_sample_form(request):
             tmp.datasets = request.POST['datasets']
             tmp.paper = models.Papers.objects.get(id=request.POST['paper'])
             tmp.save()
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(request.POST['next'])
         else:
             print "INVALID Sample FORM"
     else:
         form = forms.SampleForm()
+        if 'next' in request.GET:
+            next = request.GET['next']
         if 'p' in request.GET:
             paper = request.GET['p']
     return render_to_response('datacollection/new_sample_form.html',
