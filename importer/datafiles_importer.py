@@ -196,8 +196,8 @@ def main():
                    ('summary.peaks_overlapped_with_dhss' in config):
                     #print config['summary.total_peaks']
                     #print config['summary.peaks_overlapped_with_dhss']
-                    dhs = models.SampleDhsStats()
-                    dhs.sample = s
+                    (dhs, created) = models.SampleDhsStats.objects.get_or_create(sample=s)
+                    #dhs.sample = s
                     dhs.total_peaks = config['summary.total_peaks']
                     dhs.peaks_in_dhs = config['summary.peaks_overlapped_with_dhss']
                     dhs.save()
