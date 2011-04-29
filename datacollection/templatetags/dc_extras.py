@@ -13,4 +13,15 @@ def split(value, arg):
 @register.filter
 @stringfilter
 def sub_site(value):
-    return settings.SUB_SITE + value
+    if settings.SUB_SITE:
+        tmp = ""
+        if not settings.SUB_SITE.startswith("/"):
+            #prepend /
+            tmp = "/"
+        tmp = tmp + settings.SUB_SITE
+        if tmp.endswith("/"):
+            #drop / at end
+            tmp = tmp[:-1]
+        return tmp + value
+    else:
+        return value
