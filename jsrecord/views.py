@@ -106,7 +106,10 @@ def loader(request, model):
     """Given a django model as a url param, this returns the meta information
     so that an equivalent javascript class can be constructed"""
     _model = getattr(MODELS, model)
-    fields = [field.name for field in _model._meta.fields]    
+    fields = [field.name for field in _model._meta.fields]
+    #add virtualfields
+    if '_virtualfields' in dir(_model._meta):
+        fields.extend(_model._meta._virtualfields)
     tmp = "{\"className\":%s, \"fields\":%s}" % (json.dumps(_model.__name__),
                                                  json.dumps(fields))
     return HttpResponse(tmp)
