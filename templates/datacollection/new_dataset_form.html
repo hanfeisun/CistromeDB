@@ -24,6 +24,9 @@ onload="init({{paper}});"
 	    {% if paper %}
 	    <input type="hidden" value="{{paper}}" id="id_paper" name="paper"/>
 	    {% endif %}
+	    {% if next %}
+	    <input type="hidden" name="next" value="{{ next|escape }}" />
+	    {% endif %}
 	    <input type="submit" value="Submit" id="submitBtn"/>
 	 </form>
       <!--</div>-->
