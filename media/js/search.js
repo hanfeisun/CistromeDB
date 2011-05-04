@@ -1,3 +1,4 @@
+var Papers = loadJSRecord('Papers');
 var Species = loadJSRecord('Species');
 var Factors = loadJSRecord('Factors');
 var CellTypes = loadJSRecord('CellTypes');
@@ -13,10 +14,15 @@ var DiseaseStates = loadJSRecord('DiseaseStates');
  * field - the field in the object used to describe the object, e.g. "name",
  *         or "antibody"--see the json
  * selectName -  how to print out the option, e.g. factor
+ * optional param: key - the key field to set the value to, defaults to id
  * 
  * Returns: a p that contains the populated select; with no duplicate entries
  */
-function helper(list, field, selectName) {
+function helper(list, field, selectName, key) {
+    var key = key;
+    if (!key) {
+	key = "id";
+    }
     var MAXLENGTH = 50;
 
     //sort the drop down menu by field name -- alphabetical order
@@ -38,13 +44,12 @@ function helper(list, field, selectName) {
     for (var i = 0; i < list.length; i++) {
 	if (list[i][field] != "" && added.indexOf(list[i][field]) == -1) {
 	    var val = list[i][field];
-
 	    //options can only be MAXLENGTH chars
 	    if (val.length > MAXLENGTH) {
 		val = val.substring(0, MAXLENGTH)+"...";
 	    }
 
-	    select.appendChild($D('option', {'value':list[i].id, 
+	    select.appendChild($D('option', {'value':list[i][key], 
 					   'innerHTML':val}));
 	    added.push(list[i][field]);
 	}
@@ -57,6 +62,7 @@ function init() {
     var container = $('main');
     //build the table/form
     var form = $D('form', {'action':SUB_SITE+'datasets/', 'method':'get'});
+    var papers = Papers.all();
     var species = Species.all();
     var factors = Factors.all();
     var cellTypes = CellTypes.all();
@@ -64,6 +70,7 @@ function init() {
 		     'cellpop':CellPops.all(), 'strain':Strains.all(),
 		     'condition':Conditions.all(), 
 		     'disease_state':DiseaseStates.all()}
+    form.appendChild(helper(papers, 'lab', 'lab', 'lab'));
     form.appendChild(helper(species, 'name', 'species'));
     form.appendChild(helper(factors, 'name', 'factor'));
     form.appendChild(helper(factors, 'antibody', 'antibody'));
@@ -82,7 +89,8 @@ function init() {
 }
 
 function submit() {
-    var fields=['species', 'factor', 'antibody', 'celltype', 'tissuetype', 
+    var fields=['lab', 'species', 'factor', 'antibody', 'celltype', 
+		'tissuetype', 
 		'platform', 'cellline', 'cellpop', 'strain', 'condition',
 		'disease_state'];
     var urlStr = "";
