@@ -64,9 +64,9 @@ class DatasetForm(forms.ModelForm):
          model = models.Datasets
          exclude = ('date_collected', 'user', 'paper',
                     'raw_file', 'raw_file_type', 'raw_file_url',
-                    'peak_file', 'wig_file', 'qc_file','ceas_file','venn_file',
+                    'treatment_file', 'peak_file', 'wig_file', 'bw_file',
                     'assembly', 'description', 'comments', 'status',
-                    'uploader', 'upload_date')
+                    'uploader', 'upload_date', 'curator')
 
 class SampleForm(forms.ModelForm):
     class Meta:
@@ -78,8 +78,9 @@ class UploadDatasetForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
         #NOTE: for some reason fields isn't working, try exclude instead
-        fields = ('raw_file', 'peak_file', 'wig_file', 'qc_file', 'ceas_file',
-                  'venn_file')
+        fields = ('raw_file', 'treatment_file', 'peak_file', 'wig_file',
+                  'bw_file',
+                  )
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
         #exclude = ('gsmid', 'name', 'chip_page', 'control_gsmid',
