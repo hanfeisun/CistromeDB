@@ -16,6 +16,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q, Count, Max, Min, Avg, query, manager
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.cache import cache
+from django.utils.encoding import smart_str
 
 import models
 import forms
@@ -280,6 +281,7 @@ def weekly_papers(request, user_id):
         return render_to_response('datacollection/list_users.html', locals(),
                                   context_instance=RequestContext(request))
 
+#NOTE: i sould cache these!!
 def datasets(request, user_id):
     """View all of the datasets in an excel like table; as with all_papers
     if given a user_id, it will return a page of all of the datsets collected
@@ -363,6 +365,11 @@ def datasets(request, user_id):
     if 'disease_state' in request.GET:
         datasets = datasets.filter(disease_state=request.GET['disease_state'])
         rest += "&disease_state=%s" % request.GET['disease_state']
+
+    if 'lab' in request.GET:
+        datasets = [d for d in datasets \
+                    if smart_str(d.paper.lab) == smart_str(request.GET['lab'])]
+        rest += "&lab=%s" % request.GET['lab']
         
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/

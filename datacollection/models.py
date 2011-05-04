@@ -121,7 +121,7 @@ class Papers(DCModel):
         tmp = []
         dsets = Datasets.objects.filter(paper=self.id)
         for d in dsets:
-            if d.species.name not in tmp:
+            if d.species and d.species.name not in tmp:
                 tmp.append(d.species.name)
         return tmp
 
@@ -131,7 +131,7 @@ class Papers(DCModel):
         tmp = []
         dsets = Datasets.objects.filter(paper=self.id)
         for d in dsets:
-            if d.factor.name not in tmp:
+            if d.factor and d.factor.name not in tmp:
                 tmp.append(d.factor.name)
         return tmp
 
@@ -148,6 +148,7 @@ class Papers(DCModel):
 
 #NOTE: _donotSerialize fields are not enumerated as records, just as keys
 Papers._meta._donotSerialize = ['user']
+Papers._meta._virtualfields = ['lab','species','factors']
 
 class Datasets(DCModel):
     """Datasets are the data associated with the papers.  They are usually
