@@ -147,6 +147,13 @@ class ModelEncoder(json.JSONEncoder):
                      isinstance(val, datetime):
                 val = str(val)
             tmp[f.name] = val
+        #enumerate virtual fields --e.g. paper.lab or paper.factors
+        #NOTE: djanto has a _meta.virtual_fields; we are using
+        #_meta._virtualfield; i hope that isn't confusing
+        if '_virtualfields' in dir(modelObj._meta):
+            for f in modelObj._meta._virtualfields:
+                if f and getattr(modelObj, f):
+                    tmp[f] = getattr(modelObj, f)
 
         return tmp
     
