@@ -967,4 +967,9 @@ def dcstats(request):
     return render_to_response('datacollection/dcstats.html',
                               locals(),
                               context_instance=RequestContext(request))
-
+@login_required
+def admin_help(request):
+    """Help page for administrators"""
+    return render_to_response('datacollection/admin_help.html',
+                              locals(),
+                              context_instance=RequestContext(request))

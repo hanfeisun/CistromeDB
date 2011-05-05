@@ -1,0 +1,29 @@
+{% extends "datacollection/base.html" %}
+
+{% block title %}Cistrome Paper Collection - Admin Help{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block login_form %}
+      {% if user.is_authenticated %}
+      <span id="login">Welcome, {{ user.username }}. <a href="{% url logout %}">logout</a></span>
+      {% else %}
+      <form action="{% url login %}" method="post" id="login">
+         <label for="username">Administrator Login:</label>
+	 <input type="text" name="username" id="username"/>
+         <label for="password">Password:</label>
+	 <input type="password" name="password" id="password"/>
+	 <input type="submit" name="login" value="login"/>
+      </form>
+      {% endif %}
+{% endblock %}
+
+{% block onload %}
+{% endblock %}
+
+{% block content %}
+<section>
+<h1>Hello World!</h1>
+</section>
+{% endblock %}
