@@ -4,7 +4,7 @@ from django.contrib.auth.views import login, logout
 import settings
 
 urlpatterns = patterns('',
-              url(r'^$', views.papers, name="home"),
+              url(r'^$', views.home, name="home"),
               #SEE how we reduce the redundancy below
               #url(r'^new_paper_form/$', views.new_paper_form, 
               #    name="new_paper_form"),

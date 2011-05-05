@@ -47,10 +47,10 @@ def no_view(request):
     """
     raise Http404
 
-def papers(request):
+def home(request):
     #show the 10 newest papers
     papers = models.Papers.objects.order_by('-date_collected')[:10]
-    return render_to_response('datacollection/papers.html', locals(),
+    return render_to_response('datacollection/home.html', locals(),
                               context_instance=RequestContext(request))
 
 @login_required
