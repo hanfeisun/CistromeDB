@@ -40,7 +40,7 @@
 	    {% else %}
 	    <td><a href="{% url weekly_papers %}{{u.user.id}}/">{{ u.weekPapers|length }}</a></td>
 	    {% endif %}
-            <td><a href="{% url all_papers %}{{u.user.id}}/">{{ u.allPapers|length }}</a></td>
+            <td><a href="{% url papers %}{{u.user.id}}/">{{ u.allPapers|length }}</a></td>
 	    {% if date %}
             <td><a href="{% url weekly_datasets %}{{u.user.id}}/?date={{date}}">{{ u.weekDatasets|length }}</a></td>
 	    {% else %}

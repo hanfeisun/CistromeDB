@@ -1,12 +1,12 @@
 {% extends "datacollection/base.html" %}
 {% load dc_extras %}
 
-{% block title %}Cistrome Paper Collection{% endblock %}
+{% block title %}Cistrome Paper Collection - Papers{% endblock %}
 {% block include %}
 <link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
-<script src="{% url static_url %}js/all_papers.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/papers.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block login_form %}

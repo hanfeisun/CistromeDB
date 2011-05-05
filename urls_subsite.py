@@ -8,7 +8,7 @@ urlpatterns = patterns('',
               #SEE how we reduce the redundancy below
               #url(r'^new_paper_form/$', views.new_paper_form, 
               #    name="new_paper_form"),
-              url(r'^all_papers/(\d+/)?$', views.all_papers,name="all_papers"),
+              url(r'^papers/(\d+/)?$', views.papers, name="papers"),
               url(r'^weekly_papers/(\d+/)?$',
                   views.weekly_papers, name="weekly_papers"),
               url(r'^datasets/(\d+/)?$', views.datasets, name="datasets"),

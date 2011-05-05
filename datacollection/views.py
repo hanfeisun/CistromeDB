@@ -70,7 +70,7 @@ def new_paper_form(request):
             tmp.date_collected = datetime.datetime.now()
             tmp.user = request.user
             tmp.save()
-            return HttpResponseRedirect(reverse('all_papers'))
+            return HttpResponseRedirect(reverse('papers'))
     else:
         form = forms.PaperForm()
     return render_to_response('datacollection/new_paper_form.html', locals(),
@@ -219,7 +219,7 @@ update_sample_form = update_form_factory('Sample Update Form',
                                           forms.UpdateSampleForm)
 #------------------------------------------------------------------------------
 
-def all_papers(request, user_id):
+def papers(request, user_id):
     """If given a user_id, shows all of the papers imported by the user,
     otherwise shows all papers in the db"""
 
@@ -243,7 +243,7 @@ def all_papers(request, user_id):
     except (EmptyPage, InvalidPage):
         pg = paginator.page(paginator.num_pages)
 
-    return render_to_response('datacollection/all_papers.html', locals(),
+    return render_to_response('datacollection/papers.html', locals(),
                               context_instance=RequestContext(request))
 
 def weekly_papers(request, user_id):
@@ -270,8 +270,9 @@ def weekly_papers(request, user_id):
         else:
             #No date param, take the beginning of the week
             papers = papers.filter(date_collected__gte=begin)
-        
-        return render_to_response('datacollection/all_papers.html', locals(),
+
+        #is this fragile?
+        return render_to_response('datacollection/papers.html', locals(),
                                   context_instance=RequestContext(request))
     else:
         #list users
@@ -283,7 +284,7 @@ def weekly_papers(request, user_id):
 
 #NOTE: i sould cache these!!
 def datasets(request, user_id):
-    """View all of the datasets in an excel like table; as with all_papers
+    """View all of the datasets in an excel like table; as with papers
     if given a user_id, it will return a page of all of the datsets collected
     by the user
     IF given species, factor_type, and/or paper url params, then we further
@@ -840,7 +841,7 @@ def delete_papers(request):
                  for id in request.GET['papers'].split(',')]
         for p in papers:
             p.delete()
-    return HttpResponseRedirect(reverse('all_papers'))
+    return HttpResponseRedirect(reverse('papers'))
 
 #cache it for a hour
 #@cache_page(60 * 60 * 1)
