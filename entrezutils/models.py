@@ -238,19 +238,22 @@ class PaperAdapter:
         self.pub_date = geo.getElementsByTagName("Release-Date")[0]['_value']
 
         contributors = geo.getElementsByTagName("Contributor")
-        self.authors = []
-        for a in contributors:
-            person = a['_children'][0]['_children']
-            #NOTE: form is LASTNAME FM - where F is first initial, and M is mid
-            if len(person) < 3: 
-                first = person[0]['_value']
-                last = person[1]['_value']
-                self.authors.append("%s %s" % (last, first[0]))
-            else: 
-                first = person[0]['_value']
-                middle = person[1]['_value']
-                last = person[2]['_value']
-                self.authors.append("%s %s%s" % (last, first[0], middle[0]))
+        #ERROR: authors list should come from pubmed
+        pubmed = PubmedSummary(self.pmid)
+        self.authors = pubmed.authors
+#         self.authors = []
+#         for a in contributors:
+#             person = a['_children'][0]['_children']
+#             #NOTE: form is LASTNAME FM - where F is first initial, and M is mid
+#             if len(person) < 3: 
+#                 first = person[0]['_value']
+#                 last = person[1]['_value']
+#                 self.authors.append("%s %s" % (last, first[0]))
+#             else: 
+#                 first = person[0]['_value']
+#                 middle = person[1]['_value']
+#                 last = person[2]['_value']
+#                 self.authors.append("%s %s%s" % (last, first[0], middle[0]))
 
         self.design = geo.getElementsByTagName("Overall-Design")[0]['_value']
         self.type = geo.getElementsByTagName("Type")[0]['_value']
