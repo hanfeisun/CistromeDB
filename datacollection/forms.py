@@ -102,6 +102,9 @@ class UpdateDatasetForm(forms.ModelForm):
 class UpdateSampleForm(forms.ModelForm):
     class Meta:
         model = models.Samples
+        fields = ('user', 'paper', 'datasets', 'uploader', 'upload_date')
+        exclude = tuple([f.name for f in model._meta.fields \
+                         if f.name not in fields])
 
 class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:
