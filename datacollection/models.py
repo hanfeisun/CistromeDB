@@ -122,7 +122,7 @@ class Papers(DCModel):
         dsets = Datasets.objects.filter(paper=self.id)
         for d in dsets:
             if d.species and d.species.name not in tmp:
-                tmp.append(d.species.name)
+                tmp.append(smart_str(d.species.name))
         return tmp
 
     def _get_factors(self):
@@ -132,7 +132,7 @@ class Papers(DCModel):
         dsets = Datasets.objects.filter(paper=self.id)
         for d in dsets:
             if d.factor and d.factor.name not in tmp:
-                tmp.append(d.factor.name)
+                tmp.append(smart_str(d.factor.name))
         return tmp
 
     def _get_lab(self):
@@ -144,7 +144,7 @@ class Papers(DCModel):
     lab = property(_get_lab)
     
     def __str__(self):
-        return self.title
+        return smart_str(self.title)
 
 #NOTE: _donotSerialize fields are not enumerated as records, just as keys
 Papers._meta._donotSerialize = ['user']

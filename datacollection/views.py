@@ -425,7 +425,7 @@ def weekly_datasets(request, user_id):
         url = reverse('weekly_datasets')
         return render_to_response('datacollection/list_users.html', locals(),
                                   context_instance=RequestContext(request))
-    
+
 def get_datasets(request, paper_id):
     """return all of the datasets associated w/ paper_id in json
     Fields: gsmid, *platform, (platform)experiment_type, *species,
@@ -437,6 +437,23 @@ def get_datasets(request, paper_id):
     
     dlist = ",".join([jsrecord.views.jsonify(d) for d in datasets])
     return HttpResponse("[%s]" % dlist)
+
+def samples(request):
+    """Returns all of the samples
+    """
+    samples = models.Samples.objects.all()
+    paginator = Paginator(samples, _items_per_page) #25 dataset per page
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        pg = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        pg = paginator.page(paginator.num_pages)
+
+    return render_to_response('datacollection/samples.html', locals(),
+                              context_instance=RequestContext(request))
 
 #DROP the FOLLOWING fn/view?
 def register(request):
@@ -818,30 +835,49 @@ def search(request):
                               locals(),
                               context_instance=RequestContext(request))
 
-@login_required
-def delete_datasets(request):
-    """Given a url param defining which datasets to delete, this view
-    tries to delete the datasets
-    """
-    if 'datasets' in request.GET:
-        datasets = request.GET['datasets']
-        dsets = [models.Datasets.objects.get(pk=id) \
-                 for id in datasets.split(',')]
-        for d in dsets:
-            d.delete()
-    return HttpResponseRedirect(reverse('datasets'))
+# @login_required
+# def delete_datasets(request):
+#     """Given a url param defining which datasets to delete, this view
+#     tries to delete the datasets
+#     """
+#     if 'datasets' in request.GET:
+#         datasets = request.GET['datasets']
+#         dsets = [models.Datasets.objects.get(pk=id) \
+#                  for id in datasets.split(',')]
+#         for d in dsets:
+#             d.delete()
+#     return HttpResponseRedirect(reverse('datasets'))
 
-@login_required
-def delete_papers(request):
-    """Given a url param defining which papers to delete, this view
-    tries to delete the papers
+# @login_required
+# def delete_papers(request):
+#     """Given a url param defining which papers to delete, this view
+#     tries to delete the papers
+#     """
+#     if 'papers' in request.GET:
+#         papers = [models.Papers.objects.get(pk=id) \
+#                  for id in request.GET['papers'].split(',')]
+#         for p in papers:
+#             p.delete()
+#     return HttpResponseRedirect(reverse('papers'))
+
+def delete_view_factory(name, model, redirect='home'):
+    """Generates generic delete views
     """
-    if 'papers' in request.GET:
-        papers = [models.Papers.objects.get(pk=id) \
-                 for id in request.GET['papers'].split(',')]
-        for p in papers:
-            p.delete()
-    return HttpResponseRedirect(reverse('papers'))
+    def generic_delete_view(request):
+        """this fn was auto_generated in delete_view_factory
+        name = papers, datasets, samples
+        """
+        if name in request.GET:
+            tmp = [model.objects.get(pk=id) \
+                   for id in request.GET[name].split(',')]
+            for o in tmp:
+                o.delete()
+        return HttpResponseRedirect(reverse(redirect))
+    return login_required(generic_delete_view)
+
+delete_datasets = delete_view_factory('datasets', models.Datasets, 'datasets')
+delete_papers = delete_view_factory('papers', models.Papers, 'papers')
+delete_samples = delete_view_factory('samples', models.Samples, 'samples')
 
 #cache it for a hour
 #@cache_page(60 * 60 * 1)
