@@ -59,6 +59,7 @@ onload="init();"
 	     <th><input type="checkbox" id="masterCheckbox"/></th>
 	     {% endif %}
 	     <th>ID</th>
+	     <th>Paper</th>
 	     <th>Pubmed ID</th>
 	     <th>GSEID</th>
 	     <th>Datasets</th>
@@ -73,6 +74,7 @@ onload="init();"
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url sample_profile s.id %}">{{ s.id }}</a></td>
+	     <td><a href="{% url paper_profile s.paper.id %}">{{ s.paper.id }}</a></td>
 	     <td><a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a></td>
 	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a></td>
 	     <td>{{ s.datasets }}</td>
