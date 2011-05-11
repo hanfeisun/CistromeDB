@@ -1,0 +1,51 @@
+{% extends "datacollection/base.html" %}
+{% block title %}Administration Help - How To - Create New Entries{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/teams.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<section>
+    <header>
+        <h2>How to create a new paper</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url papers %}" target="_blank">papers page</a></li>
+	   <li>click on the "add a new paper" link</li>
+	   <li>fill out the form</li>
+	   <li>click submit</li>
+       </ol>
+    </p>
+</section>
+
+<section>
+    <header>
+        <h2>How to create a new dataset</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url papers %}" target="_blank">papers page</a> and find the paper you want the dataset to be associated with and click on the ID to go to the paper's profile page</li>
+	   <li>alternatively if you know the paper's id, e.g. NNN, then go to the paper's profile page: http://cistrome.org/newdc/paper_profile/NNN/ where NNN is the paper's id</li>
+	   <li>click on the "add a new dataset" link</li>
+	   <li>fill out the form</li>
+	   <li>click submit</li>
+       </ol>
+    </p>
+</section>
+
+<section>
+    <header>
+        <h2>How to create a new sample</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url papers %}" target="_blank">papers page</a> and find the paper you want the sample to be associated and click on the ID to go to the paper's profile page</li>
+	   <li>alternatively if you know the paper's id, e.g. NNN, then go to the paper's profile page: http://cistrome.org/newdc/paper_profile/NNN/ where NNN is the paper's id</li>
+	   <li>click on the "add a new sample" link</li>
+	   <li>for each dataset in the sample, click on "add a dataset" and select the dataset.  For example: GSM12345 is the sample treatment and GSM12346 is the sample control, then click "add a dataset" twice and select GSM12345 in the first menu and GSM12346 in the second menu. <strong>You can only select from the datasets that are associated with the paper.</strong></li>
+	   <li>click submit</li>
+       </ol>
+    </p>
+</section>
+{% endblock %}

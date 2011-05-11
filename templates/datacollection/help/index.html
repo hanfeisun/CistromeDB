@@ -24,6 +24,12 @@
 
 {% block content %}
 <section>
-<h1>Hello World!</h1>
+    <header><h2>Administration Help Pages</h2>
+    </header>
+    <ul>
+        <li><a href="{% url admin_help %}create/">How to Create new Papers, Datasets, and Samples</a></li>
+        <li><a href="{% url admin_help %}update/">How to Update Papers, Datasets, and Samples</a></li>
+        <li><a href="{% url admin_help %}delete/">How to Delete Papers, Datasets, and Samples</a></li>
+    </ul>
 </section>
 {% endblock %}

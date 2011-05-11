@@ -1005,8 +1005,15 @@ def dcstats(request):
                               locals(),
                               context_instance=RequestContext(request))
 @login_required
-def admin_help(request):
-    """Help page for administrators"""
-    return render_to_response('datacollection/admin_help.html',
-                              locals(),
-                              context_instance=RequestContext(request))
+def admin_help(request, page):
+    """Help page for administrators, w/ optional page param"""
+    if page:
+        if page.endswith("/"):
+            page = page[:-1]
+        return render_to_response('datacollection/help/%s.html' % page,
+                                  locals(),
+                                  context_instance=RequestContext(request))
+    else:
+        return render_to_response('datacollection/help/index.html',
+                                  locals(),
+                                  context_instance=RequestContext(request))
