@@ -1010,10 +1010,10 @@ def admin_help(request, page):
     if page:
         if page.endswith("/"):
             page = page[:-1]
-        return render_to_response('datacollection/help/%s.html' % page,
+        return render_to_response('datacollection/admin_help/%s.html' % page,
                                   locals(),
                                   context_instance=RequestContext(request))
     else:
-        return render_to_response('datacollection/help/index.html',
+        return render_to_response('datacollection/admin_help/index.html',
                                   locals(),
                                   context_instance=RequestContext(request))
