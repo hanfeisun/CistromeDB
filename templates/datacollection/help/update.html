@@ -1,0 +1,50 @@
+{% extends "datacollection/base.html" %}
+{% block title %}Administration Help - How To - Updating Entries{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/teams.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<section>
+    <header>
+        <h2>How to update a paper entry</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url papers %}" target="_blank">papers page</a>; find the paper you want to edit; click the "edit" btn</li>
+	   <li>alternatively, if you know the paper's id, go to the following page: http://cistrome.org/newdc/update_paper_form/NNN/ where NNN is the paper's id</li>
+	   <li>edit out the form</li>
+	   <li>click submit</li>
+       </ol>
+    </p>
+</section>
+
+<section>
+    <header>
+        <h2>How to update a dataset entry</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url datasets %}" target="_blank">datasets page</a>; find the dataset you want to edit; click the "edit" btn</li>
+	   <li>alternatively, if you know the dataset's id, go to the following page: http://cistrome.org/newdc/update_dataset_form/NNN/ where NNN is the dataset's id</li>
+	   <li>edit out the form</li>
+	   <li>click submit</li>
+       </ol>
+    </p>
+</section>
+
+<section>
+    <header>
+        <h2>How to update a sample entry</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url samples %}" target="_blank">samples page</a>; find the sample you want to edit; click the "edit" btn</li>
+	   <li>alternatively, if you know the sample's id, go to the following page: http://cistrome.org/newdc/update_sample_form/NNN/ where NNN is the sample's id</li>
+	   <li>edit out the form</li>
+	   <li>click submit</li>
+       </ol>
+    </p>
+</section>
+
+{% endblock %}
