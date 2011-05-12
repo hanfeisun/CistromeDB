@@ -21,7 +21,7 @@ from django.utils.encoding import smart_str
 import models
 import forms
 import settings
-from entrezutils import models as entrez
+import entrez
 import jsrecord.views
 
 try:

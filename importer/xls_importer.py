@@ -22,7 +22,7 @@ setup_environ(settings)
 from datacollection import models
 from datacollection import views
 from django.contrib.auth.models import User
-from entrezutils import models as entrez
+import datacollection.entrez as entrez
 
 from openpyxl.reader.excel import load_workbook
 
