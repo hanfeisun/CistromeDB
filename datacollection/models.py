@@ -42,6 +42,14 @@ DATASET_STATUS = (
     (u'error', u'error/hold- see comments'),
     )
 
+SAMPLE_STATUS = (
+    (u'new', u'sample created, awaiting check for raw files'),
+    (u'checked', u'raw files checked, awaiting run'),
+    (u'running', u'analysis is running, awaiting completion'),
+    (u'complete', u'analysis complete'),
+    (u'error', u'error/hold- see comments'),
+    )
+
 TEAMS = (
     (u'admin', u'Administrators'),
     (u'paper', u'paper collection team'),
@@ -441,6 +449,10 @@ class Samples(DCModel):
                                  related_name="sample_uploader")
     upload_date = models.DateTimeField(blank=True, null=True, default=None)
 
+    status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
+                              default="new")
+
+    comments = models.TextField(blank=True, default="")
 
     def __str__(self):
         """Tries to print the GSMID of the datasets"""

@@ -3,7 +3,7 @@
 
 {% block title %}Cistrome Paper Collection - Samples{% endblock %}
 {% block include %}
-<link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/samples.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/samples.js" type="text/javascript"></script>
@@ -63,14 +63,17 @@ onload="init();"
 	     <th>Pubmed ID</th>
 	     <th>GSEID</th>
 	     <th>Datasets</th>
+	     <th>Status</th>
+	     <th>Comments</th>
 	     <th>Uploader</th>
 	     <th>Upload Date</th>
+	     <th>Action</th>
 	 </tr>
 	 {% for s in pg.object_list %}
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{s.id}}"/>
-	         <a href="{% url update_sample_form s.id %}">edit</a>
+	         <a href="{% url update_sample_form s.id %}?next={% url samples %}?page={{pg.number}}{{rest}}">edit</a>
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url sample_profile s.id %}">{{ s.id }}</a></td>
@@ -78,8 +81,32 @@ onload="init();"
 	     <td><a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a></td>
 	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a></td>
 	     <td>{{ s.datasets }}</td>
+	     {% ifequal s.status "new" %}
+	     <td class="new_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "checked" %}
+	     <td class="checked_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "running" %}
+	     <td class="running_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "complete" %}
+	     <td class="complete_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "error" %}
+	     <td class="error_row">{{ s.get_status_display }}</td>
+	     {% else %}
+	     <td>{{ s.get_status_display }}</td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+	     <td>{{ s.comments }}</td>
 	     <td>{{ s.uploader }}</td>
 	     <td>{{ s.upload_date|date:"Y-m-d" }}</td>
+	     <!--actions-->
+	     {% ifequal s.status "new" %}
+	     <td><input type="button" value="check raw files" onclick="checkRawFiles({{s.id}}, {{pg.number}});"/></td>
+	     {% else %} {% ifequal s.status "checked" %}
+	     <td><input type="button" value="run!"/></td>
+	     {% else %} {% ifequal s.status "running" %}
+	     <td><input type="button" value="run!" disabled="true"/></td>
+	     {% else %} 
+	     <td> </td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}
 	 </tr>
 	 {% endfor %}
       </table>

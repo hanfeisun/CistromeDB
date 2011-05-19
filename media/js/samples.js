@@ -79,3 +79,7 @@ function init() {
 	}
     }
 }
+
+function checkRawFiles(sampleId, pg) {
+    window.location = SUB_SITE+"check_raw_files/"+sampleId+"/?page="+pg;
+}

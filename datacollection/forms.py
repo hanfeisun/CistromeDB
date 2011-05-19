@@ -102,7 +102,8 @@ class UpdateDatasetForm(forms.ModelForm):
 class UpdateSampleForm(forms.ModelForm):
     class Meta:
         model = models.Samples
-        fields = ('user', 'paper', 'datasets', 'uploader', 'upload_date')
+        fields = ('user', 'paper', 'datasets', 'uploader', 'upload_date',
+                  'status', 'comments')
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
 
