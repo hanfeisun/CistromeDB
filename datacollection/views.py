@@ -1017,3 +1017,36 @@ def admin_help(request, page):
         return render_to_response('datacollection/admin_help/index.html',
                                   locals(),
                                   context_instance=RequestContext(request))
+
+@login_required
+def check_raw_files(request, sample_id):
+    """If the sample's status is 'new', checks to see if that the raw files
+    are uploaded/loaded for all of the datasets assoc. w/ the sample
+    IF this condition holds, changes the status to 'checked', 
+    OTHERWISE the status is 'error' and a msg is appended to comments
+    """
+    sample = models.Samples.objects.get(pk=sample_id)
+    page = 1
+    if "page" in request.GET:
+        page = request.GET['page']
+
+    missing_files_list = []
+    if sample.status == "new":
+        datasets = [models.Datasets.objects.get(pk=id) \
+                        for id in sample.datasets.split(",")]
+        for d in datasets:
+            if not d.raw_file:
+                missing_files_list.append(int(d.id))
+        
+        if missing_files_list: #some missing files-->ERROR
+            sample.status = "error"
+            sample.comments = "Datasets %s are missing files" % \
+                missing_files_list
+            sample.save()
+        else:
+            #No err!
+            sample.status = "checked"
+            sample.save()
+
+    #redirect to the samples view
+    return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
