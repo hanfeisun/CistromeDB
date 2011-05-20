@@ -23,6 +23,7 @@ import forms
 import settings
 import entrez
 import jsrecord.views
+import pipeline.ConfGenerator as ConfGenerator
 
 try:
     import json
@@ -1018,6 +1019,23 @@ def admin_help(request, page):
                                   locals(),
                                   context_instance=RequestContext(request))
 
+def _check_for_files(sample):
+    """Checks to make sure that the raw files associated for each of the 
+    sample's dataset is present.
+    Returns a list of datasets whose raw files are missing; [] means the 
+    sample's files are all there!
+    """
+    missing_files_list = []
+
+    datasets = [models.Datasets.objects.get(pk=id) \
+                    for id in sample.datasets.split(",")]
+    for d in datasets:
+        if not d.raw_file:
+            missing_files_list.append(int(d.id))
+    
+    return missing_files_list
+    
+
 @login_required
 def check_raw_files(request, sample_id):
     """If the sample's status is 'new', checks to see if that the raw files
@@ -1030,14 +1048,9 @@ def check_raw_files(request, sample_id):
     if "page" in request.GET:
         page = request.GET['page']
 
-    missing_files_list = []
     if sample.status == "new":
-        datasets = [models.Datasets.objects.get(pk=id) \
-                        for id in sample.datasets.split(",")]
-        for d in datasets:
-            if not d.raw_file:
-                missing_files_list.append(int(d.id))
-        
+        missing_files_list = _check_for_files(sample)
+
         if missing_files_list: #some missing files-->ERROR
             sample.status = "error"
             sample.comments = "Datasets %s are missing files" % \
@@ -1050,3 +1063,40 @@ def check_raw_files(request, sample_id):
 
     #redirect to the samples view
     return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
+
+@login_required
+def run_analysis(request, sample_id):
+    """
+    Tries to: 
+    0. runs to make sure that all datasets have their files
+       (redundant w/ check raw files)
+    1. calls pipeline runner script on the sample
+    
+    BLAH! more here! but later!
+    """
+    sample = models.Samples.objects.get(pk=sample_id)
+    page = 1
+    if "page" in request.GET:
+        page = request.GET['page']
+
+    missing_files_list = _check_for_files(sample)
+    if missing_files_list:
+        sample.status = "error"
+        sample.comments = "Datasets %s are missing files" % \
+            missing_files_list
+        sample.save()
+        return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
+    else: # ok to proceed!
+        cwd = os.getcwd()
+        working_dir = os.path.join(settings.MEDIA_ROOT, "data", "tmp", 
+                                   "sample%s" % sample.id)
+        #if not os.path.exists(working_dir):
+            #os.mkdir(working_dir)
+            #os.chdir(working_dir)
+        ConfGenerator.generate(sample, request.user, working_dir, True)
+
+    #redirect to the samples view
+    return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
+
+
+

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#for some reason, cp isn't copying over the macs peaks properly
+#so we make sure that arg4, our peaks file has at least 1 line
+echo "foo" > $4
+
+echo "chr1	3504655	3505348	MACS_peak_2	83.30
+chr1 3595683	3596121	MACS_peak_4	88.53
+"

@@ -1,3 +1,4 @@
+import os
 from settings import DEPLOY_DIR
 
 ADMINS = (('Len Taing', 'lentaing@jimmy.harvard.edu'),
@@ -62,6 +63,7 @@ TEMPLATE_DIRS = (
     DEPLOY_DIR+'templates',
 )
 
+CONF_TEMPLATE_DIR = os.path.join(DEPLOY_DIR, "pipeline", "templates")
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',

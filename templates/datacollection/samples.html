@@ -101,7 +101,7 @@ onload="init();"
 	     {% ifequal s.status "new" %}
 	     <td><input type="button" value="check raw files" onclick="checkRawFiles({{s.id}}, {{pg.number}});"/></td>
 	     {% else %} {% ifequal s.status "checked" %}
-	     <td><input type="button" value="run!"/></td>
+	     <td><input type="button" value="run!" onclick="runAnalysis({{s.id}}, {{pg.number}});"/></td>
 	     {% else %} {% ifequal s.status "running" %}
 	     <td><input type="button" value="run!" disabled="true"/></td>
 	     {% else %} 
