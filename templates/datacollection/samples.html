@@ -62,7 +62,8 @@ onload="init();"
 	     <th>Paper</th>
 	     <th>Pubmed ID</th>
 	     <th>GSEID</th>
-	     <th>Datasets</th>
+	     <th>Treatments</th>
+	     <th>Controls</th>
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>Uploader</th>
@@ -80,7 +81,8 @@ onload="init();"
 	     <td><a href="{% url paper_profile s.paper.id %}">{{ s.paper.id }}</a></td>
 	     <td><a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a></td>
 	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a></td>
-	     <td>{{ s.datasets }}</td>
+	     <td>{{ s.treatments }}</td>
+	     <td>{{ s.controls }}</td>
 	     {% ifequal s.status "new" %}
 	     <td class="new_row">{{ s.get_status_display }}</td>
 	     {% else %} {% ifequal s.status "checked" %}

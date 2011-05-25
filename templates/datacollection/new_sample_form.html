@@ -26,13 +26,12 @@ onload="init({{paper}});"
 	    {% endif %}
 	    </p>
 	    <p>
-	    <input type="hidden" value="" id="id_datasets" name="datasets"/>
-	    <!--this is where the hidden datasets input is going -->
+	    <!--this is where the hidden datasets inputs are going -->
+	    <input type="hidden" value="" id="id_treatments" name="treatments"/>
+	    <input type="hidden" value="" id="id_controls" name="controls"/>
 	    </p>
-	    <p id="dataset_p">
-	    </p>
-	    <!--{{ form.as_p }}-->
-	    <!--<input type="submit" value="Submit"/>-->
+	    <p id="treatments_p"> </p>
+	    <p id="controls_p"> </p>
 	    <button type="button" onclick="mySubmit();">Submit</button>
             <input type="hidden" name="next" value="{{ next|escape }}" /> 
 	 </form>

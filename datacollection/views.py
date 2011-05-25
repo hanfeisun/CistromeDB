@@ -130,18 +130,13 @@ def upload_dataset_form(request, dataset_id):
 @login_required
 def new_sample_form(request):
     if request.method == "POST":
-        form = forms.SampleForm(request.POST, request.FILES)
-        if form.is_valid():
-            tmp = form.save(commit=False)
-            tmp.user = request.user
-            #I'm not sure why the form isn't finding paper OR datasets in
-            #request.POST
-            tmp.datasets = request.POST['datasets']
-            tmp.paper = models.Papers.objects.get(id=request.POST['paper'])
-            tmp.save()
-            return HttpResponseRedirect(request.POST['next'])
-        else:
-            print "INVALID Sample FORM"
+        tmp = models.Samples()
+        tmp.user = request.user
+        tmp.treatments = request.POST['treatments']
+        tmp.controls = request.POST['controls']
+        tmp.paper = models.Papers.objects.get(id=request.POST['paper'])
+        tmp.save()
+        return HttpResponseRedirect(request.POST['next'])
     else:
         form = forms.SampleForm()
         if 'next' in request.GET:
@@ -690,8 +685,8 @@ def dataset_profile(request, dataset_id):
 def sample_profile(request, sample_id):
     """View of the paper_profile page"""
     sample = models.Samples.objects.get(id=sample_id)
-    dsets = sample.datasets.split(",")
-    datasets = [models.Datasets.objects.get(id=d) for d in dsets]
+    #treatments = sample.treatments.split(",")
+    #datasets = [models.Datasets.objects.get(id=d) for d in dsets]
     return render_to_response('datacollection/sample_profile.html',
                               locals(),
                               context_instance=RequestContext(request))

@@ -404,7 +404,12 @@ class Samples(DCModel):
     
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
-    datasets = models.CommaSeparatedIntegerField(max_length=255)
+    #DROPPING datasets in favor of a more robust way of defining which 
+    #datasets.
+    treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
+                                                   blank=True)
+    controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
+                                                 blank=True)
     #FileFields
     treatment_file = models.FileField(upload_to=upload_factory("treatment"),
                                       null=True, blank=True)
@@ -438,11 +443,20 @@ class Samples(DCModel):
                                    null=True, blank=True)
     venn_file = models.FileField(upload_to=upload_factory("venn"),
                                  null=True, blank=True)
-    #Moved this to an information table--DatasetDHSStats below
-    #venn_dhs_file = models.FileField(upload_to=upload_factory("venn"),
-    #                                 null=True, blank=True)
     seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
                                    null=True, blank=True)
+
+    #adding meta files
+    conf_file = models.FileField(upload_to=upload_factory("meta"),
+                                 null=True, blank=True)
+    log_file = models.FileField(upload_to=upload_factory("meta"),
+                                 null=True, blank=True)
+    summary_file = models.FileField(upload_to=upload_factory("meta"),
+                                    null=True, blank=True)
+    #NOTE: even though dhs stats are saved in a table, we're going to store it
+    #in meta
+    dhs_file = models.FileField(upload_to=upload_factory("meta"),
+                                null=True, blank=True)
 
     #uploader = the person who uploaded the files (data team)
     uploader = models.ForeignKey(User, null=True, blank=True, default=None,
@@ -454,14 +468,24 @@ class Samples(DCModel):
 
     comments = models.TextField(blank=True, default="")
 
+
+    def _printInfo(self):
+        """Tries to print the treatment and controls list like this:
+        GSMXXX,GSMYYY::GSMZZZ where the :: is a separator btwn the two lists"""
+        treat = []
+        control = []
+        if self.treatments:
+            treat = [Datasets.objects.get(id=d) \
+                         for d in self.treatments.split(',')]
+        if self.controls:
+            controls = [Datasets.objects.get(id=d) \
+                         for d in self.controls.split(',')]
+        return "%s::%s" % (",".join(treat), ",".join(control))
+
     def __str__(self):
-        """Tries to print the GSMID of the datasets"""
-        if self.datasets:
-            datasets = [Datasets.objects.get(id=d) \
-                        for d in self.datasets.split(',')]
-            return "[%s]" % ",".join([d.gsmid for d in datasets])
-        else:
-            return "None"
+        #return self._printInfo()
+        return str(self.id)
+
 
 class SampleControls(DCModel):
     """a table to store all of the control files for a given sample.
