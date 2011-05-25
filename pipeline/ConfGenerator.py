@@ -72,13 +72,24 @@ def generate(sample, user, dir=".", use_mock=False):
     config.set("sample", "sample_id", sample.id)
     config.set("sample", "username", user.username)
 
-    datasets = [datacollection.models.Datasets.objects.get(pk=id) \
-                    for id in sample.datasets.split(",")]
-    assembly = datasets[0].assembly.name
+    treatments = []
+    if sample.treatments:
+        treatments = [datacollection.models.Datasets.objects.get(pk=id) \
+                          for id in sample.treatments.split(",")]
+
+    controls = []
+    if sample.controls:
+        controls = [datacollection.models.Datasets.objects.get(pk=id) \
+                        for id in sample.controls.split(",")]
+
+    assembly = treatments[0].assembly.name
     config.set("sample", "assembly_name", assembly)
     
     config.set("data", "treatment_seq_file_path", 
-               ",".join([d.raw_file.path for d in datasets]))
+               ",".join([t.raw_file.path for t in treatments]))
+    config.set("data", "control_seq_file_path", 
+               ",".join([c.raw_file.path for c in controls]))
+
     #need to override alot more here!
     if use_mock:
         mock_conf(config, assembly)

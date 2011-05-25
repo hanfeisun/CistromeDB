@@ -1023,7 +1023,12 @@ def _check_for_files(sample):
     missing_files_list = []
 
     datasets = [models.Datasets.objects.get(pk=id) \
-                    for id in sample.datasets.split(",")]
+                    for id in sample.treatments.split(",")]
+    
+    if sample.controls:
+        datasets.extend([models.Datasets.objects.get(pk=id) \
+                             for id in sample.controls.split(",")])
+
     for d in datasets:
         if not d.raw_file:
             missing_files_list.append(int(d.id))

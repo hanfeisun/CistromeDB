@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "Hello world!"
+echo "venn_diagram" > venn_diagram.png

@@ -12,28 +12,31 @@
 #   1_rep1_summits.bed
 
 #macs is run twice, we just generate all the files on the first pass
-if [ ! -e $8_MACS_wiggle ]
+
+export lastarg=${!#}
+
+if [ ! -e ${lastarg}_MACS_wiggle ]
 then
-export WIG=$8_treat_afterfitting_all.wig
-export BDG=$8_treat_afterfiting_all.bdg
+export WIG=${lastarg}_treat_afterfitting_all.wig
+export BDG=${lastarg}_treat_afterfiting_all.bdg
 
-mkdir $8_MACS_wiggle
-mkdir $8_MACS_bedGraph
+mkdir ${lastarg}_MACS_wiggle
+mkdir ${lastarg}_MACS_bedGraph
 
-mkdir $8_MACS_wiggle/treat
-mkdir $8_MACS_bedGraph/treat
+mkdir ${lastarg}_MACS_wiggle/treat
+mkdir ${lastarg}_MACS_bedGraph/treat
 
-echo $WIG > $8_MACS_wiggle/treat/$WIG
-echo $BDG > $8_MACS_bedGraph/treat/$BDG
+echo $WIG > ${lastarg}_MACS_wiggle/treat/$WIG
+echo $BDG > ${lastarg}_MACS_bedGraph/treat/$BDG
 
-gzip -q $8_MACS_wiggle/treat/$WIG
-gzip -q $8_MACS_bedGraph/treat/$BDG
+gzip -q ${lastarg}_MACS_wiggle/treat/$WIG
+gzip -q ${lastarg}_MACS_bedGraph/treat/$BDG
 
 #other files
 echo "chr1	3002080	3002219	140	70	8	376.04	7.23	0.01
 chr1 3361547	3361669	123	61	6	433.23	13.09	0.01
 chr1 3366548	3366674	127	63	6	372.19	9.65	0.01
-" > $8_peaks.xls
-echo $8_peaks.bed > $8_peaks.bed
-echo $8_summits.bed > $8_summits.bed
+" > ${lastarg}_peaks.xls
+echo ${lastarg}_peaks.bed > ${lastarg}_peaks.bed
+echo ${lastarg}_summits.bed > ${lastarg}_summits.bed
 fi
