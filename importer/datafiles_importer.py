@@ -174,7 +174,7 @@ def main():
 
                 #try to store the dataset files
                 dsets = [models.Datasets.objects.get(pk=id) \
-                         for id in s.datasets.split(",")]
+                         for id in s.treatments.split(",")]
                 for (i,d) in enumerate(dsets):
                     for f in _Pipe2Datasets_Dict:
                         if "replicates."+f[0] in config:
