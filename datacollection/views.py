@@ -1093,7 +1093,19 @@ def run_analysis(request, sample_id):
         #if not os.path.exists(working_dir):
             #os.mkdir(working_dir)
             #os.chdir(working_dir)
-        ConfGenerator.generate(sample, request.user, working_dir, True)
+        conf_f = ConfGenerator.generate(sample, request.user, working_dir,True)
+        # this isn't ready yet!
+        # log_f = open(os.path.join(working_dir, "log"), "w")
+        # #hack--logfhd is a global in the script, we need to set it
+        # setattr(ChIPSeqPipeline, "logfhd", log_f)
+        # os.chdir(working_dir)
+        # #hack--we should replace sys.exit calls while the script is running.
+        # ChIPSeqPipeline._myMain(conf_f.name) #problem this will hang
+        # log_f.close()
+        # os.chdir(cwd)
+        
+        # sample.status = "complete"
+        # sample.save()
 
     #redirect to the samples view
     return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
