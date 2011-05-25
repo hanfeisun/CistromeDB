@@ -101,3 +101,5 @@ def generate(sample, user, dir=".", use_mock=False):
     f = open(os.path.join(dir, "sample%s.conf" % sample.id), "w")
     config.write(f)
     f.close()
+    
+    return f
