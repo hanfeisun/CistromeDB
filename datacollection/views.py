@@ -24,6 +24,7 @@ import settings
 import entrez
 import jsrecord.views
 import pipeline.ConfGenerator as ConfGenerator
+import pipeline.RunSHGenerator as RunSHGenerator
 
 try:
     import json
@@ -1094,6 +1095,8 @@ def run_analysis(request, sample_id):
             #os.mkdir(working_dir)
             #os.chdir(working_dir)
         conf_f = ConfGenerator.generate(sample, request.user, working_dir,True)
+        run_sh = RunSHGenerator.generate(sample, conf_f, request.user,
+                                         working_dir)
         # this isn't ready yet!
         # log_f = open(os.path.join(working_dir, "log"), "w")
         # #hack--logfhd is a global in the script, we need to set it
