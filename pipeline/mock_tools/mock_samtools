@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#INFO  @ Thu, 19 May 2011 22:16:23: Run: /home/lentaing/liulab/lenlib/newdc/pipeline/mock_tools/mock_samtools view -bt /home/lentaing/liulab/lenlib/newdc/pipeline/mock_tools/static_libraries/chromLen/mm9.len 1_rep1_treat.sam -o 1_rep1_treat.bam 
+#output last arg, arg6
+
+echo $6 > $6

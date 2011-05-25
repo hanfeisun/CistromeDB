@@ -1,0 +1,116 @@
+body { 
+    width:960px; 
+    margin:15px auto; 
+    font-family: Helvetica, Arial, "MS Trebuchet", sans-serif;
+    /*background-color:#cad0fc;*/
+
+}
+
+p {
+    margin: 0 0 20px 0
+}
+
+img#logo {
+    margin:0;
+    padding:0;
+    padding-left:5px;
+    display:inline;
+}
+
+header#page_header{
+    width:100%;
+    /*background-color:#7782A0;*/
+    background-color:#cad0fc;
+    color:#2f2f2f;
+    margin:0;
+    padding:0;
+    margin-top:-15px;
+    border: 1px solid #000;
+}
+
+header#page_header h1{
+    margin:0;
+    padding:0;
+    display:inline;
+}
+
+/*login form*/
+header#page_header span{
+    display:block;
+    padding-left:10%;
+}
+
+header#page_header nav ul, #page_footer nav ul {
+    list-style:none;
+    margin:0;
+    padding:0;
+}
+
+#page_header nav ul li, footer#page_footer nav ul li {
+    padding:0;
+    margin: 0 20px 0 0;
+    display:inline;
+}
+
+section#main{
+    float:left;
+    width:60%;
+    padding-left:10%;
+}
+
+section#sidebar{
+    float:right;
+    width:25%;
+}
+
+footer#page_footer{
+    clear:both;
+    width:100%;
+    display:block;
+    text-align: center;
+    background-color:#0e162a;
+    color:#fff;
+    font-size:8pt;
+}
+
+footer#page_footer a{
+    color:#828aa0;
+} 
+
+a {
+    color:#093955;
+}
+
+
+/*
+body {
+   background:#2b3141;
+}
+
+a:link, a:visited {
+   color:#fff;
+}
+
+#header {
+   position: relative;
+   top:-15px;
+   border-bottom: 1px solid #b2bbbe;
+}
+*/
+/*logo*/
+/*
+#header img {
+   position: relative;
+   top:15px;
+}
+*/
+/* login unit */
+/*
+#login {
+   padding-left:65px;
+   font-family: Helvetica, Arial, sans-serif;
+   font-size: 10pt;
+   color:#7782a0;
+   display:inline;
+}
+*/

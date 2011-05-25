@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#INFO  @ Thu, 19 May 2011 22:16:23: Run: /home/lentaing/liulab/lenlib/newdc/pipeline/mock_tools/mock_bowtie -S  -q  -m 1 /home/lentaing/liulab/lenlib/newdc/pipeline/mock_tools/indexes/mm9 /home/lentaing/liulab/lenlib/newdc/media/data/datasets/gsm281/692/raw/foo.fastq 1_rep1_treat.sam 
+#output last arg, arg7
+
+echo $7 > $7
+
