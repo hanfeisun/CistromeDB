@@ -71,7 +71,7 @@ class DatasetForm(forms.ModelForm):
 class SampleForm(forms.ModelForm):
     class Meta:
         model = models.Samples
-        exclude = ('user', 'paper', 'datasets')
+        exclude = ('user', 'paper', 'treatments', 'controls')
 
 #Used by the data team to upload dataset files
 class UploadDatasetForm(forms.ModelForm):
@@ -102,7 +102,8 @@ class UpdateDatasetForm(forms.ModelForm):
 class UpdateSampleForm(forms.ModelForm):
     class Meta:
         model = models.Samples
-        fields = ('user', 'paper', 'datasets', 'uploader', 'upload_date',
+        fields = ('user', 'paper', 'treatments', 'controls', 
+                  'uploader', 'upload_date',
                   'status', 'comments')
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])

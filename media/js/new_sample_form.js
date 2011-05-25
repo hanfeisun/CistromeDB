@@ -1,49 +1,65 @@
-//NOTE: very important: todo- have to change the submit btn to just a regular
-//btn; onclick--compose the datasets hidden input, then submit
-
+//script to control how a user defines a new sample: a new sample is some 
+//set of datasets (treatments) and controls
 
 var PaperModel = ModelFactory(['paperId'], []);
 
 var paperObj = new PaperModel({'paperId':null});
 
-var replicateContainers = [];
-
-var paperIdLstnr = function() { 
-    //makes the initial "add replicate" link
-    var container = $('dataset_p');
-    //clear the container
-    container.innerHTML = "";
-    //remove any old replicates if any
-    for (var i = 0; i < replicateContainers.length; i++) {
-	replicateContainers[i].parentNode.removeChild(replicateContainers[i]);
+/**
+ * Function: PaperLstnrFactory
+ * Description: when the paper changes, we need to generate two dialogues:
+ * a dialogue to define treatments, and another to define controls.  
+ * To reduce code redundancy, we define this factory
+ * @param: container - html obj that holds the dialogue
+ * @param: containers_list - list that will hold the pointers to the 
+ * select menus this dialogue generates
+ * @param: name - string "treatments" or "controls"
+ */
+function PaperLstnrFactory(container, containers_list, name) {
+    return function() {
+	//clear the container
+	container.innerHTML = "";
+	//remove any old datasets if any
+	for (var i = 0; i < containers_list.length; i++) {
+	    containers_list[i].parentNode.removeChild(containers_list[i]);
+	}
+	containers_list.clear(); //NOTE: must use clear, rather than = []
+	container.appendChild($D('label', {'innerHTML':'Define '+name+':'}));
+	
+	var tmp = $D('span', {'className':'a', 'innerHTML':'add a dataset'});
+	tmp.onclick = function(event) {
+	    addDataset(container, containers_list, name);
+	}
+	container.appendChild(tmp);
     }
-    replicateContainers = [];
-
-    container.appendChild($D('label', {'innerHTML':'.'}));
-    
-    var tmp = $D('span', {'className':'a', 'innerHTML':'add a dataset'});
-    tmp.onclick = function(event) {
-	addReplicate();
-    }
-    container.appendChild(tmp);
 }
-    
-paperObj.paperIdEvent.register(paperIdLstnr);
 
-function addReplicate() {
+
+/**
+ * Function: addDataset
+ * Description: when we click "add a dataset" in a treatment/control 
+ * dialogue, tries to add another select menu in the appropriate place
+ * @param: container - html obj that holds the treatment/control dialogue
+ * @param: containers_list - list that will hold the pointers to the 
+ * select menus this dialogue generates
+ * NOTE: for the first one will add the select to the container, otherwise
+ * to the last item in containers_list
+ * @param: name - string "treatments" or "controls"
+ */
+
+function addDataset(container, containers_list, name) {
     //tries to make a select menu for the datasets associated w/ the curr paper
     var paperId = paperObj.getPaperId();
     var cbFn = function(req) {
-	//alert(req.responseText);
 	var datasets = eval("("+req.responseText+")");
-	var numReps = replicateContainers.length;
-	var lastRep =(numReps > 0) ? 
-	replicateContainers[numReps - 1] : $('dataset_p');
-	var newRep = $D('p');
-	replicateContainers.push(newRep);
-	newRep.appendChild($D('label', {'innerHTML':'Replicate '+numReps}));
-	var select = $D('select', {'name':'replicate'+numReps, 
-				'id':'id_replicate'+numReps});
+	var numDsets = containers_list.length;
+	var lastDset =(numDsets > 0) ? 
+	containers_list[numDsets - 1] : container;
+	var newDset = $D('p');
+        containers_list.push(newDset);
+	newDset.appendChild($D('label', {'innerHTML':'dataset '+numDsets}));
+	var select = $D('select', {'name':name+numDsets, 
+				'id':'id_'+name+numDsets});
 	var opt = $D('option', {'value':'','selected':'selected', 
 			     'innerHTML':'----------'});
 	select.appendChild(opt);
@@ -53,12 +69,12 @@ function addReplicate() {
 	    select.appendChild(opt);
 	}
 
-	newRep.appendChild(select);
+	newDset.appendChild(select);
 
 	//add before
-	//lastRep.parentNode.insertBefore(newRep, lastRep);
+	//lastDset.parentNode.insertBefore(newDset, lastDset);
 	//add after
-	lastRep.parentNode.insertBefore(newRep, lastRep.nextSibling);
+	lastDset.parentNode.insertBefore(newDset, lastDset.nextSibling);
     }
     if (paperId != null) {
 	var getDatasets =new Ajax.Request(SUB_SITE+"get_datasets/"+paperId+"/",
@@ -66,8 +82,44 @@ function addReplicate() {
     }
 }
 
+/**
+ * Function: enumerateDatasets
+ * Description: when user clicks "submit" btn, we want to enumerate the 
+ * datasets selected; returns a string of comma-separated dataset ids.
+ * IF one of the select menus is unselected, then the return is "" for 
+ * invalid!
+ * @param: containers_list - list of select menus in the dialogue
+ * @param: name - treatment or control
+ */
+function enumerateDatasets(containers_list, name) {
+    var tmp = "";
+    if (containers_list.length > 0) {
+	tmp = $('id_'+name+'0').value;
+	if ($('id_'+name+'0').value == "") {
+	    return "";
+	}
+    }
+    for (var i = 1; i < containers_list.length; i++) {
+	tmp += ","+$('id_'+name+i).value;
+	if ($('id_'+name+i).value == "") {
+	    return "";
+	}
+    }
+    return tmp;
+}
+
+var mySubmit;
 
 function init(paperId) {
+    var treatmentsContainers = [];
+    var controlsContainers = [];
+    treatmentsLstnr = PaperLstnrFactory($('treatments_p'), 
+					treatmentsContainers, "treatments");
+    controlsLstnr = PaperLstnrFactory($('controls_p'),
+				      controlsContainers, "controls");
+    paperObj.paperIdEvent.register(treatmentsLstnr);
+    paperObj.paperIdEvent.register(controlsLstnr);
+
     var setPaper = function(pId) { 
 	//sets the paperObj value
 	if (pId != "") {
@@ -105,32 +157,26 @@ function init(paperId) {
 	setPaper(paperId);
     }
     
-}
-
-function mySubmit() {
-    var tmp = "";
-    var valid = true;
-    if (replicateContainers.length > 0) {
-	tmp = $('id_replicate0').value;
-	if ($('id_replicate0').value == "") {
-	    valid = false;
+    //The submit fn is defined here b/c that's where treatmentContainers and
+    //controlContainers have scope
+    mySubmit = function() {
+	var treatments = enumerateDatasets(treatmentsContainers, "treatments");
+	var controls = enumerateDatasets(controlsContainers, "controls");
+	if (treatments != "") {
+	    $('id_treatments').value = treatments;
+	} else {
+	    alert("Please fill all treatment datasets before submitting");
+	    return;
 	}
-    }
-    for (var i = 1; i < replicateContainers.length; i++) {
-	tmp += ","+$('id_replicate'+i).value;
-	if ($('id_replicate'+i).value == "") {
-	    valid = false;
+	//Allow controls to not be defined	
+	if ((controls != "") || (controlsContainers.length == 0)) {
+	    $('id_controls').value = controls;
+	} else {
+	    alert("Please fill all control datasets before submitting");
+	    return;
 	}
-    }
-
-    if (valid) {
-	//set the datasetvalue
-	$('id_datasets').value = tmp;
-	//submit the form
+	
+	//fall through --> submit form!
 	$('rep_form').submit();
-    } else {
-	alert("Please select fill all replicates before submitting");
     }
-
-    //alert(
 }
