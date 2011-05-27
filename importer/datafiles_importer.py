@@ -176,6 +176,18 @@ def main():
                             setattr(s, f[1], File(open(file_path)))
                         else: #add it to the error msg
                             missing_files.append(file_path)
+                #import meta files: conf, log, summary and dhs_file
+                meta_files = [("%s.conf" % s.id, "conf_file"), 
+                              ("log", "log_file"), 
+                              ("sample%s_summary.txt" % s.id, "summary_file"),
+                              ("%s_bedtools_dhs.txt" % s.id, "dhs_file")
+                              ]
+                for f in meta_files:
+                    if os.path.exists(f[0]):
+                        setattr(s, f[1], File(open(f[0])))
+                    else:
+                        missing_files.append(f[0])
+                
                 if missing_files:
                     s.comments = "ERROR: missing files %s" % missing_files
                 s.status = "complete"
