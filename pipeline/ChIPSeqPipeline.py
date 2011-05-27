@@ -1307,11 +1307,13 @@ def main():
     steps[7](configs)    
     
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        sys.stderr.write("User interrupt me! ;-) See you!\n")
-        sys.exit(0)
+    main()
+    #ignoring keyboardinterruptions
+    # try:
+    #     main()
+    # except KeyboardInterrupt:
+    #     sys.stderr.write("User interrupt me! ;-) See you!\n")
+    #     sys.exit(0)
 
     
 logfhd.close()

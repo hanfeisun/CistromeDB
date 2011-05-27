@@ -3,6 +3,7 @@ import sys
 import datetime
 import subprocess
 import re
+#import daemon
 
 from django.shortcuts import render_to_response, Http404, get_object_or_404
 from django.contrib import auth
@@ -1031,8 +1032,12 @@ def _check_for_files(sample):
                              for id in sample.controls.split(",")])
 
     for d in datasets:
+        #check db entry
         if not d.raw_file:
             missing_files_list.append(int(d.id))
+        #check file existence
+        elif not os.path.exists(d.raw_file.path):
+            missing_files_list.append(d.raw_file.path)
     
     return missing_files_list
     
@@ -1097,18 +1102,12 @@ def run_analysis(request, sample_id):
         conf_f = ConfGenerator.generate(sample, request.user, working_dir,True)
         run_sh = RunSHGenerator.generate(sample, conf_f, request.user,
                                          working_dir)
-        # this isn't ready yet!
-        # log_f = open(os.path.join(working_dir, "log"), "w")
-        # #hack--logfhd is a global in the script, we need to set it
-        # setattr(ChIPSeqPipeline, "logfhd", log_f)
-        # os.chdir(working_dir)
-        # #hack--we should replace sys.exit calls while the script is running.
-        # ChIPSeqPipeline._myMain(conf_f.name) #problem this will hang
-        # log_f.close()
-        # os.chdir(cwd)
+
+        # run the script as a daemon
+        proc = subprocess.Popen(["python", "daemonize.py"], cwd=working_dir)
         
-        # sample.status = "complete"
-        # sample.save()
+        sample.status = "running"
+        sample.save()
 
     #redirect to the samples view
     return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
