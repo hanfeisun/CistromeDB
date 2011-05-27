@@ -167,28 +167,48 @@ def main():
                 s.upload_date=datetime.datetime.now()
                 
                 #try to set the sample fields
+                #NOTE: adding fault tolderance-if missing files, we don't fail;
+                missing_files = []
                 for f in _Pipe2Samples_Dict:
                     if "sample."+f[0] in config:
-                        setattr(s, f[1], File(open(config["sample."+f[0]])))
+                        file_path = config["sample."+f[0]]
+                        if os.path.exists(file_path):
+                            setattr(s, f[1], File(open(file_path)))
+                        else: #add it to the error msg
+                            missing_files.append(file_path)
+                if missing_files:
+                    s.comment = "ERROR: missing files %s" % missing_files
+                s.status = "complete"
                 s.save()
 
                 #try to store the dataset files
                 dsets = [models.Datasets.objects.get(pk=id) \
                          for id in s.treatments.split(",")]
                 for (i,d) in enumerate(dsets):
+                    missing_files = []
                     for f in _Pipe2Datasets_Dict:
                         if "replicates."+f[0] in config:
                             reps = config["replicates."+f[0]].split(",")
-                            setattr(d, f[1], File(open(reps[i])))
+                            if os.path.exists(reps[i]):
+                                setattr(d, f[1], File(open(reps[i])))
+                            else:
+                                missing_files.append(reps[i])
+                    #ignore missing_files
                     d.uploader = u
                     d.upload_date = datetime.datetime.now()
                     d.save()
 
                 #try to save the control files
                 (sc, created) = models.SampleControls.objects.get_or_create(sample=s)
+                missing_files = []
                 for f in _Pipe2SampleControls_Dict:
                     if "sample."+f[0] in config:
-                        setattr(sc, f[1], File(open(config["sample."+f[0]])))
+                        file_path = config["sample."+f[0]]
+                        if os.path.exists(file_path):
+                            setattr(sc, f[1], File(open(file_path)))
+                        else:
+                            missing_files.append(file_path)
+                #ignore missing_files
                 sc.save()
 
                 #try to store the summary info                
