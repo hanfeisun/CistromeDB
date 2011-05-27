@@ -177,7 +177,7 @@ def main():
                         else: #add it to the error msg
                             missing_files.append(file_path)
                 if missing_files:
-                    s.comment = "ERROR: missing files %s" % missing_files
+                    s.comments = "ERROR: missing files %s" % missing_files
                 s.status = "complete"
                 s.save()
 
