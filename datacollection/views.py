@@ -1099,7 +1099,7 @@ def run_analysis(request, sample_id):
         #if not os.path.exists(working_dir):
             #os.mkdir(working_dir)
             #os.chdir(working_dir)
-        conf_f = ConfGenerator.generate(sample, request.user, working_dir,True)
+        conf_f = ConfGenerator.generate(sample, request.user,working_dir,False)
         run_sh = RunSHGenerator.generate(sample, conf_f, request.user,
                                          working_dir)
 
