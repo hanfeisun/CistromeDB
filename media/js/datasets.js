@@ -77,3 +77,7 @@ function init() {
 	}
     }
 }
+
+function downloadFile(datasetId, pg) {
+    window.location = SUB_SITE+"download_file/"+datasetId+"/?page="+pg;
+}
