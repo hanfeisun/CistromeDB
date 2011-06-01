@@ -78,6 +78,9 @@ onload="init();"
 	     <th>Uploader</th>
 	     <th>Curator</th>
 	     <th>Date Collected</th>
+	     {% if user.is_authenticated %}
+	     <th>Action</th>
+	     {% endif %}
 	 </tr>
 	 {% for d in datasets.object_list %}
 	 <tr>
@@ -120,6 +123,18 @@ onload="init();"
 	     <td>{{d.uploader.username}}</td>
 	     <td>{{d.curator.username}}</td>
 	     <td>{{ d.date_collected|date:"Y-m-d"}}</td>
+	     {% comment %} ACTIONS HERE {% endcomment %}
+	     {% if user.is_authenticated %}
+	     {% ifequal d.status "info" %}
+	     <td><input type="button" value="validate" onclick=""/></td>
+	     {% else %}{% ifequal d.status "valid" %}
+	     <td><input type="button" value="download raw file" onclick="downloadFile({{d.id}}, {{datasets.number}});"/></td>
+	     {% else %} {% ifequal d.status "downloading" %}
+	     <td><input type="button" value="download raw file" disabled="true"/></td>
+	     {% else %} 
+	     <td> </td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}
+	     {% endif %} 
 	 </tr>
 	 {% endfor %}
       </table>

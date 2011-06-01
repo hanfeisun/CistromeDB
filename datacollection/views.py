@@ -26,6 +26,7 @@ import entrez
 import jsrecord.views
 import pipeline.ConfGenerator as ConfGenerator
 import pipeline.RunSHGenerator as RunSHGenerator
+import importer.DnldSHGenerator as DnldSHGenerator
 
 try:
     import json
@@ -1114,3 +1115,33 @@ def run_analysis(request, sample_id):
 
 
 
+@login_required
+def download_file(request, dataset_id):
+    """Tries to download the file for the given dataset"""
+    dataset = models.Datasets.objects.get(pk=dataset_id)
+
+    page = 1
+    if "page" in request.GET:
+        page = request.GET['page']
+
+    #do the stuff here!
+    #pattern: ftp://(server) (path) (file)
+    #NOTE: this pattern may be buggy!
+    url_pattern = "^ftp://((\w|-)+\.?)+(/(\w|-)+)*(/((\w|-)+\.)*\w+)$"
+    if not re.match(url_pattern, dataset.raw_file_url):
+        dataset.status = "error"
+        dataset.comments = "The file_url %s is invalid" % dataset.raw_file_url
+        dataset.save()
+        return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))
+    else: # ok to proceed!
+        cwd = os.getcwd()
+        working_dir = os.path.join(settings.MEDIA_ROOT, "data", "tmp", 
+                                   "dataset%s" % dataset.id)
+        dnld_sh = DnldSHGenerator.generate(dataset, request.user, working_dir)
+        proc = subprocess.Popen(["python", "daemonize.py"], cwd=working_dir)
+        
+    dataset.status = "downloading" 
+    dataset.save()
+
+    #redirect to the samples view
+    return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))

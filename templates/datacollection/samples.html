@@ -68,7 +68,9 @@ onload="init();"
 	     <th>Comments</th>
 	     <th>Uploader</th>
 	     <th>Upload Date</th>
+	     {% if user.is_authenticated %}
 	     <th>Action</th>
+	     {% endif %}
 	 </tr>
 	 {% for s in pg.object_list %}
 	 <tr>
@@ -99,7 +101,8 @@ onload="init();"
 	     <td>{{ s.comments }}</td>
 	     <td>{{ s.uploader }}</td>
 	     <td>{{ s.upload_date|date:"Y-m-d" }}</td>
-	     <!--actions-->
+	     {% comment %} ACTIONS HERE {% endcomment %}
+	     {% if user.is_authenticated %}
 	     {% ifequal s.status "new" %}
 	     <td><input type="button" value="check raw files" onclick="checkRawFiles({{s.id}}, {{pg.number}});"/></td>
 	     {% else %} {% ifequal s.status "checked" %}
@@ -109,6 +112,7 @@ onload="init();"
 	     {% else %} 
 	     <td> </td>
 	     {% endifequal %}{% endifequal %}{% endifequal %}
+	     {% endif %} 
 	 </tr>
 	 {% endfor %}
       </table>
