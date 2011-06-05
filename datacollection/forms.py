@@ -98,6 +98,18 @@ class UpdatePaperForm(forms.ModelForm):
 class UpdateDatasetForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
+        #Don't include the files--use the Upload form for that
+        exclude = UploadDatasetForm.Meta.fields
+        exclude = exclude + ("raw_file_url", "raw_file_type", )
+    
+    #NOTE: if you get validating errs, you can override the validators like
+    # def clean_raw_file_type(self):
+    #      """IF we don't define this, it complains that the ftp:// URLS
+    #      we give are invalid
+    #      """
+    #      cleaned_data = self.cleaned_data["raw_file_type"]
+    #      #raise forms.ValidationError("FOOBAR!")
+    #      return cleaned_data
 
 class UpdateSampleForm(forms.ModelForm):
     class Meta:
