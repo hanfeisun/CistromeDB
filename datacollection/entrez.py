@@ -69,8 +69,8 @@ class DatasetAdapter:
         self.platform = geo.getElementsByTagName("Platform")[0]['_children'][0]['_value']
         self.species = geo.getElementsByTagName("Organism")[0]['_value']
         supplementary_data = geo.getElementsByTagName("Supplementary-Data")[0]
-        self.file_url = supplementary_data['_value']
-        self.file_type = supplementary_data['_attribs']['type']
+        self.raw_file_url = supplementary_data['_value']
+        self.raw_file_type = supplementary_data['_attribs']['type']
         
     def __str__(self):
         return "\n".join(["%s:%s" % (a, getattr(self, a)) \
