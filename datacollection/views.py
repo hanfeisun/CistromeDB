@@ -630,13 +630,14 @@ def admin(request):
     return render_to_response('datacollection/admin.html', locals(),
                               context_instance=RequestContext(request))
 
-@login_required
-def download_datasets(request, paper_id):
-    """Tries to download the datasets associated with the paper"""
-    #NOTE: this uses pip, which is in DEPLOY_DIR/importer
-    path = os.path.join(settings.DEPLOY_DIR, "importer", "pip.py")
-    pid = subprocess.Popen([path, paper_id]).pid
-    return HttpResponse("{success:true}")
+#OBSOLETE
+# @login_required
+# def download_datasets(request, paper_id):
+#     """Tries to download the datasets associated with the paper"""
+#     #NOTE: this uses pip, which is in DEPLOY_DIR/importer
+#     path = os.path.join(settings.DEPLOY_DIR, "importer", "pip.py")
+#     pid = subprocess.Popen([path, paper_id]).pid
+#     return HttpResponse("{success:true}")
 
 def dataset_profile(request, dataset_id):
     """View of the paper_profile page"""
@@ -1165,24 +1166,28 @@ def import_datasets(request, paper_id):
     #redirect to the papers view
     return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
 
-# @login_required
-# def download_paper_datasets(request, paper_id):
-#     """Tries to download the datasets associated with the paper--calls the 
-#     download_dataset fn
-#     """
-#     datasets = models.Datasets.objects.filter(paper=paper_id)
+@login_required
+def download_paper_datasets(request, paper_id):
+    """Tries to download the datasets associated with the paper--calls the 
+    download_dataset fn
+    """
+    paper = models.Papers.objects.get(pk=paper_id)
+    datasets = models.Datasets.objects.filter(paper=paper_id)
 
-#     page = 1
-#     if "page" in request.GET:
-#         page = request.GET['page']
+    page = 1
+    if "page" in request.GET:
+        page = request.GET['page']
 
-#     paper.status = "transfer"
-#     paper.save()
+    #call download_datasets but ignore the return
+    for d in datasets:
+        #sending request is ok--b/c request.page doesn't really affect things
+        ignored = download_file(request, d.id)
 
-#     #redirect to the papers view
-#     return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
-    
+    paper.status = "transfer"
+    paper.save()
 
+    #redirect to the papers view
+    return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
 #------------------------------------------------------------------------------
 # Action Btns END
 #------------------------------------------------------------------------------
