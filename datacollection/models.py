@@ -115,7 +115,7 @@ class Papers(DCModel):
     pub_date = models.DateField()
     date_collected = models.DateTimeField()
     authors = models.CharField(max_length=255)
-    last_auth_email = models.EmailField()
+    last_auth_email = models.EmailField(null=True, blank=True)
         
     journal = models.ForeignKey('Journals',
                                 null=True, blank=True, default=None)
