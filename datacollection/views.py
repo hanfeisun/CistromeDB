@@ -1126,21 +1126,13 @@ def _auto_dataset_import(paper, user, gsmids):
         (tmp, created) = models.Datasets.objects.get_or_create(gsmid=gsmid, defaults={"date_collected": datetime.datetime.now(), "user":user, "paper":paper})
         if created:
             geoQuery = entrez.DatasetAdapter(gsmid)
-            #tmp = models.Datasets()
         
-            attrs = ['gsmid', 'name']#, 'file_url']
+            attrs = ['gsmid', 'name', 'raw_file_url']
             for a in attrs:
                 setattr(tmp, a, getattr(geoQuery, a))
 
-            #NOTE: file_url changed to raw_file_url
-            tmp.raw_file_url = geoQuery.file_url
+            (tmp.raw_file_type, ignored) = models.FileTypes.objects.get_or_create(name=geoQuery.raw_file_type)
 
-            #tmp.date_collected = datetime.datetime.now()
-            #NOTE: file_type changed to raw_file_type
-            (tmp.raw_file_type, ignored) = models.FileTypes.objects.get_or_create(name=geoQuery.file_type)
-            #tmp.user = user
-            #tmp.paper = paper
-        
             platform = entrez.PlatformAdapter(geoQuery.platform)
             (tmp.platform, ignored) = models.Platforms.objects.get_or_create(gplid=platform.gplid, name=platform.name, technology=platform.technology)
             (tmp.species, ignored) = models.Species.objects.get_or_create(name=geoQuery.species)
