@@ -129,7 +129,7 @@ onload="init();"
 	     <td><input type="button" value="validate" onclick=""/></td>
 	     {% else %}{% ifequal d.status "valid" %}
 	     <td><input type="button" value="download raw file" onclick="downloadFile({{d.id}}, {{datasets.number}});"/></td>
-	     {% else %} {% ifequal d.status "downloading" %}
+	     {% else %} {% ifequal d.status "transfer" %}
 	     <td><input type="button" value="download raw file" disabled="true"/></td>
 	     {% else %} 
 	     <td> </td>

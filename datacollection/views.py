@@ -1107,7 +1107,7 @@ def download_file(request, dataset_id):
         dnld_sh = DnldSHGenerator.generate(dataset, request.user, working_dir)
         proc = subprocess.Popen(["python", "daemonize.py"], cwd=working_dir)
         
-    dataset.status = "downloading" 
+    dataset.status = "transfer" 
     dataset.save()
 
     #redirect to the datasets view
@@ -1164,6 +1164,25 @@ def import_datasets(request, paper_id):
 
     #redirect to the papers view
     return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
+
+# @login_required
+# def download_paper_datasets(request, paper_id):
+#     """Tries to download the datasets associated with the paper--calls the 
+#     download_dataset fn
+#     """
+#     datasets = models.Datasets.objects.filter(paper=paper_id)
+
+#     page = 1
+#     if "page" in request.GET:
+#         page = request.GET['page']
+
+#     paper.status = "transfer"
+#     paper.save()
+
+#     #redirect to the papers view
+#     return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
+    
+
 #------------------------------------------------------------------------------
 # Action Btns END
 #------------------------------------------------------------------------------
