@@ -79,3 +79,7 @@ function init() {
 	}
     }
 }
+
+function importDatasets(paperId, pg) {
+    window.location = SUB_SITE+"import_datasets/"+paperId+"/?page="+pg;
+}
