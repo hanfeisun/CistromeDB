@@ -38,7 +38,7 @@ DATASET_STATUS = (
     (u'imported', u'imported awaiting meta-info'),
     (u'info', u'meta-info inputted awaiting validation'),
     (u'valid', u'meta-info validated awaiting file download'),
-    (u'downloading', u'file is downloading'),
+    (u'transfer', u'file is downloading'),
     (u'downloaded', u'downloaded/closed'),
     (u'error', u'error/hold- see comments'),
     )
