@@ -567,46 +567,7 @@ def auto_paper_import(request):
     if request.method == "POST":
         #the user is trying to autoimport a paper
         if request.POST['gseid']:
-            # geoQuery = entrez.PaperAdapter(request.POST['gseid'])
-#             attrs = ['pmid', 'gseid', 'title', 'abstract', 'pub_date']
-
-#             #try to create a new paper
-#             tmp = models.Papers()
-#             for a in attrs:
-#                 #tmp.a = geoQuery.a
-#                 setattr(tmp, a, getattr(geoQuery, a))
-#             #deal with authors
-#             tmp.authors = ",".join(geoQuery.authors)
-
-#             #set the journal
-#             JM = models.Journals
-#             (journal,created) = JM.objects.get_or_create(name=geoQuery.journal)
-#             tmp.journal = journal
-            
-#             #add automatic info
-#             tmp.user = request.user
-#             tmp.date_collected = datetime.datetime.now()
-
-#             tmp.save()
              tmp = _import_paper(request.POST['gseid'], request.user)
-             
-#            _auto_dataset_import(tmp.id, request.user, geoQuery.datasets)
-# TURN THIS ON IF you want it to work with the paper importer 
-#             try: 
-#                 tmp.save()
-
-#                 #try to auto import the associated datasets
-#                 _auto_dataset_import(tmp.id, request.user, geoQuery.datasets)
-                
-#                 #json - a flag that is sent in
-#                 if 'json' in request.POST and request.POST['json']:
-#                     return HttpResponse("{'success':true}")
-#             except:
-#                 #probably a duplicate entry--silently ignored
-#                 sys.stderr.write("autopaperimport error: %s\n\t%s\n" % \
-#                                 (sys.exc_info()[0],"probably duplicate entry"))
-#                 if 'json' in request.POST and request.POST['json']:
-#                     return HttpResponse("{'success':false}")
     else:
         pass
 
@@ -629,15 +590,6 @@ def admin(request):
     papers = models.Papers.objects.all()
     return render_to_response('datacollection/admin.html', locals(),
                               context_instance=RequestContext(request))
-
-#OBSOLETE
-# @login_required
-# def download_datasets(request, paper_id):
-#     """Tries to download the datasets associated with the paper"""
-#     #NOTE: this uses pip, which is in DEPLOY_DIR/importer
-#     path = os.path.join(settings.DEPLOY_DIR, "importer", "pip.py")
-#     pid = subprocess.Popen([path, paper_id]).pid
-#     return HttpResponse("{success:true}")
 
 def dataset_profile(request, dataset_id):
     """View of the paper_profile page"""
@@ -762,68 +714,11 @@ def batch_update_datasets(request):
                               locals(),
                               context_instance=RequestContext(request))
 
-# NOT USEFUL
-# @login_required
-# def batch_update_papers(request):
-#     """See batch edit datasets--similar idea but for papers"""
-#     title = "Batch Update Papers"
-#     fields = forms.BatchUpdatePapersForm.Meta.fields
-#     if request.method == "POST":
-#         papers = [models.Papers.objects.get(pk=id) \
-#                   for id in request.GET['papers'].split(',')]
-#         for p in papers:
-#             form = forms.BatchUpdatePaperForm(request.POST, instance=p)
-#             if form.is_valid():
-#                 tmp = form.save()
-#         return HttpResponseRedirect(reverse('all_papers'))
-#     else:
-#         if 'papers' in request.GET:
-#             paperList = request.GET['papers']
-#             papers = [models.Papers.objects.get(pk=id)\
-#                       for id in paperList.split(",")]
-#             tmp = models.Papers()
-#             for f in fields:
-#                 #have to make exception for user b/c it can't be set to None
-#                 if f == "user" and not _allSameOrNone(papers, f):
-#                     setattr(tmp, f, auth.models.User.objects.get(pk=1))
-#                 else:
-#                     setattr(tmp, f, _allSameOrNone(papers, f))
-#             form = forms.BatchUpdatePapersForm(instance=tmp)
-#     return render_to_response('datacollection/batch_update_papers_form.html',
-#                               locals(),
-#                               context_instance=RequestContext(request))
-            
-
 def search(request):
     """the search page"""
     return render_to_response('datacollection/search.html',
                               locals(),
                               context_instance=RequestContext(request))
-
-# @login_required
-# def delete_datasets(request):
-#     """Given a url param defining which datasets to delete, this view
-#     tries to delete the datasets
-#     """
-#     if 'datasets' in request.GET:
-#         datasets = request.GET['datasets']
-#         dsets = [models.Datasets.objects.get(pk=id) \
-#                  for id in datasets.split(',')]
-#         for d in dsets:
-#             d.delete()
-#     return HttpResponseRedirect(reverse('datasets'))
-
-# @login_required
-# def delete_papers(request):
-#     """Given a url param defining which papers to delete, this view
-#     tries to delete the papers
-#     """
-#     if 'papers' in request.GET:
-#         papers = [models.Papers.objects.get(pk=id) \
-#                  for id in request.GET['papers'].split(',')]
-#         for p in papers:
-#             p.delete()
-#     return HttpResponseRedirect(reverse('papers'))
 
 def delete_view_factory(name, model, redirect='home'):
     """Generates generic delete views

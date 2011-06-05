@@ -5,9 +5,6 @@ import settings
 
 urlpatterns = patterns('',
               url(r'^$', views.home, name="home"),
-              #SEE how we reduce the redundancy below
-              #url(r'^new_paper_form/$', views.new_paper_form, 
-              #    name="new_paper_form"),
               url(r'^papers/(\d+/)?$', views.papers, name="papers"),
               url(r'^weekly_papers/(\d+/)?$',
                   views.weekly_papers, name="weekly_papers"),
@@ -42,8 +39,6 @@ urlpatterns = patterns('',
               url(r'^datasets/$', views.datasets, name="datasets"),
               url(r'^batch_update_datasets/$', views.batch_update_datasets,
                   name="batch_update_datasets"),
-              #url(r'^batch_update_papers/$', views.batch_update_papers,
-              #    name="batch_update_papers"),
               url(r'^search/$', views.search, name="search"),
               url(r'^delete_datasets/$', views.delete_datasets,
                   name="delete_datasets"),
