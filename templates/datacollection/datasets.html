@@ -85,7 +85,9 @@ onload="init();"
 	 {% for d in datasets.object_list %}
 	 <tr>
 	     {% if user.is_authenticated %}
-	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/></td>
+	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/>
+	         <a href="{% url update_dataset_form d.id %}?next={% url datasets %}?page={{datasets.number}}">edit</a>
+	     </td>
 	     {% endif %}
 	     <td><a href="{% url dataset_profile d.id %}">{{d.id}}</a></td>
 	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{d.gsmid}}" target="_blank">{{d.gsmid}}</a></td>
