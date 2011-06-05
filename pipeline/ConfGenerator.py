@@ -57,6 +57,27 @@ def mock_conf(config, assembly):
                os.path.join(mock_tools_path, "mock_venn_diagram.py"))
     
 
+def real_conf(config, assembly):
+    """Given a configuraton and an assembly, this fn will set the config
+    with the right file paths according to the assembly"""
+    #NOTE: we should draw the path from some settings.py!
+    config.set("samtools", "samtools_chrom_len_path",
+               "/data/CistromeAP/static_libraries/chromLen/%s.len" % assembly)
+    config.set("bowtie", "bowtie_genome_index_path",
+               "/data/CistromeAP/static_libraries/indexes/%s" % assembly)
+
+    if assembly == "hg19":
+        sub_path = "hg19/placentalMammals/"
+    else:
+        sub_path = "%s/placental/" % assembly
+    config.set("conservation", "conserv_plot_phast_path",
+               "/data/CistromeAP/static_libraries/conservation/%s" % sub_path)
+
+    config.set("ceas", "ceas_genetable_path",
+               "/data/CistromeAP/static_libraries/ceaslib/GeneTable/%s" % assembly)    
+    #NOTE:**we really need proper dhs files, not just ncor_5pm_peaks.bed **
+
+
 def generate(sample, user, dir=".", use_mock=False):
     """Generates configuration files for the pipeline. uses the templates, 
     overrides the templates w/ the given values and writes the conf file
@@ -93,8 +114,8 @@ def generate(sample, user, dir=".", use_mock=False):
     #need to override alot more here!
     if use_mock:
         mock_conf(config, assembly)
-    else: #TODO:set the tool and index paths based on assembly
-        pass
+    else: 
+        real_conf(config, assembly)
 
     if not os.path.exists(dir):
         os.makedirs(dir)
