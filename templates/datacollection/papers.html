@@ -119,7 +119,7 @@ onload="init();"
 	     {% ifequal p.status "imported" %}
 	     <td><input type="button" value="import datasets" onclick="importDatasets({{p.id}},{{pg.number}})"/></td>
 	     {% else %}{% ifequal p.status "datasets" %}
-	     <td><input type="button" value="download datasets" onclick=""/></td>
+	     <td><input type="button" value="download datasets" onclick="downloadPaperDatasets({{p.id}},{{pg.number}})"/></td>
 	     {% else %} {% ifequal d.status "transfer" %}
 	     <td><input type="button" value="download datasets" disabled="true"/></td>
 	     {% else %} 

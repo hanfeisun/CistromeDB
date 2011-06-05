@@ -83,3 +83,7 @@ function init() {
 function importDatasets(paperId, pg) {
     window.location = SUB_SITE+"import_datasets/"+paperId+"/?page="+pg;
 }
+
+function downloadPaperDatasets(paperId, pg) {
+    window.location = SUB_SITE+"download_paper_datasets/"+paperId+"/?page="+pg;
+}
