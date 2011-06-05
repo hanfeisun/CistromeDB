@@ -111,13 +111,15 @@ onload="init();"
 	     <td class="info_row">{{ d.get_status_display }}</td>
 	     {% else %} {% ifequal d.status "valid" %}
 	     <td class="valid_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "transfer" %}
+	     <td class="transfer_row">{{ d.get_status_display }}</td>
 	     {% else %} {% ifequal d.status "downloaded" %}
 	     <td class="downloaded_row">{{ d.get_status_display }}</td>
 	     {% else %} {% ifequal d.status "error" %}
 	     <td class="error_row">{{ d.get_status_display }}</td>
 	     {% else %}
 	     <td>{{ d.get_status_display }}</td>
-	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
 	     <td>{{ d.comments }}</td>
 	     <td><a href="{% url datasets %}{{d.user.id}}/">{{ d.user.username }}</a></td>
 	     <td>{{d.uploader.username}}</td>

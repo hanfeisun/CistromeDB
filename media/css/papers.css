@@ -1,4 +1,3 @@
-
 table {
     width:100%;
     border: 2px solid #626cac;
@@ -17,12 +16,8 @@ td, th {
     background-color:#ffff00;
 }
 
-.info_row {
+.datasets_row {
     background-color:#ff9900;
-}
-
-.valid_row {
-    background-color:#ff5500;
 }
 
 .transfer_row {
@@ -30,8 +25,13 @@ td, th {
 }
 
 .downloaded_row {
+    background-color:#ff5500;
+}
+
+.complete_row {
     background-color:#00cc00;
 }
+
 
 .error_row {
     background-color:red;
