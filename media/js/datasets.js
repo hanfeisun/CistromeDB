@@ -60,7 +60,7 @@ function init() {
     btn.onclick = function(event) {
 	//redirect
 	if (dsetModel.dsets.length > 0) { //check for empty list
-	    window.location = SUB_SITE + "batch_update_datasets/?datasets="+ dsetModel.dsets;
+	    window.location = SUB_SITE + "batch_update_datasets/?datasets="+ dsetModel.dsets+"&next="+window.location;
 	}
 	//NOTE: TODO--acutally the best way to do it is to just run down the 
 	//list of selected rows--i.e. generate dsetModel IN/AFTER onclick

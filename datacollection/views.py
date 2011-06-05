@@ -700,8 +700,10 @@ def batch_update_datasets(request):
             form = forms.BatchUpdateDatasetsForm(request.POST, instance=d)
             if form.is_valid():
                 tmp = form.save()
-        return HttpResponseRedirect(reverse('datasets'))
+        return HttpResponseRedirect(request.POST['next'])
     else:
+        if 'next' in request.GET:
+            next = request.GET['next']
         if 'datasets' in request.GET:
             datasets = request.GET['datasets']
             dsets = [models.Datasets.objects.get(pk=id) \
