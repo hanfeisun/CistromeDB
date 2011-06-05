@@ -530,32 +530,6 @@ def submissions_admin(request):
                               locals(),
                               context_instance=RequestContext(request))
 
-def _auto_dataset_import(paper, user, gsmids):
-    """Given a paper id and a set of gsmids, this fn tries to create the
-    datasets and associate it with the paper"""
-
-    for gsmid in gsmids:
-        geoQuery = entrez.DatasetAdapter(gsmid)
-        tmp = models.Datasets()
-        
-        attrs = ['gsmid', 'name']#, 'file_url']
-        for a in attrs:
-            setattr(tmp, a, getattr(geoQuery, a))
-
-        #NOTE: file_url changed to raw_file_url
-        tmp.raw_file_url = geoQuery.file_url
-
-        tmp.date_collected = datetime.datetime.now()
-        #NOTE: file_type changed to raw_file_type
-        (tmp.raw_file_type, created) = models.FileTypes.objects.get_or_create(name=geoQuery.file_type)
-        tmp.user = user
-        tmp.paper = paper
-        
-        platform = entrez.PlatformAdapter(geoQuery.platform)
-        (tmp.platform, created) = models.Platforms.objects.get_or_create(gplid=platform.gplid, name=platform.name, technology=platform.technology)
-        (tmp.species, created) = models.Species.objects.get_or_create(name=geoQuery.species)
-        tmp.save()
-
 def _import_paper(gseid, user):
     """Given a gseid, tries to import all of the information associated
     with that geo entry and create a Paper model object
@@ -655,15 +629,6 @@ def admin(request):
     papers = models.Papers.objects.all()
     return render_to_response('datacollection/admin.html', locals(),
                               context_instance=RequestContext(request))
-
-@login_required
-def import_datasets(request, paper_id):
-    """Tries to import the datasets associated with the paper"""
-    paper = models.Papers.objects.get(pk=paper_id)
-    geoQuery = entrez.PaperAdapter(paper.gseid)
-    _auto_dataset_import(paper, paper.user, geoQuery.datasets)
-        
-    return HttpResponse("{success:true}")
 
 @login_required
 def download_datasets(request, paper_id):
@@ -1017,6 +982,9 @@ def admin_help(request, page):
                                   locals(),
                                   context_instance=RequestContext(request))
 
+#------------------------------------------------------------------------------
+# Action Btns BEGIN
+#------------------------------------------------------------------------------
 def _check_for_files(sample):
     """Checks to make sure that the raw files associated for each of the 
     sample's dataset is present.
@@ -1114,7 +1082,6 @@ def run_analysis(request, sample_id):
     return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
 
 
-
 @login_required
 def download_file(request, dataset_id):
     """Tries to download the file for the given dataset"""
@@ -1143,5 +1110,60 @@ def download_file(request, dataset_id):
     dataset.status = "downloading" 
     dataset.save()
 
-    #redirect to the samples view
+    #redirect to the datasets view
     return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))
+
+def _auto_dataset_import(paper, user, gsmids):
+    """Given a paper id and a set of gsmids, this fn tries to create the
+    datasets and associate it with the paper
+    NOTE: we are also adding a check for the datasets to see if they're 
+    already in the system
+    """
+
+    for gsmid in gsmids:
+        #check if the dataset already exists
+        (tmp, created) = models.Datasets.objects.get_or_create(gsmid=gsmid, defaults={"date_collected": datetime.datetime.now(), "user":user, "paper":paper})
+        if created:
+            geoQuery = entrez.DatasetAdapter(gsmid)
+            #tmp = models.Datasets()
+        
+            attrs = ['gsmid', 'name']#, 'file_url']
+            for a in attrs:
+                setattr(tmp, a, getattr(geoQuery, a))
+
+            #NOTE: file_url changed to raw_file_url
+            tmp.raw_file_url = geoQuery.file_url
+
+            #tmp.date_collected = datetime.datetime.now()
+            #NOTE: file_type changed to raw_file_type
+            (tmp.raw_file_type, ignored) = models.FileTypes.objects.get_or_create(name=geoQuery.file_type)
+            #tmp.user = user
+            #tmp.paper = paper
+        
+            platform = entrez.PlatformAdapter(geoQuery.platform)
+            (tmp.platform, ignored) = models.Platforms.objects.get_or_create(gplid=platform.gplid, name=platform.name, technology=platform.technology)
+            (tmp.species, ignored) = models.Species.objects.get_or_create(name=geoQuery.species)
+            tmp.save()
+
+@login_required
+def import_datasets(request, paper_id):
+    """Tries to import the datasets associated with the paper.
+    NOTE: before we returned JSON, but now we are making it more action-btn 
+    like check_raw_files, run_analysis, etc
+    """
+    paper = models.Papers.objects.get(pk=paper_id)
+    geoQuery = entrez.PaperAdapter(paper.gseid)
+    _auto_dataset_import(paper, paper.user, geoQuery.datasets)
+    
+    page = 1
+    if "page" in request.GET:
+        page = request.GET['page']
+
+    paper.status = "datasets"
+    paper.save()
+
+    #redirect to the papers view
+    return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
+#------------------------------------------------------------------------------
+# Action Btns END
+#------------------------------------------------------------------------------

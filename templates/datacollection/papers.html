@@ -72,6 +72,9 @@ onload="init();"
 	     <th>Comments</th>
 	     <th>User</th>
 	     <th>Date Added</th>
+	     {% if user.is_authenticated %}
+	     <th>Action</th>
+	     {% endif %}
 	 </tr>
 	 {% for p in pg.object_list %}
 	 <tr>
@@ -111,6 +114,18 @@ onload="init();"
 	     <td>{{ p.comments }}</td>
 	     <td>{{ p.user }}</td>
 	     <td>{{ p.date_collected|date:"Y-m-d" }}</td>
+	     {% comment %} ACTIONS HERE {% endcomment %}
+	     {% if user.is_authenticated %}
+	     {% ifequal p.status "imported" %}
+	     <td><input type="button" value="import datasets" onclick="importDatasets({{p.id}},{{pg.number}})"/></td>
+	     {% else %}{% ifequal p.status "datasets" %}
+	     <td><input type="button" value="download datasets" onclick=""/></td>
+	     {% else %} {% ifequal d.status "transfer" %}
+	     <td><input type="button" value="download datasets" disabled="true"/></td>
+	     {% else %} 
+	     <td> </td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}
+	     {% endif %} 
 	 </tr>
 	 {% endfor %}
       </table>
