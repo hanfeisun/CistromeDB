@@ -80,7 +80,7 @@ onload="init();"
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{p.id}}"/>
-	         <a href="{% url update_paper_form p.id %}">edit</a>
+	         <a href="{% url update_paper_form p.id %}?next={% url papers %}?page={{pg.number}}">edit</a>
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url paper_profile p.id %}">{{ p.id }}</a></td>
