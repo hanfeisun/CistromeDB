@@ -56,6 +56,8 @@ urlpatterns = patterns('',
                   name="run_analysis"),
               url(r'^download_file/(\d+)/$', views.download_file,
                   name="download_file"),
+              url(r'^generic_delete/(\w+)/$', views.generic_delete, 
+                  name="generic_delete"),
               url(r'^accounts/login/$', login, name="login"),
               url(r'^accounts/logout/$', logout, name="logout"),
               #(r'^''accounts/register/$', views.register),
@@ -68,10 +70,7 @@ urlpatterns = patterns('',
 )
 
 #add the generics
-generic_views_list = ['paper', 'dataset',
-                      'platform','factor','celltype','cellline', 'cellpop',
-                      'strain', 'condition', 'journal',
-                      'species', 'filetype', 'assembly', 'sample']
+generic_views_list = views.generic_forms_list + ['paper', 'dataset', 'sample']
 
 for v in generic_views_list:
     urlpatterns += patterns('',
@@ -85,6 +84,12 @@ for v in views.generic_update_list:
                             url(r'^update_%s_form/(\d+)/$' % v,
                                 getattr(views, "update_%s_form" % v),
                                 name="update_%s_form" % v),)
+
+#add generic model views
+for v in views.generic_model_list:
+    view_name = "%s" % v.lower()
+    urlpatterns += patterns('', url(r'%s'%view_name, getattr(views, view_name),
+                                    name=view_name),)
 
 if settings.DEBUG:
     urlpatterns += patterns('',

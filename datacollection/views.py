@@ -171,7 +171,7 @@ def form_view_factory(title_in, form_class):
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
                       'strain', 'condition', 'journal', 'species', 'filetype',
-                      'assembly']
+                      'assembly', "diseasestate"]
 #new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
 #Generate the generic form views
 for name in generic_forms_list:
@@ -741,6 +741,25 @@ delete_datasets = delete_view_factory('datasets', models.Datasets, 'datasets')
 delete_papers = delete_view_factory('papers', models.Papers, 'papers')
 delete_samples = delete_view_factory('samples', models.Samples, 'samples')
 
+@login_required
+def generic_delete(request, model_name):
+    """Not to be confused with the inner-fn of delete_view_factory, this 
+    view supports the model pages, e.g. platforms, factors delete btn
+    """
+    model = getattr(models, model_name)
+
+    next = model_name.lower()
+    if 'next' in request.GET:
+        next = request.GET['next']
+
+    if 'objects' in request.GET:
+        tmp = [model.objects.get(pk=i) \
+                   for i in request.GET['objects'].split(',')]
+        for o in tmp:
+            o.delete()
+    return HttpResponseRedirect(next)
+    
+
 #cache it for a hour
 #@cache_page(60 * 60 * 1)
 def stats(request):
@@ -1080,3 +1099,48 @@ def download_paper_datasets(request, paper_id):
 #------------------------------------------------------------------------------
 # Action Btns END
 #------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Model Pages
+#------------------------------------------------------------------------------
+def modelPagesFactory(model, base_name):
+    def generic_model_view(request):
+        #model fields
+        fields = [f.name for f in model._meta.fields]
+
+        title = "%ss" % base_name.title()
+        objs = model.objects.all()
+        current_path = request.get_full_path()
+        paginator = Paginator(objs, _items_per_page)
+        update_form = "update_%s_form" % base_name
+        try:
+            page = int(request.GET.get('page', '1'))
+        except ValueError:
+            page = 1
+        try:
+            pg = paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            pg = paginator.page(paginator.num_pages)
+            
+        return render_to_response('datacollection/generic_table.html', 
+                                  locals(),
+                                  context_instance=RequestContext(request))
+    return login_required(generic_model_view)
+
+
+#DUPLICATE!!! kind of!
+generic_model_list = ["Platforms", "Factors", "CellTypes", "CellLines", 
+                      "CellPops", "Strains", "Conditions", "Journals", 
+                      "FileTypes",  "DiseaseStates",
+                      #"Assemblies", "Species", 
+                      ]
+
+for name in generic_model_list:
+    """
+    url name - e.g. /factors/
+    base name - e.g. factor
+    """
+    url_name = name.lower()
+    base_name = name.lower()[:-1]
+    setattr(_this_mod, url_name, 
+            modelPagesFactory(getattr(models, name), base_name))
