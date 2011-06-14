@@ -1107,8 +1107,12 @@ def modelPagesFactory(model, base_name):
     def generic_model_view(request):
         #model fields
         fields = [f.name for f in model._meta.fields]
+        
+        if (base_name != "species" and base_name != "assembly"):
+            title = "%ss" % base_name.title()
+        else:
+            title = base_name.title()
 
-        title = "%ss" % base_name.title()
         objs = model.objects.all()
         current_path = request.get_full_path()
         paginator = Paginator(objs, _items_per_page)
@@ -1131,8 +1135,8 @@ def modelPagesFactory(model, base_name):
 #DUPLICATE!!! kind of!
 generic_model_list = ["Platforms", "Factors", "CellTypes", "CellLines", 
                       "CellPops", "Strains", "Conditions", "Journals", 
-                      "FileTypes",  "DiseaseStates",
-                      #"Assemblies", "Species", 
+                      "FileTypes",  "DiseaseStates", "Species"
+                      #"Assemblies",
                       ]
 
 for name in generic_model_list:
@@ -1141,6 +1145,13 @@ for name in generic_model_list:
     base name - e.g. factor
     """
     url_name = name.lower()
-    base_name = name.lower()[:-1]
+    #this is the exception
+    if name != "Species":
+        base_name = name.lower()[:-1]
+    else:
+        base_name = url_name
     setattr(_this_mod, url_name, 
             modelPagesFactory(getattr(models, name), base_name))
+
+assemblies = modelPagesFactory(models.Assemblies, "assembly")
+

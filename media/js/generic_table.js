@@ -19,7 +19,9 @@ function init(model, this_pg) {
 	//model = Factors
 	//we want to redirect to new_factor_form
 	var tmp = model.toLowerCase();
-	tmp = tmp.substring(0, tmp.length-1);
+	if (tmp != "species" && tmp != "assembly") {
+	    tmp = tmp.substring(0, tmp.length-1);
+	}
 	//alert(SUB_SITE+"new_"+tmp+"_form/?next="+this_pg);
 	window.location = SUB_SITE+"new_"+tmp+"_form/?next="+this_pg;
     }
@@ -35,7 +37,11 @@ function init(model, this_pg) {
 		    tmp.push(rowSelects[i].id);
 		}
 	    }
-	    window.location = SUB_SITE+"generic_delete/"+model+"/?objects="+tmp+"&next="+next;
+	    var m = model;
+	    if (model == "Assembly") {
+		m = "Assemblies";
+	    }
+	    window.location = SUB_SITE+"generic_delete/"+m+"/?objects="+tmp+"&next="+next;
 	}
     }
 }
