@@ -1,0 +1,8 @@
+{{ object.pmid }}
+{{ object.gseid }}
+{{ object.authors }}
+{{ object.title }}
+{{ object.abstract }}
+{{ object.journal.name }}
+{{ object.journal.issn }}
+
