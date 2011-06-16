@@ -111,11 +111,11 @@ function barChartFactory(container, title, data) {
 		    data: data.values,
 		    dataLabels: {
 		    enabled: true,
-			rotation: -90,
-			color: '#FFFFFF', //Highcharts.theme.dataLabelsColor || '#FFFFFF',
+			rotation: 0,
+			color: '#000000', //Highcharts.theme.dataLabelsColor || '#FFFFFF',
 			align: 'right',
-			x: -3,
-			y: 10,
+			x: 0,
+			y: 0,
 			formatter: function() {
 			return this.y;
 		    },
