@@ -266,7 +266,7 @@ class Datasets(DCModel):
     curator = models.ForeignKey(User, null=True, blank=True, default=None,
                                 related_name="curator")
     
-Datasets._meta._donotSerialize = ['user', 'uploader']
+Datasets._meta._donotSerialize = ['user', 'uploader', 'curator']
 
 class Platforms(DCModel):
     """Platforms are the chips/assemblies used to generate the dataset.
@@ -486,7 +486,7 @@ class Samples(DCModel):
     def __str__(self):
         #return self._printInfo()
         return str(self.id)
-
+Samples._meta._donotSerialize = ['user', 'uploader']
 
 class SampleControls(DCModel):
     """a table to store all of the control files for a given sample.
