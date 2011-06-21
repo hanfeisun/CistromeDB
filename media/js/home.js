@@ -93,7 +93,7 @@ function ResultsView(container, model) {
 
 	//BEGIN: draw the title row
 	var newTbl = $D('table');
-	var titles = ["Authors", "Title", "Journal", "Date", "Rating",
+	var titles = [" ", "Authors", "Title", "Journal", "Date", "Rating",
 		      "Last Viewed"];
 	var newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
 	for (var i = 0; i < titles.length; i++) {
@@ -135,6 +135,17 @@ function ResultsView(container, model) {
 		}
 	    }(papers[i]);
 
+	    //add the icons
+	    var iconTd = $D('td');
+	    if (papers[i].status == "complete") {
+		iconTd.appendChild($D('img', {'src':SUB_SITE+"static/img/full.png", className:"icon"}));
+	    } else if (papers[i].status == "downloaded") {
+		iconTd.appendChild($D('img', {'src':SUB_SITE+"static/img/half.png", className:"icon"}));
+	    } else {
+		iconTd.appendChild($D('img', {'src':SUB_SITE+"static/img/empty.png", className:"icon"}));
+	    }
+	    newTr.appendChild(iconTd);
+	    
 	    for (var j = 0; j < fields.length; j++) {
 		var shrt = shorten(getattr(papers[i], fields[j]));
 		newTr.appendChild($D('td', {'innerHTML':shrt}));
@@ -145,6 +156,8 @@ function ResultsView(container, model) {
 	//build until min papers
 	for (; i < outer.minPapers; i++) {
 	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
+	    //stub for iconTd
+	    newTr.appendChild($D('td', {'innerHTML':"&nbsp;"}));
 	    for (var j = 0; j < fields.length; j++) {	       
 		newTr.appendChild($D('td', {'innerHTML':"&nbsp;"}));
 	    }
