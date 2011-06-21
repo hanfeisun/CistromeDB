@@ -40,7 +40,7 @@ function init() {
 	}
     }
 
-    var resultsView = new ResultsView($('papers_table'), pgModel);
+    var resultsView = new ResultsView($('results'), pgModel);
     var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
     var datasetsView = new DatasetsView($('datasets'), pgModel);
     var samplesView = new SamplesView($('samples'), pgModel);
@@ -53,6 +53,8 @@ function init() {
     resultsView.makeHTML();
 
     //togglers
+    var results_tog = new Toggler($('results_toggler'), 
+				  $('results_wrapper'));
     var paper_info_tog = new Toggler($('paper_info_toggler'), 
 				     $('paper_info_wrapper'));
     var datasets_tog = new Toggler($('datasets_toggler'), 
@@ -90,13 +92,14 @@ function ResultsView(container, model) {
 	outer.container.innerHTML = "";
 
 	//BEGIN: draw the title row
+	var newTbl = $D('table');
 	var titles = ["Authors", "Title", "Journal", "Date", "Rating",
 		      "Last Viewed"];
 	var newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
 	for (var i = 0; i < titles.length; i++) {
 	    newTr.appendChild($D('th',{'innerHTML':titles[i]}));
 	}
-	outer.container.appendChild(newTr);
+	newTbl.appendChild(newTr);
 	//END: draw the title row
 
 	var i = 0;
@@ -137,7 +140,7 @@ function ResultsView(container, model) {
 		newTr.appendChild($D('td', {'innerHTML':shrt}));
 	    }
 
-	    outer.container.appendChild(newTr);
+	    newTbl.appendChild(newTr);
 	}
 	//build until min papers
 	for (; i < outer.minPapers; i++) {
@@ -145,9 +148,9 @@ function ResultsView(container, model) {
 	    for (var j = 0; j < fields.length; j++) {	       
 		newTr.appendChild($D('td', {'innerHTML':"&nbsp;"}));
 	    }
-	    outer.container.appendChild(newTr);
+	    newTbl.appendChild(newTr);
 	}
-
+	outer.container.appendChild(newTbl);
     }
 }
 

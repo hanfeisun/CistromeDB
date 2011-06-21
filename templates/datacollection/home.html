@@ -30,16 +30,16 @@ onload="init();"
 {% endblock %}
 
 {% block content %}
-      <p><input type="text" id="search" value=""></input>
-	 <input type="button" value="Search" id="searchBtn"/>
-      </p>
-      <!--Results table-->
-      <table class="datatable" id="papers_table">
-      </table>
-
       <!--inspired by www.factorbook.org -->
       <section class="collapsable_box"> 
-	<header class="collapsable_box_header">Paper:<span id="paper_info_toggler" class="toggle">-</span></header> 
+	<header class="collapsable_box_header">Papers:<span id="searchSpan"><input type="text" id="search" value=""></input><input type="button" value="Search" id="searchBtn"/></span><span id="results_toggler" class="toggle">-</span></header> 
+	<section class="collapsable_box_content" id="results_wrapper">
+	      <section id="results"> </section> 
+	</section>
+      </section>
+
+      <section class="collapsable_box"> 
+	<header class="collapsable_box_header">Info:<span id="paper_info_toggler" class="toggle">-</span></header> 
 	<section class="collapsable_box_content" id="paper_info_wrapper">
 	      <section id="paper_info"> </section> 
 	</section>
@@ -58,7 +58,6 @@ onload="init();"
 	      <section id="samples"> </section> 
 	</section>
       </section>
-
 {% endblock %}
 
 {% block sidebar %}
