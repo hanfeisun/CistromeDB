@@ -1,16 +1,49 @@
+
+
+/* BEGIN: itunes styling */
 table {
     width:100%;
-    border: 2px solid #626cac;
+    border: 1px solid #a6a6a6;
     border-collapse: collapse;
     margin-bottom:20px;
     font-size:10pt;
-    color:#093955;
 }
 
-td, th {
-    border: 1px dotted #626cac;
+th {
+    color:#000;
+    background-color:#f3f3f3;
 }
 
+.row {
+    color:#000;
+    background-color:#f3f6fa;
+}
+
+.altrow {
+    color:#000;
+    background-color:#fff;
+}
+
+.searchWait {
+    color:#807f80;
+}
+.searchIn {
+    color:#000;
+}
+
+.highlight {
+    color:#fff;
+    background-color:#4790eb;
+}
+
+.selected {
+    color:#fff;
+    background-color:#175099;
+}
+
+/* END: itunes styling */
+
+/*
 h3 {
     color:#093955;
     margin:0;
@@ -18,6 +51,7 @@ h3 {
     padding-right:50%;
     display:inline;
 }
+*/
 
 #sidebar nav ul {
     list-style:none;
@@ -26,74 +60,132 @@ h3 {
     font-size:12pt;
 }
 
+section#main{
+    float:left;
+    width:90%;
+}
+
+/* BEGIN: collapsable boxes 
+   from: http://www.factorbook.org/_css/css.css?lastcache=1295038164&amp;viewtype=default
+   with modifications
+*/
+.collapsable_box {
+    margin: 0 0 20px 0;
+    height:auto;
+
+}
+/* IE6 fix */
+* html .collapsable_box  {
+    height:10px;
+}
+.collapsable_box_header {
+    color: #000;
+    font-size:12pt;
+    font-weight:bold;
+
+    padding: 5px 5px 5px 5px;
+    margin:0;
+    border: 1px solid #a6a6a6;
+    /* NOTE: the above might not work w/ some browsers
+    border-left: 1px solid #a6a6a6;
+    border-right: 1px solid #a6a6a6;
+    border-bottom: 1px solid #a6a6a6;
+    */
+    -moz-border-radius-topleft:8px;
+    -moz-border-radius-topright:8px;
+    -webkit-border-top-right-radius:8px;
+    -webkit-border-top-left-radius:8px;
+    background:#f3f3f3;
+}
+
+.collapsable_box_content {
+    padding: 10px 0 10px 0;
+    margin:0;
+    height:auto;
+    background:#fff;/*#dedede;*/
+    -moz-border-radius-bottomleft:8px;
+    -moz-border-radius-bottomright:8px;
+    -webkit-border-bottom-right-radius:8px;
+    -webkit-border-bottom-left-radius:8px;
+    border-left: 1px solid #cccccc;
+    border-right: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+}
 /*
-#nav_div {
-   position:relative;
-   left:20px;
-   width:850px;
-   margin-top:5px;
-   font-family: Helvetica, Arial, sans-serif;
-   font-size: 10pt;
+.collapsable_box_content .contentWrapper {
+    margin-bottom:5px;
 }
-
-#nav_div iframe {
-   width:850px;
+.collapsable_box_editpanel {
+    display: none;
+    background: #a8a8a8;
+    padding:10px 10px 5px 10px;
+    border-left: 1px solid white;
+    border-bottom: 1px solid white;
 }
-
-.section_hdr {
-   background-color:#615536;
-   display: block;
-   color:#fff;
-   padding: 5px 0px 5px 20px;
+.collapsable_box_editpanel p {
+    margin:0 0 5px 0;
 }
-
-#info_div {
-   background-color:#fff;
-   position:relative;
-   left:20px;
-   width:850px;
-   margin-top:5px;
-   font-family: Helvetica, Arial, sans-serif;
-   font-size: 10pt;
+.collapsable_box_header a.toggle_box_contents {
+    color: #4690d6;
+    cursor:pointer;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:20px;
+    font-weight: bold;
+    text-decoration:none;
+    float:right;
+    margin: 0;
+    margin-top: -7px;
 }
-
-#info_container .fld_label {
-   padding-right:10px;
-   padding-left:20px;
-   text-align:right;
+.collapsable_box_header a.toggle_box_edit_panel {
+    color: #4690d6;
+    cursor:pointer;
+    font-size:9px;
+    text-transform: uppercase;
+    text-decoration:none;
+    font-weight: normal;
+    float:right;
+    margin: 3px 10px 0 0;
 }
-
-#info_container .fld_value {
-   padding-top:10px;
-   padding-right:20px;
-}
-
-#dataset_div {
-   background-color:#fff;
-   position:relative;
-   left:20px;
-   width:850px;
-   margin-top:5px;
-   font-family: Times New Roman, Georgia, serif;
-   font-size: 10pt;
-}
-
-#dataset_div table{
-   width:850px;
-}
-
-#dataset_div th {
-   padding-right:10px;
-   text-align:left;
-}
-
-#dataset_div td {
-   padding-right:10px;
-   text-align:left;
-   font-size:9pt;
-}
-
-td a:link {
-   color:#000;
+.collapsable_box_editpanel label {
+    font-weight: normal;
+    font-size: 100%;
 }
 */
+/* used for collapsing a content box */
+/*
+.display_none {
+    display:none;
+}
+*/
+/* used on spotlight box - to cancel default box margin */
+/*
+.no_space_after {
+    margin: 0 0 0 0;
+}
+*/
+/* END: collapsable boxes */
+
+/* BEGIN: info styling */
+p.info {
+    color:gray;
+    width:100%;
+    margin: 5, 0, 0, 0;
+    font-size:10pt;
+}
+span.label {
+    color:gray;
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:0px;
+    margin:0;
+}
+span.value {
+    margin-left:25px;
+    display:block;
+    color:#000;
+}
+
+span.value2 {
+    color:#000;
+}

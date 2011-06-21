@@ -1,205 +1,413 @@
-/**
- * This file contains the data models, viewers, and controllers for the 
- * paper's page.
- *
- * Models: 
- *   PapersModel: the papers list, the current paper
- * Views: 
- *   Given a PapersModel, construct the table of papers
- *   Given a CurrentPaper, construct the info and datasets section
- */
+//create the class
+var Model = ModelFactory(["papersList", "currPaper"],[]);
+//Instantiate the class
+var pgModel = new Model({"papersList":null, "currPaper":null});
 
-/**
- * Class: ModelEvent
- * Description: This class does two important things: 1. register listeners
- * for a model event, and 2. when the model event is "invoked" (via the
- * notify method), all of the registered listeners are informed.
- *
- * @param: modelRef -- the object that is passed as the message of notify
- * NOTE: it is customary for modelRef to be MODEL that uses the Model Event
- */
-function ModelEvent(modelRef) {
-     this.modelRef = modelRef;
-     this.listeners = [];
-     var outer = this;
-     
-     this.register = function(listenerFn) {
-	 var i = outer.listeners.indexOf(listenerFn);
-	 //make sure there are no duplicates
-	 if (i == -1) { outer.listeners.push(listenerFn);}
-     }
-     
-     this.unregister = function(listenerFn) {
-	 var i = outer.listeners.indexOf(listenerFn);
-	 if (i != -1) { outer.listeners.splice(i, 1);}
-     }
-     
-     this.notify = function() {
-	 for (var i = 0; i < outer.listeners.length; i++) {
-	     outer.listeners[i](outer.modelRef);
-	 }
-     }
+var msg = "Search Cistrome DC";
+
+//NOTE: an empty search might mean "all" and not none.
+function init() {
+    var searchFld = $('search');
+    searchFld.value = msg;
+    searchFld.className = "searchWait"
+    searchFld.onclick = function(event) {
+	//IF the user is clicking for the first time
+	if (this.value == msg) {
+	    this.className = "searchIn";
+	    this.value = "";
+	}
+    }
+
+    searchFld.onblur = function(event) {
+	if (this.value == "") {
+	    this.className = "searchWait";
+	    this.value = msg;
+	}
+    }
+    
+    /* listen for return; note: i should do this through prototype or jscript
+       book b/c this might now transport across browsers
+    searchFld.onkeydown = function(event) {
+    }
+    */
+
+    var searchBtn = $('searchBtn');
+    searchBtn.onclick = function(event) {
+	if (searchFld.value != msg) {
+	    var srch = new Ajax.Request(SUB_SITE+"search/", 
+    {method:"get", parameters: {"q":searchFld.value}, onComplete: searchCb});
+	    this.disabled = true;
+	}
+    }
+
+    var resultsView = new ResultsView($('papers_table'), pgModel);
+    var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
+    var datasetsView = new DatasetsView($('datasets'), pgModel);
+    var samplesView = new SamplesView($('samples'), pgModel);
+
+    pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
+    pgModel.currPaperEvent.register(function() { paperInfoView.makeHTML();});
+    pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
+    pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
+    //Draw the results view
+    resultsView.makeHTML();
 }
 
 /**
- * CLASS: PapersModel
- * Description: This model contains a list of all of the papers, and the 
- * current paper selected
- */
-function PapersModel(papersList) {
-    this.papersList = papersList;
-    this.currentPaperID = null;
-    var outer = this;
-    
-    this.papersListEvent = new ModelEvent(this);
-    this.currentPaperIDEvent = new ModelEvent(this);
-    
-    this.setCurrentPaperID = function(id) {
-	if (outer.currentPaperID != id){
-	    outer.currentPaperID = id;
-	}
-	outer.currentPaperIDEvent.notify()
-    }
+ * shortens the string
+ *
+ * len - optional param specifying max length
+ **/
+function shorten(s, len) {
+    if (s == null) { return "";}
 
-    this.getPaper = function(index) {
-	if (index >= 0 && index < outer.papersList.length) {
-	    return outer.papersList[index];
-	} else {
-	    return null;
-	}
-    }
-    
-    this.getCurrPaper = function() {
-	if (outer.currentPaperID == null) {
-	    return null;
-	} else {
-	    return outer.getPaper(outer.currentPaperID);
-	}
+    var max_length = (len) ? len : 40;
+    if (s.length > max_length) {
+	return s.substr(0, max_length - 3) + "...";
+    } else {
+	return s;
     }
 }
 
-/**
- * constructs the paper info view
- */
-function PaperInfoView(papersModel, container) {
-    this.papersModel = papersModel;
+//draws the search results
+function ResultsView(container, model) {
+    this.prevTr = null;
+    this.minPapers = 10;
+    this.model = model;
     this.container = container;
     var outer = this;
+    this.makeHTML = function() {
+	//clear
+	outer.container.innerHTML = "";
 
-    this.currPaperLstnr = function() {
-	outer.draw();
-    }
-    outer.papersModel.currentPaperIDEvent.register(outer.currPaperLstnr);
-
-    this.draw = function() {
-	var currPaper = outer.papersModel.getCurrPaper();
-	if (currPaper != null) {
-	    var fields = ['title', 'authors', 'abstract'];
-	    var newTable = document.createElement('table');
-	    for (var i = 0; i < fields.length; i++) {
-		var newTR = document.createElement('tr');
-		var label = document.createElement('td');
-		label.innerHTML = fields[i]+":";
-		label.className = "fld_label";
-		newTR.appendChild(label);
-		
-		var val = document.createElement('td');
-		val.innerHTML = currPaper[fields[i]];
-		val.className = "fld_value";
-		newTR.appendChild(val);
-		newTable.appendChild(newTR);
-	    }
-	    if (outer.container.childNodes.length > 0) {
-		outer.container.replaceChild(newTable,
-					     outer.container.childNodes[0]);
-	    } else {
-		outer.container.appendChild(newTable);
-	    }
+	//BEGIN: draw the title row
+	var titles = ["Authors", "Title", "Journal", "Date", "Rating",
+		      "Last Viewed"];
+	var newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
+	for (var i = 0; i < titles.length; i++) {
+	    newTr.appendChild($D('th',{'innerHTML':titles[i]}));
 	}
-    }
-}
+	outer.container.appendChild(newTr);
+	//END: draw the title row
 
-/**
- * constructs the dataset info view
- */
-function DatasetsInfoView(papersModel, container) {
-    this.papersModel = papersModel;
-    this.container = container;
-    var outer = this;
-    this.datasetList = null;
-    
-    this.currPaperLstnr = function() {
-	outer.getDatasetList(outer.papersModel.getCurrPaper());
-    }
-    outer.papersModel.currentPaperIDEvent.register(outer.currPaperLstnr);
-
-    this.datasetListEvent = new ModelEvent(this);
-    this.setDatasetList = function(dlist) {
-	outer.datasetList = dlist;
-	outer.datasetListEvent.notify();
-    }
-    //NOTE: given a PAPER, retrieve the datasets associated with that PAPER
-    //through AJAX and then set it.
-    this.getDatasetList = function(currPaper) {
-	var url = SUB_SITE+"get_datasets/"+currPaper.id+"/";
-	var getDataset = 
-	new Ajax.Request(url, {onComplete:outer.getDatasetListCb});
-    }
-    this.getDatasetListCb = function(req) {
-	var dlist = eval("("+req.responseText+")");
-	outer.setDatasetList(dlist);
-    }
-    
-    this.draw = function() {
-	if (outer.datasetList != null) {
-	    //missing other info
-	    var fields = ["gsmid", "platform", "exp_type", "species", "factor",
-			  "cell_type", "file"];
-	    var newTable = document.createElement('table');
-	    var newTR = document.createElement('tr');
-	    newTable.appendChild(newTR);
-	    //create the header
-	    for (var i = 0; i < fields.length; i++) {
-		var newTH = document.createElement('th');
-		newTH.innerHTML = fields[i];
-		newTR.appendChild(newTH);
-	    }
-	    //fill in data
-	    for (var i = 0; i < outer.datasetList.length; i++) {
-		newTR = document.createElement('tr');
-		newTable.appendChild(newTR)
-		for (var j = 0; j < fields.length; j++) {
-		    var newTD = document.createElement('td');
-		    if (fields[j] == "file") {
-			var newA = document.createElement('a');
-			newA.href = outer.datasetList[i]['file'];
-			newA.innerHTML = "download";
-			newTD.appendChild(newA);
-		    } else {
-			newTD.innerHTML = outer.datasetList[i][fields[j]];
-		    }
-		    newTR.appendChild(newTD);
+	var i = 0;
+	var papers = (outer.model.getPapersList() == null)? []:outer.model.getPapersList();
+	var fields = ["authors", "title", "journal.name", "pub_date", "", ""]
+	for (; i < papers.length; i++) {
+	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
+	    //try to save this information so we can restore it
+	    newTr.rowInfo = newTr.className;
+	    newTr.onmouseover = function() {
+		if (this.className != "selected") {
+		    this.className = "highlight";
+		    this.style.cursor = "pointer";
 		}
 	    }
-	    if (outer.container.childNodes.length > 0) {
-		outer.container.replaceChild(newTable,
-					     outer.container.childNodes[0]);
-	    } else {
-		outer.container.appendChild(newTable);
+	    newTr.onmouseout = function() {
+		if (this.className != "selected") {
+		    this.className = this.rowInfo;
+		    this.style.cursor = "auto";
+		}
 	    }
+
+	    //note: we have to curry the paper obj in.
+	    newTr.onclick = function(p) {
+		return function() {
+		    //restore previous click
+		    if (outer.prevTr != null) {
+			outer.prevTr.className = outer.prevTr.rowInfo;
+		    }
+		    outer.prevTr = this;
+		    this.className = "selected";
+		    outer.model.setCurrPaper(p);
+		}
+	    }(papers[i]);
+
+	    for (var j = 0; j < fields.length; j++) {
+		var shrt = shorten(getattr(papers[i], fields[j]));
+		newTr.appendChild($D('td', {'innerHTML':shrt}));
+	    }
+
+	    outer.container.appendChild(newTr);
 	}
+	//build until min papers
+	for (; i < outer.minPapers; i++) {
+	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
+	    for (var j = 0; j < fields.length; j++) {	       
+		newTr.appendChild($D('td', {'innerHTML':"&nbsp;"}));
+	    }
+	    outer.container.appendChild(newTr);
+	}
+
     }
-    this.datasetListEvent.register(outer.draw);
 }
 
-var papersModel;
-var paperInfoView;
-var datasetsContainer;
-function initPage(papersList) {
-    papersModel = new PapersModel(papersList);
-    var infoContainer = document.getElementById('info_container');
-    var datasetsContainer = document.getElementById('dataset_container');
-    paperInfoView = new PaperInfoView(papersModel, infoContainer);
-    datasetsInfoView = new DatasetsInfoView(papersModel, datasetsContainer);
+function searchCb(req) {
+    var resp = eval("("+req.responseText+")");
+    pgModel.setPapersList(resp);
 }
 
+function PaperInfoView(container, model) {
+    this.container = container;
+    this.model = model;
+    var outer = this;
+    
+    this.makeHTML = function() {
+	//clear the container
+	outer.container.innerHTML = "";
+	var currPaper = outer.model.getCurrPaper();
+
+	var fields1 = ["title", "authors", "abstract"];
+
+	for (var i = 0; i < fields1.length; i++) {
+	    var tmp = $D('p', {'className':'info'});
+	    tmp.appendChild($D('span', {'className':'label',
+			    'innerHTML':upperCase1stLtr(fields1[i])+':'}));
+	    tmp.appendChild($D('span', {'className':'value',
+			    'innerHTML':currPaper[fields1[i]]}));
+	    outer.container.appendChild(tmp);
+	}
+
+	//[[field, label], ...]
+	var fields2 = [["pmid", "Pubmed ID:"], ["gseid", "GEO Series ID:"],
+		       ['journal.name', "Journal:"], 
+		       ['pub_date', 'Published:'], ['factors', 'Factors:']];
+	var tmp = $D('p', {'className':'info'});
+	for (var i = 0; i < fields2.length; i++) {
+	    tmp.appendChild($D('span', {'className':'label',
+			    'innerHTML':fields2[i][1]}));
+	    tmp.appendChild($D('span', {'className':'value2',
+			    'innerHTML':getattr(currPaper, fields2[i][0])}));
+	    tmp.appendChild($D('br'));
+	}
+	outer.container.appendChild(tmp);
+    }
+}
+
+function DatasetsView(container, model) {
+    this.container = container;
+    this.model = model;
+    this.datasets = null;
+    var outer = this;
+    
+    this.makeHTML = function() {
+	//clear
+	outer.container.innerHTML = "";
+	//build the table
+	var tbl = $D('table');
+	var tr = $D('tr');
+	tbl.appendChild(tr);
+
+	//build the table.th
+	var titles = ["GSMID", "Info", " ", "Files", "Rating"];
+	for (var i = 0; i < titles.length; i++) {
+	    tr.appendChild($D('th', {'innerHTML':titles[i]}));
+	}
+
+	//build the fields
+	var files = [["raw_file", "Raw"], ["treatment_file", "Treatment"], 
+		     ["peak_file", "Peak"], ["wig_file", "Wig"], 
+		     ["bw_file", "Big Wig"]];
+	var info1 = [
+		     ["species.name", "Species:"],
+		     ["assembly.name", "Assembly:"],		    
+		     ["factor.name", "Factor:"], 
+		     ["factor.antibody", "Antibody:"], 
+		     ["factor.type", "Factor Type:"],
+		     ["cell_type.name", "Cell Type:"],
+		     ["cell_type.tissue_type", "Cell Tissue Type:"],
+		     ["cell_line.name", "Cell Line:"],
+		     ["cell_pop.name", "Cell Pop.:"]
+		     ];
+	var info2 = [
+		     ["strain.name", "Strain:"],
+		     ["condition.name", "Condition:"],
+		     ["disease_state.name", "Disease State:"],
+		     ["platform.gplid", "GPLID:"],
+		     ["platform.name", "Platform Name:"],
+		     ["platform.technology", "Technology:"],
+		     ["platform.experiment_type", "Experiment Type:"]
+
+		     ];
+
+	//LIKE this:
+	//	  <tr class="row">
+	//	    <td>GSM1234</td>
+	//	    <td><span class="value"><a href="">view</a></span>
+	//	        <span class="value"><a href="">download</a></span>
+	//	    </td>
+	//alert(outer.datasets.length);
+	for (var i = 0; i < outer.datasets.length; i++) {
+	    var d = outer.datasets[i];
+	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
+	    tr.appendChild($D('td', {"innerHTML":getattr(d, "gsmid")}));
+
+	    //build the info tds
+	    var info = [info1, info2];
+	    for (var z = 0; z < info.length; z++) {
+		var newTd = $D('td');
+		for (var j = 0; j < info[z].length; j++) {
+		    var val = getattr(d, info[z][j][0], true);
+		    //NOTE: null evals to false
+		    if (val && val != "") {
+			newTd.appendChild($D('span', {'className':'label',
+					'innerHTML':info[z][j][1]}));
+			newTd.appendChild($D('span', {'className':'value2',
+					'innerHTML':val}));
+			newTd.appendChild($D('br'));
+		    }
+		}
+		tr.appendChild(newTd);
+	    }
+
+	    //Build the files
+	    var td = $D('td');
+	    for (var j = 0; j < files.length; j++) {
+		var url = getattr(d, files[j][0]);
+		if (url && url != "") {
+		    var tmp = $D('span', {'className':'label',
+					  'innerHTML':files[j][1]+":"});
+		    td.appendChild(tmp);
+
+		    tmp = $D('span', {'className':'value'});
+		    tmp.appendChild($D('a', {href:'', 
+				    innerHTML:'view'}));
+		    tmp.appendChild($D('span', {'innerHTML':'|'}));
+		    tmp.appendChild($D('a', {href:SUB_SITE+"static/"+url, 
+				    innerHTML:'download'}));
+
+		    td.appendChild(tmp);
+		}
+	    }
+	    tr.appendChild(td);
+
+	    //Stub for ratings
+	    tr.appendChild($D('td'));
+
+	    tbl.appendChild(tr);
+	}
+	outer.container.appendChild(tbl);
+    }
+    
+    this.cb = function(req) {
+	var resp = eval("("+req.responseText+")");
+	outer.datasets = resp;
+	outer.makeHTML();
+    }
+
+    this.currPaperLstnr = function() {
+	var dsets = 
+	new Ajax.Request(SUB_SITE+"jsrecord/Datasets/find/",
+    {method:"get", parameters:{"paper":outer.model.getCurrPaper().id}, 
+     onComplete: outer.cb});
+    }
+
+}
+
+function SamplesView(container, model) {
+    this.container = container;
+    this.model = model;
+    this.samples = null;
+    var outer = this;
+    
+    this.makeHTML = function() {
+	//clear
+	outer.container.innerHTML = "";
+	//build the table
+	var tbl = $D('table');
+	var tr = $D('tr');
+	tbl.appendChild(tr);
+
+	//build the table.th
+	var titles = ["Treaments", "Controls", "Files", " ", " ", " ", " ",
+		      " ", " ", "Rating"];
+	for (var i = 0; i < titles.length; i++) {
+	    tr.appendChild($D('th', {'innerHTML':titles[i]}));
+	}
+
+	var files1 = [
+		      ["treatment_file", "Treatment"],
+		      ["peak_file", "Peak"],
+		      ["peak_xls_file", "Peak XLS"]
+		      ];
+
+	var files2 = [
+		      ["summit_file", "Summit"],
+		      ["wig_file", "Wig"],
+		      ["bw_file", "Big Wig"]
+		      ];
+	var files3 = [
+		      ["bed_graph_file", "Bed Graph"],
+		      ["control_bed_graph_file", "Control Bed Graph"]
+		      ];
+	var files4 = [
+		      ["conservation_file", "Conservation"],
+		      ["conservation_r_file", "Conservation R"]
+		      ];
+	var files5 = [
+		      ["qc_file", "QC"],
+		      ["qc_r_file", "QC R"]
+		      ];
+	var files6 = [
+		      ["ceas_file", "CEAS"],
+		      ["ceas_r_file", "CEAS R"]
+		      ];
+	var files7 = [
+		      ["venn_file", "Venn Diagram"],
+		      ["seqpos_file", "Motif"]
+		      ];
+	for (var i = 0; i < outer.samples.length; i++) {
+	    var s = outer.samples[i];
+	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
+	    //Treatments & Controles
+	    tr.appendChild($D('td', {'innerHTML':s.treatments}));
+	    tr.appendChild($D('td', {'innerHTML':s.controls}));
+
+	    //Build the files
+	    var ls = [files1, files2, files3, files4, files5, files6, files7];
+	    for (var z = 0; z < ls.length; z++) {
+		var files = ls[z];
+		var td = $D('td');
+		for (var j = 0; j < files.length; j++) {
+		    var url = getattr(s, files[j][0]);
+		    if (url && url != "") {
+			var tmp = $D('span', {'className':'label',
+					      'innerHTML':files[j][1]+":"});
+			td.appendChild(tmp);
+			
+			tmp = $D('span', {'className':'value'});
+			tmp.appendChild($D('a', {href:'', 
+					innerHTML:'view'}));
+			tmp.appendChild($D('span', {'innerHTML':'|'}));
+			tmp.appendChild($D('a', {href:SUB_SITE+"static/"+url, 
+					innerHTML:'download'}));
+			
+			td.appendChild(tmp);
+		    }
+		}
+		tr.appendChild(td);
+	    }
+
+
+	    //stubb sample ratings
+	    tr.appendChild($D('td'));
+
+	    tbl.appendChild(tr);
+	}
+
+	outer.container.appendChild(tbl);
+    }
+
+    this.cb = function(req) {
+	var resp = eval("("+req.responseText+")");
+	outer.samples = resp;
+	outer.makeHTML();
+    }
+
+    this.currPaperLstnr = function() {
+	var samples = 
+	new Ajax.Request(SUB_SITE+"jsrecord/Samples/find/",
+    {method:"get", parameters:{"paper":outer.model.getCurrPaper().id}, 
+     onComplete: outer.cb});
+    }
+}
