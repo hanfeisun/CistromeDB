@@ -92,6 +92,6 @@ AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
 CACHE_BACKEND = 'db://newdc_cache'
 
 #haystack specific
-HAYSTACK_SITECONF = 'newdc.search_sites'
+HAYSTACK_SITECONF = 'search_sites'
 HAYSTACK_SEARCH_ENGINE = 'whoosh'
 HAYSTACK_WHOOSH_PATH = os.path.join(MEDIA_ROOT, 'whoosh_index')
