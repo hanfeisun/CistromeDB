@@ -46,6 +46,11 @@ th {
     width:30%;
 }
 
+.icon {
+    height:8px;
+    width:8px;
+}
+
 /* END: itunes styling */
 
 #sidebar nav ul {
