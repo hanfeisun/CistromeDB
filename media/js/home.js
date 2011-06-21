@@ -51,6 +51,15 @@ function init() {
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
     //Draw the results view
     resultsView.makeHTML();
+
+    //togglers
+    var paper_info_tog = new Toggler($('paper_info_toggler'), 
+				     $('paper_info_wrapper'));
+    var datasets_tog = new Toggler($('datasets_toggler'), 
+				   $('datasets_wrapper'), false);
+    var samples_tog = new Toggler($('samples_toggler'), 
+				  $('samples_wrapper'), false);
+
 }
 
 /**
@@ -145,6 +154,8 @@ function ResultsView(container, model) {
 function searchCb(req) {
     var resp = eval("("+req.responseText+")");
     pgModel.setPapersList(resp);
+    //reset the search btn
+    $('searchBtn').disabled = false;
 }
 
 function PaperInfoView(container, model) {
@@ -410,4 +421,42 @@ function SamplesView(container, model) {
     {method:"get", parameters:{"paper":outer.model.getCurrPaper().id}, 
      onComplete: outer.cb});
     }
+}
+
+
+function Toggler(toggleSpan, container, isOpen) {
+    this.toggleSpan = toggleSpan;
+    this.isOpen = (isOpen == null) ? true : isOpen;
+    this.container = container;
+    var outer = this;
+
+    this.close = function() {
+	Effect.SlideUp(outer.container);
+	outer.toggleSpan.innerHTML = "+";
+	outer.isOpen = false;
+    }
+
+    this.open = function() {
+	Effect.SlideDown(outer.container);
+	outer.toggleSpan.innerHTML = "-";
+	outer.isOpen = true;
+    }
+
+    this.toggleSpan.onclick = function() {
+	if (outer.isOpen) {
+	    //close
+	    outer.close();
+	} else {
+	    //open
+	    outer.open();
+	}
+    }
+
+    //init the display
+    if (this.isOpen) {
+	this.open();
+    } else {
+	this.close();
+    }
+
 }
