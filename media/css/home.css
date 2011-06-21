@@ -99,7 +99,9 @@ section#main{
 }
 
 .collapsable_box_content {
-    padding: 10px 0 10px 0;
+/*  removing this b/c it causes jitters w/ the slidedown/up effect:
+    Note: it's causing an ugly gap anyway
+    padding: 10px 0 10px 0;*/
     margin:0;
     height:auto;
     background:#fff;/*#dedede;*/
@@ -110,6 +112,18 @@ section#main{
     border-left: 1px solid #cccccc;
     border-right: 1px solid #cccccc;
     border-bottom: 1px solid #cccccc;
+}
+
+.toggle {
+    color: #4690d6;
+    cursor:pointer;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:20px;
+    font-weight: bold;
+    text-decoration:none;
+    float:right;
+    margin: 0;
+    margin-top: -7px;
 }
 /*
 .collapsable_box_content .contentWrapper {
