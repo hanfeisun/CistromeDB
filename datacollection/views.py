@@ -27,6 +27,7 @@ import jsrecord.views
 import pipeline.ConfGenerator as ConfGenerator
 import pipeline.RunSHGenerator as RunSHGenerator
 import importer.DnldSHGenerator as DnldSHGenerator
+from haystack.query import SearchQuerySet
 
 try:
     import json
@@ -715,12 +716,12 @@ def batch_update_datasets(request):
     return render_to_response('datacollection/batch_update_datasets_form.html',
                               locals(),
                               context_instance=RequestContext(request))
-
-def search(request):
-    """the search page"""
-    return render_to_response('datacollection/search.html',
-                              locals(),
-                              context_instance=RequestContext(request))
+#OBSOLETE
+# def search(request):
+#     """the search page"""
+#     return render_to_response('datacollection/search.html',
+#                               locals(),
+#                               context_instance=RequestContext(request))
 
 def delete_view_factory(name, model, redirect='home'):
     """Generates generic delete views
@@ -1155,3 +1156,24 @@ for name in generic_model_list:
 
 assemblies = modelPagesFactory(models.Assemblies, "assembly")
 
+#------------------------------------------------------------------------------
+# search page
+#------------------------------------------------------------------------------
+def search(request):
+    """This view takes a query param, q, and returns the jsonified records for
+    all of the papers associated with that query string
+    """
+    tmp = []
+    if 'q' in request.GET:
+        res = SearchQuerySet().filter(content=request.GET['q'])
+        for r in res:
+            #NOTE: r.model, r.model_name, r.object
+            if r.model is models.Datasets:
+                p = r.object.paper
+            else:
+                p = r.object
+
+            if not p in tmp:
+                tmp.append(jsrecord.views.jsonify(p))
+
+    return HttpResponse("[%s]" % ",".join(tmp))

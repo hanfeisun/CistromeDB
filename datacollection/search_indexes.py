@@ -13,4 +13,4 @@ class DatasetsIndex(SearchIndex):
     text = CharField(document=True, use_template=True)    
 
 site.register(Papers, PapersIndex)
-#site.register(Datasets, DatasetsIndex)
+site.register(Datasets, DatasetsIndex)
