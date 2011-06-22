@@ -4,32 +4,22 @@ class PaperAdapter:
     """Given a GSEID (given from a PaperSummary), this class adapter holds
     all of the information necessary to create a Paper object"""
     
-    def __init__(self, gseid):
-        geo = entrez.GeoQuery(gseid)
-        
-        self.pmid = geo.getElementsByTagName("Pubmed-ID")[0]['_value']
-        self.gseid = gseid
-        self.title = geo.getElementsByTagName("Title")[0]['_value']
-        self.abstract = geo.getElementsByTagName("Summary")[0]['_value']
-        self.pub_date = geo.getElementsByTagName("Release-Date")[0]['_value']
+    def __init__(self, pmid):
+        pubmed = entrez.PubmedSummary(pmid)
 
-        contributors = geo.getElementsByTagName("Contributor")
-        #ERROR: authors list should come from pubmed
-        pubmed = entrez.PubmedSummary(self.pmid)
+        #self.pmid = geo.getElementsByTagName("Pubmed-ID")[0]['_value']
+        self.pmid = pmid
+        self.gseid = pubmed.gseid
+        self.title = pubmed.title
+        self.abstract = pubmed.abstract
+        #self.pub_date = pubmed.pub_date #Can't take this b/c not in YYYY-MM-DD
         self.authors = pubmed.authors
-#         self.authors = []
-#         for a in contributors:
-#             person = a['_children'][0]['_children']
-#             #NOTE: form is LASTNAME FM - where F is first initial, and M is mid
-#             if len(person) < 3: 
-#                 first = person[0]['_value']
-#                 last = person[1]['_value']
-#                 self.authors.append("%s %s" % (last, first[0]))
-#             else: 
-#                 first = person[0]['_value']
-#                 middle = person[1]['_value']
-#                 last = person[2]['_value']
-#                 self.authors.append("%s %s%s" % (last, first[0], middle[0]))
+        self.journal = pubmed.journal
+        self.issn = pubmed.issn
+        
+        geo = entrez.GeoQuery(self.gseid)
+        self.pub_date = geo.getElementsByTagName("Release-Date")[0]['_value']
+        contributors = geo.getElementsByTagName("Contributor")
 
         self.design = geo.getElementsByTagName("Overall-Design")[0]['_value']
         self.type = geo.getElementsByTagName("Type")[0]['_value']
@@ -39,13 +29,14 @@ class PaperAdapter:
         self.datasets = ["%s" % s['_children'][0]['_value'] for s in samples]
 
         #get the journal -- TAKEN from PaperSummary
-        params0 = {'db':'pubmed', 'id': self.pmid}
-        pubmed = entrez.EntrezQuery('esummary', params0)
-        pubmedItems = pubmed.getElementsByTagName("Item")
-        self.journal= filter(lambda node: node['_attribs']['Name'] == 'Source',
-                             pubmedItems)[0]['_value']
-        self.issn = filter(lambda node: node['_attribs']['Name'] == 'ISSN',
-                           pubmedItems)[0]['_value']
+        #NOTE: this is all in PaperSummary
+        # params0 = {'db':'pubmed', 'id': self.pmid}
+        # pubmed = entrez.EntrezQuery('esummary', params0)
+        # pubmedItems = pubmed.getElementsByTagName("Item")
+        # self.journal= filter(lambda node: node['_attribs']['Name']=='Source',
+        #                      pubmedItems)[0]['_value']
+        # self.issn = filter(lambda node: node['_attribs']['Name'] == 'ISSN',
+        #                    pubmedItems)[0]['_value']
         
     def __str__(self):
         attrs = ["pmid", "gseid", "title", "abstract", "pub_date", "authors",
