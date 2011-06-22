@@ -166,23 +166,30 @@ class PubmedSummary:
     
     def __init__(self, pmid):
         self._attrs = ['pmid', 'gseid', 'title', 'authors', 'abstract',
-                       'published']
+                       'pub_date', 'journal', 'issn', 'published']
         self.pmid = pmid
 
         params0 = {'db':'pubmed', 'id': pmid}
         pubmed = EntrezQuery('esummary', params0)
         pubmedItems = pubmed.getElementsByTagName("Item")
         if len(pubmedItems):
-            #search for the item where attribute Name='PubDate' and 'Soruce'
-            pd = filter(lambda node: node['_attribs']['Name'] == 'PubDate',
-                         pubmedItems)[0]['_value']
-            src = filter(lambda node: node['_attribs']['Name'] == 'Source',
-                        pubmedItems)[0]['_value']
-            self.published = "%s, %s" % (src, pd)
-
+            #NOTE: almost all of the fields should come from pubmed!!!
+            #gseid - below in geo
+            self.title = filter(lambda node:node['_attribs']['Name']=='Title',
+                                pubmedItems)[0]['_value']
             auths = filter(lambda node: node['_attribs']['Name'] == 'Author',
                          pubmedItems)
             self.authors = [n['_value'] for n in auths]
+            #abstrac - below in geo
+
+            #search for the item where attribute Name='PubDate' and 'Source'
+            self.pub_date=filter(lambda nd:nd['_attribs']['Name']=='PubDate',
+                                 pubmedItems)[0]['_value']
+            self.journal=filter(lambda node:node['_attribs']['Name']=='Source',
+                                pubmedItems)[0]['_value']
+            self.issn = filter(lambda node: node['_attribs']['Name'] == 'ISSN',
+                               pubmedItems)[0]['_value']
+            self.published = "%s, %s" % (self.journal, self.pub_date)
 
         #print pubmed.root
         
@@ -202,15 +209,8 @@ class PubmedSummary:
                          items)
             self.gseid = "GSE"+tmp[0]['_value']
 
-            #search for the item where attribute Name='title'
-            tmp = filter(lambda node: node['_attribs']['Name'] == 'title',
-                         items)
-            self.title = tmp[0]['_value']
-            
-            #search for the item where attribute Name='title'
-            tmp = filter(lambda node: node['_attribs']['Name'] == 'summary',
-                         items)
-            self.abstract = tmp[0]['_value']
+            self.abstract=filter(lambda nd:nd['_attribs']['Name']=='summary',
+                                 items)[0]['_value']
 
     def __str__(self):
         """returns the string repr of the PubmedSummary"""

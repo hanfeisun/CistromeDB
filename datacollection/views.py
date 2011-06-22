@@ -531,26 +531,26 @@ def submissions_admin(request):
                               locals(),
                               context_instance=RequestContext(request))
 
-def _import_paper(gseid, user):
+def _import_paper(pmid, user):
     """Given a gseid, tries to import all of the information associated
     with that geo entry and create a Paper model object
     this is a helper fn to the auto_paper_import;
     returns the paper model object"""
-    geoQuery = entrez.PaperAdapter(gseid)
+    pmedQuery = entrez.PaperAdapter(pmid)
     attrs = ['pmid', 'gseid', 'title', 'abstract', 'pub_date']
 
     #try to create a new paper
     tmp = models.Papers()
     for a in attrs:
-        #tmp.a = geoQuery.a
-        setattr(tmp, a, getattr(geoQuery, a))
+        #tmp.a = pmedQuery.a
+        setattr(tmp, a, getattr(pmedQuery, a))
         
     #deal with authors
-    tmp.authors = ",".join(geoQuery.authors)
+    tmp.authors = ",".join(pmedQuery.authors)
 
     #set the journal
     JM = models.Journals
-    (journal,created) = JM.objects.get_or_create(name=geoQuery.journal)
+    (journal,created) = JM.objects.get_or_create(name=pmedQuery.journal)
     tmp.journal = journal
             
     #add automatic info
@@ -567,8 +567,8 @@ def auto_paper_import(request):
     information using pubmed ids"""
     if request.method == "POST":
         #the user is trying to autoimport a paper
-        if request.POST['gseid']:
-             tmp = _import_paper(request.POST['gseid'], request.user)
+        if request.POST['pmid']:
+             tmp = _import_paper(request.POST['pmid'], request.user)
     else:
         pass
 
@@ -1062,7 +1062,7 @@ def import_datasets(request, paper_id):
     like check_raw_files, run_analysis, etc
     """
     paper = models.Papers.objects.get(pk=paper_id)
-    geoQuery = entrez.PaperAdapter(paper.gseid)
+    geoQuery = entrez.PaperAdapter(paper.pmid)
     _auto_dataset_import(paper, paper.user, geoQuery.datasets)
     
     page = 1
