@@ -150,7 +150,6 @@ def EntrezQuery(tool, params):
     #print tmp.root
 
 #------------------------------------------------------------------------------
-
 class PubmedSummary:
     """stores the information from a pubmed summary:--usually the stuff from
     an esummary call on a pubmed id:
@@ -163,7 +162,30 @@ class PubmedSummary:
 
     --SUPPORTS auto_import_paper page
     """
-    
+    @staticmethod
+    def _getValue(items, field, val):
+        """many calls were like this:
+            self.title = filter(lambda node:node['_attribs']['Name']=='Title',
+                                pubmedItems)[0]['_value']
+           This is to clean up the call, so it's now like:
+           self.title = PubmedSummary._getValue(pubmedItems, 'Name', 'Title')
+
+           NOTE: this is what the record looks like-
+           [{'_tagName': u'Item', '_value': u'0092-8674', '_attribs': {u'Type': u'String', u'Name': u'ISSN'}, '_children': None}]
+           
+           It would be cool if we could do something like:
+           _getValue(foo, '_tagName', 'Item') --> [domList _tags]
+           _getValue(foo, '_attr.Name', 'ISSN') --> u'0092-8674'
+
+        """
+        tmp = filter(lambda node: node['_attribs'][field] == val,
+                     items)
+        
+        if len(tmp) > 0:
+            if '_value' in tmp[0]:
+                return tmp[0]['_value']
+        return None
+
     def __init__(self, pmid):
         self._attrs = ['pmid', 'gseid', 'title', 'authors', 'abstract',
                        'pub_date', 'journal', 'issn', 'published']
@@ -175,20 +197,15 @@ class PubmedSummary:
         if len(pubmedItems):
             #NOTE: almost all of the fields should come from pubmed!!!
             #gseid - below in geo
-            self.title = filter(lambda node:node['_attribs']['Name']=='Title',
-                                pubmedItems)[0]['_value']
+            self.title = PubmedSummary._getValue(pubmedItems,'Name','Title')
             auths = filter(lambda node: node['_attribs']['Name'] == 'Author',
                          pubmedItems)
             self.authors = [n['_value'] for n in auths]
-            #abstrac - below in geo
+            #abstract - below in geo
 
-            #search for the item where attribute Name='PubDate' and 'Source'
-            self.pub_date=filter(lambda nd:nd['_attribs']['Name']=='PubDate',
-                                 pubmedItems)[0]['_value']
-            self.journal=filter(lambda node:node['_attribs']['Name']=='Source',
-                                pubmedItems)[0]['_value']
-            self.issn = filter(lambda node: node['_attribs']['Name'] == 'ISSN',
-                               pubmedItems)[0]['_value']
+            self.pub_date=PubmedSummary._getValue(pubmedItems,'Name','PubDate')
+            self.journal = PubmedSummary._getValue(pubmedItems,'Name','Source')
+            self.issn = PubmedSummary._getValue(pubmedItems, 'Name', 'ISSN')
             self.published = "%s, %s" % (self.journal, self.pub_date)
 
         #print pubmed.root
@@ -205,12 +222,10 @@ class PubmedSummary:
             items = gds.getElementsByTagName('Item')
             
             #search for the item where attribute Name='GSE'
-            tmp = filter(lambda node: node['_attribs']['Name'] == 'GSE',
-                         items)
-            self.gseid = "GSE"+tmp[0]['_value']
+            tmp = PubmedSummary._getValue(items, 'Name', 'GSE')
+            self.gseid = "GSE"+tmp
 
-            self.abstract=filter(lambda nd:nd['_attribs']['Name']=='summary',
-                                 items)[0]['_value']
+            self.abstract = PubmedSummary._getValue(items, 'Name', 'summary')
 
     def __str__(self):
         """returns the string repr of the PubmedSummary"""
