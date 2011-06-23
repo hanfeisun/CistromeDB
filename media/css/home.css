@@ -80,7 +80,7 @@ section#sidebar{
 /* override the base.css */ 
 section#main{
     float:right;
-    width:90%;
+    width:85%;
     padding-left:0%;
 }
 
