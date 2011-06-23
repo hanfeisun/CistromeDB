@@ -1167,7 +1167,7 @@ def search(request):
     #use paper ids to check for duplicates
     paper_ids = []
     tmp = []
-    _timeout = 60*60 #1 hour
+    _timeout = 60*60*24 #1 day
     if 'q' in request.GET:
         key = request.GET['q']
         if cache.get(key):
