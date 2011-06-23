@@ -25,12 +25,6 @@ function init() {
 	}
     }
     
-    /* listen for return; note: i should do this through prototype or jscript
-       book b/c this might now transport across browsers
-    searchFld.onkeydown = function(event) {
-    }
-    */
-
     var searchBtn = $('searchBtn');
     searchBtn.onclick = function(event) {
 	if (searchFld.value != msg) {
@@ -39,6 +33,14 @@ function init() {
 	    this.disabled = true;
 	}
     }
+
+    //Enter key invokes search --NOTE: this might not work across browsers
+    searchFld.onkeydown = function(event) {
+	if (event.keyCode == 13) {
+	    searchBtn.onclick()
+	}
+    }
+
 
     var resultsView = new ResultsView($('results'), pgModel);
     var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
