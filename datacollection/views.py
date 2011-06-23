@@ -1163,6 +1163,8 @@ def search(request):
     """This view takes a query param, q, and returns the jsonified records for
     all of the papers associated with that query string
     """
+    #use paper ids to check for duplicates
+    paper_ids = []
     tmp = []
     if 'q' in request.GET:
         res = SearchQuerySet().filter(content=request.GET['q'])
@@ -1173,7 +1175,9 @@ def search(request):
             else:
                 p = r.object
 
-            if not p in tmp:
+            if not p.id in paper_ids:
+                paper_ids.append(p.id)
                 tmp.append(jsrecord.views.jsonify(p))
 
+    #print paper_ids
     return HttpResponse("[%s]" % ",".join(tmp))
