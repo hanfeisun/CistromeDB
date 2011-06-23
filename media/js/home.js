@@ -74,7 +74,7 @@ function init() {
 function shorten(s, len) {
     if (s == null) { return "";}
 
-    var max_length = (len) ? len : 40;
+    var max_length = (len) ? len : 30;
     if (s.length > max_length) {
 	return s.substr(0, max_length - 3) + "...";
     } else {
