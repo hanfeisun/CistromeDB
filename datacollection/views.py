@@ -1159,6 +1159,7 @@ assemblies = modelPagesFactory(models.Assemblies, "assembly")
 #------------------------------------------------------------------------------
 # search page
 #------------------------------------------------------------------------------
+#@cache_page(60 * 60 * 1)
 def search(request):
     """This view takes a query param, q, and returns the jsonified records for
     all of the papers associated with that query string
@@ -1166,8 +1167,13 @@ def search(request):
     #use paper ids to check for duplicates
     paper_ids = []
     tmp = []
+    _timeout = 60*60 #1 hour
     if 'q' in request.GET:
-        res = SearchQuerySet().filter(content=request.GET['q'])
+        key = request.GET['q']
+        if cache.get(key):
+            return HttpResponse(cache.get(key))
+
+        res = SearchQuerySet().filter(content=key)
         for r in res:
             #NOTE: r.model, r.model_name, r.object
             if r.model is models.Datasets:
@@ -1179,5 +1185,7 @@ def search(request):
                 paper_ids.append(p.id)
                 tmp.append(jsrecord.views.jsonify(p))
 
+        ret = "[%s]" % ",".join(tmp)
+        cache.set(key, ret, _timeout)
     #print paper_ids
-    return HttpResponse("[%s]" % ",".join(tmp))
+    return HttpResponse(ret)
