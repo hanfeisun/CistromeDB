@@ -53,17 +53,37 @@ th {
 
 /* END: itunes styling */
 
+/* BEGIN: sidebar- override base.css */
+section#sidebar{
+    float:left;
+    width:10%;
+}
+
 #sidebar nav ul {
     list-style:none;
     margin:0;
-    padding:0;
-    font-size:12pt;
+    padding:0px;
+    font-size:8pt;
 }
 
-section#main{
-    float:left;
-    width:90%;
+#sidebar nav h3 {
+    font-size:11pt;
+    margin:0;
+    padding:0;
+    padding-top:8px;
+    padding-bottom:2px;
+
 }
+
+/* END: sidebar */
+
+/* override the base.css */ 
+section#main{
+    float:right;
+    width:90%;
+    padding-left:0%;
+}
+
 
 /* BEGIN: collapsable boxes 
    from: http://www.factorbook.org/_css/css.css?lastcache=1295038164&amp;viewtype=default

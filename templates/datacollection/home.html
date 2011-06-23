@@ -61,14 +61,21 @@ onload="init();"
 {% endblock %}
 
 {% block sidebar %}
-{% comment %}
       <nav>
-         <h3>Links:</h3>
+         <h3>Cistrome DC:</h3>
          <ul>
-	    <li><a href="{% url search %}">Search</a></li>
-	    <li><a href="{% url papers %}">Browse Papers</a></li>
-	    <li><a href="{% url datasets %}">Browse Datasets</a></li>
-	    <li><a href="{% url paper_submission %}">Help Us- Submit Papers for Curation</a></li>
+	    <li><a href="">Latest Papers</a></li>
+	    <li><a href="">Top Rated Papers</a></li>
+	    <li><a href="">Most Downloaded</a></li>
+	 </ul>
+      </nav>
+      <nav>
+	 <h3>Help:</h3>
+	 <ul>
+	    <li><a href="">About Cistrome DC</a></li>
+	    <li><a href="">FAQ</a></li>
+	    <li><a href="{% url paper_submission %}">Submit a Paper</a></li>
+	    <li><a href="{% url dcstats %}">Cistrome DC Stats</a></li>
 	 </ul>
       </nav>
       {% if user.is_authenticated %}
@@ -85,5 +92,4 @@ onload="init();"
 	 </ul>
       </nav>
       {% endif %}
-{% endcomment %}
 {% endblock %}
