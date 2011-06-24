@@ -48,6 +48,8 @@ function init() {
     var samplesView = new SamplesView($('samples'), pgModel);
 
     pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
+    //when a new paperList is set, clear the current paper
+    pgModel.papersListEvent.register(function() {pgModel.setCurrPaper(null);});
     pgModel.currPaperEvent.register(function() { paperInfoView.makeHTML();});
     pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
@@ -185,6 +187,9 @@ function PaperInfoView(container, model) {
 	//clear the container
 	outer.container.innerHTML = "";
 	var currPaper = outer.model.getCurrPaper();
+	
+	//check for null
+	if (!currPaper) { return; }
 
 	var fields1 = ["title", "authors", "abstract"];
 
@@ -325,10 +330,18 @@ function DatasetsView(container, model) {
     }
 
     this.currPaperLstnr = function() {
-	var dsets = 
-	new Ajax.Request(SUB_SITE+"jsrecord/Datasets/find/",
-    {method:"get", parameters:{"paper":outer.model.getCurrPaper().id}, 
-     onComplete: outer.cb});
+	var currPaper = outer.model.getCurrPaper();
+	if (currPaper != null) {
+	    var dsets = 
+		new Ajax.Request(SUB_SITE+"jsrecord/Datasets/find/",
+				 {method:"get",
+				  parameters:{"paper":currPaper.id}, 
+				  onComplete: outer.cb});
+	} else {
+	    //clear
+	    outer.container.innerHTML = "";
+	}
+
     }
 
 }
@@ -434,10 +447,18 @@ function SamplesView(container, model) {
     }
 
     this.currPaperLstnr = function() {
-	var samples = 
-	new Ajax.Request(SUB_SITE+"jsrecord/Samples/find/",
-    {method:"get", parameters:{"paper":outer.model.getCurrPaper().id}, 
-     onComplete: outer.cb});
+	var currPaper = outer.model.getCurrPaper();
+	if (currPaper != null) {
+	    var samples = 
+		new Ajax.Request(SUB_SITE+"jsrecord/Samples/find/",
+				 {method:"get", 
+				  parameters:{"paper":currPaper.id}, 
+				  onComplete: outer.cb});
+	} else {
+	    //clear
+	    outer.container.innerHTML = "";
+	}
+	
     }
 }
 
