@@ -12,6 +12,15 @@ th {
     background-color:#f3f3f3;
 }
 
+/*turn off selection color for liquid columns*/
+th::selection {
+    background-color:Transparent;
+}
+
+th span::selection {
+    background-color:Transparent;
+}
+
 .row {
     color:#000;
     background-color:#f3f6fa;

@@ -151,8 +151,9 @@ function ResultsView(container, model) {
 	    newTr.appendChild(iconTd);
 	    
 	    for (var j = 0; j < fields.length; j++) {
-		var shrt = shorten(getattr(papers[i], fields[j]));
-		newTr.appendChild($D('td', {'innerHTML':shrt}));
+		val = getattr(papers[i], fields[j]);
+		var shrt = shorten(val);
+		newTr.appendChild($D('td', {'innerHTML':shrt, '_val':val}));
 	    }
 
 	    newTbl.appendChild(newTr);
@@ -167,7 +168,11 @@ function ResultsView(container, model) {
 	    }
 	    newTbl.appendChild(newTr);
 	}
+	//make the liquid cols for the tabl
 	outer.container.appendChild(newTbl);
+	//NOTE: this call to liquid cols MUST be AFTER we append the newTbl,
+	//otherwise the widths of the elms will be 0
+	var liquidCols = new LiquidCols(newTbl);
     }
 }
 
@@ -498,4 +503,76 @@ function Toggler(toggleSpan, container, isOpen) {
 	this.close();
     }
 
+}
+
+//Liquid Columns class: -- THIS might be reusable...
+function LiquidCols(table) {
+    this.table = table;
+    //get the table's th's
+    this.ths = this.table.getElementsByTagName('th');
+    this.trs = this.table.getElementsByTagName('tr');
+
+    //NOTE: tds[0] is an array of all of the td elms in the 0th column
+    var tmp = [];
+    for (var i = 0; i < this.trs.length; i++) {
+	tmp.push(this.trs[i].getElementsByTagName('td'));
+    }
+    //transpose tmp to get tds
+    this.tds = [];
+    //init the transpose w/ empty rows
+    for (var i = 0; i < this.ths.length; i++) {
+	this.tds.push([]);
+    }
+    for (var r = 0; r < tmp.length; r++) {
+	var foo = tmp[r];
+	for (var c = 0; c < foo.length; c++) {
+	    this.tds[c].push(tmp[r][c]);
+	}
+    }
+
+    this.widths = [];
+    var outer = this;
+    
+    this.startX = 0;
+    this.curr = null;
+    this.scale = 7.0;
+
+    this.table.onmouseup = function(event) {
+	Event.stopObserving(outer.table, "mousemove");
+	//sett the new width--not pretty but hey.
+	if (outer.curr) {
+	    outer.widths[outer.curr] = outer.ths[outer.curr].getWidth();
+	}
+    }
+
+    for (var i = 0; i < this.ths.length; i++) {
+	var tmp = $D('span', {innerHTML:"|"});
+	tmp.style['float'] = "right";
+	tmp.style['cursor'] = "pointer";
+	
+	tmp.onmousedown = function(i) {
+	    return function(event) {
+		outer.startX = event.x;
+		outer.curr = i;
+		
+		outer.table.observe("mousemove", function(event) {
+			outer.ths[i].style.width = 
+			    outer.widths[i] + (event.x - outer.startX) +"px";
+			
+			//shorten the td's text content to fit the new width
+			for (var z = 0; z < outer.tds[i].length; z++) {
+			    //we store the full string in the td's _val attrib
+			    if (outer.tds[i][z]['_val']) {
+				var max=Math.round(outer.tds[i][z].getWidth() /
+						   outer.scale);
+				outer.tds[i][z].innerHTML = 
+				    shorten(outer.tds[i][z]['_val'], max);
+			    }
+			}
+		    });
+	    }
+	}(i);
+	this.ths[i].appendChild(tmp);
+	this.widths.push(this.ths[i].getWidth());
+    }
 }
