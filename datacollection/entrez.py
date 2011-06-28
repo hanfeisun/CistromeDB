@@ -7,7 +7,6 @@ class PaperAdapter:
     def __init__(self, pmid):
         pubmed = entrez.PubmedSummary(pmid)
 
-        #self.pmid = geo.getElementsByTagName("Pubmed-ID")[0]['_value']
         self.pmid = pmid
         self.gseid = pubmed.gseid
         self.title = pubmed.title
@@ -18,25 +17,15 @@ class PaperAdapter:
         self.issn = pubmed.issn
         
         geo = entrez.GeoQuery(self.gseid)
-        self.pub_date = geo.getElementsByTagName("Release-Date")[0]['_value']
+        self.pub_date = geo._getValue("Release-Date")
         contributors = geo.getElementsByTagName("Contributor")
 
-        self.design = geo.getElementsByTagName("Overall-Design")[0]['_value']
-        self.type = geo.getElementsByTagName("Type")[0]['_value']
+        self.design = geo._getValue("Overall-Design")
+        self.type = geo._getValue("Type")
 
         #store the sample accession numbers
         samples = geo.getElementsByTagName('Sample')
         self.datasets = ["%s" % s['_children'][0]['_value'] for s in samples]
-
-        #get the journal -- TAKEN from PaperSummary
-        #NOTE: this is all in PaperSummary
-        # params0 = {'db':'pubmed', 'id': self.pmid}
-        # pubmed = entrez.EntrezQuery('esummary', params0)
-        # pubmedItems = pubmed.getElementsByTagName("Item")
-        # self.journal= filter(lambda node: node['_attribs']['Name']=='Source',
-        #                      pubmedItems)[0]['_value']
-        # self.issn = filter(lambda node: node['_attribs']['Name'] == 'ISSN',
-        #                    pubmedItems)[0]['_value']
         
     def __str__(self):
         attrs = ["pmid", "gseid", "title", "abstract", "pub_date", "authors",
