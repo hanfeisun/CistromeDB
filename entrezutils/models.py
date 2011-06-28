@@ -81,6 +81,18 @@ class XMLWrapper:
         treeWalker(self.root, fn)
         return tmp
 
+    def _getValue(self, fieldName):
+        """replaces calles like this-
+        geo.getElementsByTagName("Release-Date")[0]['_value']
+        Does error checking
+        Modeled after PubmedSummary._getValue
+        """
+        tmp = self.getElementsByTagName(fieldName)
+        if (tmp and (len(tmp) > 0)):
+            if '_value' in tmp[0]:
+                return tmp[0]['_value']
+        return None
+
 def treeWalker(XMLWrapperNode, fn):
     """Walks XMLWrapper tree in BFS order, and applies the fn"""
     fn(XMLWrapperNode)
