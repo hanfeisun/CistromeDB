@@ -1199,7 +1199,6 @@ def front(request, rtype):
     returns JSON
     """
     _timeout = 60*60 #1 hr
-    _max = 25
 
     #1. go to cache
     if cache.get(rtype):
@@ -1209,7 +1208,8 @@ def front(request, rtype):
     if (rtype == "all"):
         papers = models.Papers.objects.all()
     elif (rtype == "recent"):
-        papers = models.Papers.objects.order_by("-date_collected")[:_max]
+        #get most recent 10
+        papers = models.Papers.objects.order_by("-date_collected")[:10]
     else:
         papers = []
 
