@@ -84,6 +84,12 @@ section#sidebar{
 
 }
 
+.fakeLink {    
+    color:#093955;
+    text-decoration:underline;
+    cursor:pointer;
+}
+
 /* END: sidebar */
 
 /* override the base.css */ 

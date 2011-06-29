@@ -54,11 +54,11 @@ function init() {
     pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
     //Draw the results view
-    resultsView.makeHTML();
+    //resultsView.makeHTML();
 
     //togglers
     var results_tog = new Toggler($('results_toggler'), 
-				  $('results_wrapper'));
+				  $('results_wrapper'), false);
     var paper_info_tog = new Toggler($('paper_info_toggler'), 
 				     $('paper_info_wrapper'));
     var datasets_tog = new Toggler($('datasets_toggler'), 
@@ -66,6 +66,34 @@ function init() {
     var samples_tog = new Toggler($('samples_toggler'), 
 				  $('samples_wrapper'), false);
 
+    //sidebar links
+    $('all_papers').onclick = function(event) {
+	getPapers("all", pgModel);
+    }
+    $('recent_papers').onclick = function(event) {
+	getPapers("recent", pgModel);
+    }
+
+    //init the results to just the most recent
+    $('recent_papers').onclick();
+    //wait 1.5 secs and then show the results pane
+    setTimeout(function() { results_tog.open();}, 1500);
+}
+
+/**
+ * This function supports the sidebar links, e.g. get All papers or the most
+ * recent papers
+ */
+function getPapers(type, model) {
+    var cb = function(req) {
+	var resp = eval("("+req.responseText+")");
+	model.setPapersList(resp);
+    }
+
+    var call = new Ajax.Request(SUB_SITE+"front/"+type+"/", 
+				{method:"get", parameters: {}, 
+				 onComplete: cb});
+    
 }
 
 /**
