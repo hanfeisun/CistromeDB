@@ -371,7 +371,10 @@ def datasets(request, user_id):
         datasets = [d for d in datasets \
                     if smart_str(d.paper.lab) == smart_str(request.GET['lab'])]
         rest += "&lab=%s" % request.GET['lab']
-        
+    
+    #here is where we order things by paper and then gsmid for the admins
+    datasets = datasets.order_by("paper", "gsmid")
+
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
