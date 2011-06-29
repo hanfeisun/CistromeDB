@@ -1192,3 +1192,29 @@ def search(request):
         cache.set(key, ret, _timeout)
     #print paper_ids
     return HttpResponse(ret)
+
+def front(request, rtype):
+    """supports the front page retrieval of, for example, the most recent 
+    papers (determined by rtype).
+    returns JSON
+    """
+    _timeout = 60*60 #1 hr
+    _max = 25
+
+    #1. go to cache
+    if cache.get(rtype):
+        return HttpResponse(cache.get(rtype))
+
+    tmp = []
+    if (rtype == "all"):
+        papers = models.Papers.objects.all()
+    elif (rtype == "recent"):
+        papers = models.Papers.objects.order_by("-date_collected")[:_max]
+    else:
+        papers = []
+
+    tmp = [jsrecord.views.jsonify(p) for p in papers]
+    ret = "[%s]" % ",".join(tmp)
+    cache.set(rtype, ret, _timeout)
+
+    return HttpResponse(ret)
