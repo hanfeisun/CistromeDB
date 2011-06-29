@@ -535,6 +535,9 @@ class DiseaseStates(DCModel):
     """Information field for datasets"""
     name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return str(self.name)
+
 class SampleDhsStats(DCModel):
     """Stats about the sample"""
     sample = models.ForeignKey('Samples', unique=True)
