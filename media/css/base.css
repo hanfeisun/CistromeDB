@@ -15,6 +15,7 @@ img#logo {
     padding:0;
     padding-left:5px;
     display:inline;
+    width:25%;
 }
 
 header#page_header{
@@ -35,10 +36,12 @@ header#page_header h1{
 }
 
 /*login form*/
+/*
 header#page_header span{
     display:block;
     padding-left:10%;
 }
+*/
 
 header#page_header nav ul, #page_footer nav ul {
     list-style:none;
@@ -105,12 +108,14 @@ a:link, a:visited {
 }
 */
 /* login unit */
-/*
+
 #login {
-   padding-left:65px;
+   padding-top:5px;
+   padding-right:5px;
    font-family: Helvetica, Arial, sans-serif;
    font-size: 10pt;
    color:#7782a0;
    display:inline;
+   float:right;
 }
-*/
+
