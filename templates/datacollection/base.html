@@ -8,16 +8,9 @@
 </head>
 <body {% block onload %}{% endblock %}>
    <header id="page_header">
-      <img src="{% url static_url %}img/small_dna.png" id="logo"/>
-      <h1>Cistrome Data Collection</h1>
+      <img src="{% url static_url %}img/cistromeMap_logo.png" id="logo"/>
+      <!--<h1>Cistrome Paper Collection</h1>-->
       {% block login_form %}{% endblock %}
-      <!--<nav>
-        <ul> <li><a href="{% url home %}">Home</a></li>
- 	     <li><a href="about">About</a></li> 
-	     <li><a href="help">Help</a></li> 
-	     <li><a href="contact">Contact Us</a></li>
-	</ul> 
-      </nav>-->
    </header>
    <section id="main">
    {% block content %}{% endblock %}
