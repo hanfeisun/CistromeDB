@@ -5,8 +5,8 @@ function init(dsets) {
 
     fields = ["factor", "platform", "species", "assembly",
 	      "cell_type", "cell_line", "cell_pop",
-	      "strain", "condition"];
-    exceptions = ["cell_type", "cell_line", "cell_pop"]
+	      "strain", "condition", "disease_state"];
+    exceptions = ["cell_type", "cell_line", "cell_pop", "disease_state"]
     for (var i = 0; i < fields.length; i++) {
 	var newA = document.createElement("a");
 	//NOTE: we have to treat cell_type, cell_line and cell_pop differently;
