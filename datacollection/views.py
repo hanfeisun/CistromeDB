@@ -1186,9 +1186,14 @@ def search(request):
 
             if not p.id in paper_ids:
                 paper_ids.append(p.id)
-                tmp.append(jsrecord.views.jsonify(p))
+                #tmp.append(jsrecord.views.jsonify(p))
+                tmp.append(p)
 
-        ret = "[%s]" % ",".join(tmp)
+        #sort tmp by pub_date
+        tmp.sort(key=lambda p: p.pub_date, reverse=True)
+        tmp2 = [jsrecord.views.jsonify(p) for p in tmp]
+        
+        ret = "[%s]" % ",".join(tmp2)
         cache.set(key, ret, _timeout)
     #print paper_ids
     return HttpResponse(ret)
@@ -1206,7 +1211,7 @@ def front(request, rtype):
 
     tmp = []
     if (rtype == "all"):
-        papers = models.Papers.objects.all()
+        papers = models.Papers.objects.all().order_by("-pub_date")
     elif (rtype == "recent"):
         #get most recent 10
         papers = models.Papers.objects.order_by("-date_collected")[:10]
