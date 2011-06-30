@@ -8,7 +8,7 @@
 </head>
 <body {% block onload %}{% endblock %}>
    <header id="page_header">
-      <img src="{% url static_url %}img/cistromeMap_logo.png" id="logo"/>
+      <a href="{% url home %}"><img src="{% url static_url %}img/cistromeMap_logo.png" id="logo"/></a>
       <!--<h1>Cistrome Paper Collection</h1>-->
       {% block login_form %}{% endblock %}
    </header>
