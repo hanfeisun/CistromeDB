@@ -184,3 +184,8 @@ span.value2 {
     color:#000;
 }
 /* END: info styling */
+
+/*hide the sample section for now--while the NAR paper is under review*/
+#sample_section {
+    display:none;
+}
