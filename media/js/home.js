@@ -236,10 +236,23 @@ function PaperInfoView(container, model) {
 	}
 
 	//[[field, label], ...]
-	var fields2 = [["pmid", "Pubmed ID:"], ["gseid", "GEO Series ID:"],
+	var fields2 = [//["pmid", "Pubmed ID:"], ["gseid", "GEO Series ID:"],
 		       ['journal.name', "Journal:"], 
 		       ['pub_date', 'Published:'], ['factors', 'Factors:']];
 	var tmp = $D('p', {'className':'info'});
+	//deal with the pmid and gseid separately--they need links like this:
+	//<a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{p.pmid}}" target="_ blank">{{ p.pmid }}</a>
+	tmp.appendChild($D('span', {'className':'label', 'innerHTML':"Pubmed ID:"}));
+	tmp.appendChild($D('a', {innerHTML:currPaper.pmid, target:'_blank',
+			href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+currPaper.pmid}));
+	tmp.appendChild($D('br'))
+	
+	tmp.appendChild($D('span', {'className':'label', 'innerHTML':"GEO Series ID:"}));
+	tmp.appendChild($D('a', {innerHTML:currPaper.gseid, target:'_blank',
+			href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+currPaper.gseid}));
+	tmp.appendChild($D('br'))
+
+
 	for (var i = 0; i < fields2.length; i++) {
 	    tmp.appendChild($D('span', {'className':'label',
 			    'innerHTML':fields2[i][1]}));
@@ -307,7 +320,10 @@ function DatasetsView(container, model) {
 	for (var i = 0; i < outer.datasets.length; i++) {
 	    var d = outer.datasets[i];
 	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
-	    tr.appendChild($D('td', {"innerHTML":getattr(d, "gsmid")}));
+	    var gsmid = getattr(d, "gsmid");
+	    var newA = $D('a', {innerHTML:gsmid, target:'_blank',
+				href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmid});
+	    tr.appendChild($D('td').appendChild(newA));
 
 	    //build the info tds
 	    var info = [info1, info2];
