@@ -1209,12 +1209,21 @@ def front(request, rtype):
     if cache.get(rtype):
         return HttpResponse(cache.get(rtype))
 
+    key = "front:all_papers"
+    if cache.get(key):
+        all_papers = cache.get(key)
+    else:
+        all_papers = models.Papers.objects.all().order_by("-pub_date")
+        cache.set(key, all_papers, _timeout)
+
     tmp = []
     if (rtype == "all"):
-        papers = models.Papers.objects.all().order_by("-pub_date")
+        #papers = models.Papers.objects.all().order_by("-pub_date")
+        papers = all_papers
     elif (rtype == "recent"):
-        #get most recent 10
-        papers = models.Papers.objects.order_by("-date_collected")[:10]
+        #get most recent 10--NOTE: just like all, but taking latest 10
+        #papers = models.Papers.objects.all().order_by("-pub_date")[:10]
+        papers = all_papers[:10]
     else:
         papers = []
 
