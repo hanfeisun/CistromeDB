@@ -1,4 +1,4 @@
-{% extends "datacollection/base.html" %}
+{% extends "datacollection/login_base.html" %}
 {% load dc_extras %}
 
 {% block title %}Cistrome Paper Collection - Samples{% endblock %}
@@ -7,20 +7,6 @@
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/samples.js" type="text/javascript"></script>
-{% endblock %}
-
-{% block login_form %}
-      {% if user.is_authenticated %}
-      <span id="login">Welcome, {{ user.username }}. <a href="{% url logout %}">logout</a></span>
-      {% else %}
-      <form action="{% url login %}" method="post" id="login">
-         <label for="username">Administrator Login:</label>
-	 <input type="text" name="username" id="username"/>
-         <label for="password">Password:</label>
-	 <input type="password" name="password" id="password"/>
-	 <input type="submit" name="login" value="login"/>
-      </form>
-      {% endif %}
 {% endblock %}
 
 {% block onload %}
