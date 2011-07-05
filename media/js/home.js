@@ -3,7 +3,10 @@ var Model = ModelFactory(["papersList", "currPaper"],[]);
 //Instantiate the class
 var pgModel = new Model({"papersList":null, "currPaper":null});
 
-var msg = "Search Cistrome DC";
+//MENG asked me to remove this for now...but i like this so i'm just going to 
+//disable it
+//var msg = "Search Cistrome DC";
+var msg = "                   ";
 
 //NOTE: an empty search might mean "all" and not none.
 function init() {
