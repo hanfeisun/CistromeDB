@@ -8,8 +8,9 @@ import re
 from django.shortcuts import render_to_response, Http404, get_object_or_404
 from django.contrib import auth
 from django.template import RequestContext
-from django.contrib.auth.decorators import login_required
+import django.contrib.auth.decorators as decorators
 from django.views.decorators.cache import cache_page
+from django.views.generic.simple import direct_to_template
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseRedirect, HttpResponse
 #from django.contrib.auth.views import login
@@ -18,6 +19,8 @@ from django.db.models import Q, Count, Max, Min, Avg, query, manager
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.cache import cache
 from django.utils.encoding import smart_str
+from django.utils.http import urlquote
+from django.conf import settings as conf_settings
 
 import models
 import forms
@@ -44,6 +47,38 @@ _items_per_page = 25
 #when the oldest/newest paper was published
 _dateRange = models.Papers.objects.aggregate(Min('pub_date'),Max('pub_date'))
 
+def admin_only(function=None):
+    """
+    Decorator for views that checks that the user is logged in AND is_staff.
+    based closely on django.contrib.auth.decorators.login_required
+    """
+    def _dec(view_fn):
+        def _view(request, *args, **kwargs):
+            #check that user is logged in AND is_staff
+            if request.user.is_authenticated() and request.user.is_staff:
+                return view_fn(request, *args, **kwargs)
+            elif not request.user.is_authenticated():
+                #redirect to login
+                path = urlquote(request.get_full_path())
+                #tup = self.login_url, self.redirect_field_name, path
+                tup = conf_settings.LOGIN_URL, auth.REDIRECT_FIELD_NAME, path
+                return HttpResponseRedirect('%s?%s=%s' % tup)
+                #return HttpResponseRedirect(auth.REDIRECT_FIELD_NAME)
+            elif not request.user.is_staff:
+                return direct_to_template(request, 
+                                          "registration/restricted.html")
+            else:
+                #should never reach
+                pass
+        _view.__name__ = view_fn.__name__
+        _view.__dict__ = view_fn.__dict__
+        _view.__doc__ = view_fn.__doc__
+
+        return _view
+    if function:
+        return _dec(function)
+    return _dec
+
 def no_view(request):
     """
     We don't really want anyone going to the static_root.
@@ -58,7 +93,7 @@ def home(request):
     return render_to_response('datacollection/home.html', locals(),
                               context_instance=RequestContext(request))
 
-@login_required
+@admin_only
 def new_paper_form(request):
     #errors = []
     #NOTE: by convention i should have to do this; django should be smart
@@ -81,7 +116,7 @@ def new_paper_form(request):
     return render_to_response('datacollection/new_paper_form.html', locals(),
                               context_instance=RequestContext(request))
 
-@login_required
+@admin_only
 def new_dataset_form(request):
     if request.method == "POST":
         form = forms.DatasetForm(request.POST, request.FILES)
@@ -107,7 +142,7 @@ def new_dataset_form(request):
     return render_to_response('datacollection/new_dataset_form.html', locals(),
                               context_instance=RequestContext(request))
 
-@login_required
+@admin_only
 def upload_dataset_form(request, dataset_id):
     """Given a dataset_id, generate or handle a form that will allow users
     to upload the files associated with it
@@ -131,7 +166,7 @@ def upload_dataset_form(request, dataset_id):
                               locals(),
                               context_instance=RequestContext(request))
 
-@login_required
+@admin_only
 def new_sample_form(request):
     if request.method == "POST":
         tmp = models.Samples()
@@ -153,7 +188,6 @@ def new_sample_form(request):
 #------------------------------------------------------------------------------
 #GENERIC FORMS section
 def form_view_factory(title_in, form_class):
-#    @login_required--see return
     def generic_form_view(request):
         title = title_in
         if request.method == "POST":
@@ -167,7 +201,7 @@ def form_view_factory(title_in, form_class):
                 next = request.GET['next']
         return render_to_response('datacollection/generic_form.html', locals(),
                                   context_instance=RequestContext(request))
-    return login_required(generic_form_view)
+    return admin_only(generic_form_view)
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
@@ -201,7 +235,7 @@ def update_form_factory(title_in, form_class):
                 next = request.GET['next']
         return render_to_response('datacollection/generic_form.html', locals(),
                                   context_instance=RequestContext(request))
-    return login_required(generic_update_view)
+    return admin_only(generic_update_view)
 
 #add papers,
 generic_update_list = generic_forms_list + ['paper', 'sample', 'dataset']
@@ -219,6 +253,7 @@ update_sample_form = update_form_factory('Sample Update Form',
                                           forms.UpdateSampleForm)
 #------------------------------------------------------------------------------
 
+@admin_only
 def papers(request, user_id):
     """If given a user_id, shows all of the papers imported by the user,
     otherwise shows all papers in the db"""
@@ -246,6 +281,7 @@ def papers(request, user_id):
     return render_to_response('datacollection/papers.html', locals(),
                               context_instance=RequestContext(request))
 
+@admin_only
 def weekly_papers(request, user_id):
     """Returns all of the papers that the user worked on since the given date,
     IF date is not given as a param, then assumes date = beginning of the week
@@ -283,6 +319,7 @@ def weekly_papers(request, user_id):
                                   context_instance=RequestContext(request))
 
 #NOTE: i sould cache these!!
+@admin_only
 def datasets(request, user_id):
     """View all of the datasets in an excel like table; as with papers
     if given a user_id, it will return a page of all of the datsets collected
@@ -390,6 +427,7 @@ def datasets(request, user_id):
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
+@admin_only
 def weekly_datasets(request, user_id):
     """Returns all of the datasets that the user worked on since the given date
     IF date is not given as a param, then assumes date = beginning of the week
@@ -441,6 +479,7 @@ def get_datasets(request, paper_id):
     dlist = ",".join([jsrecord.views.jsonify(d) for d in datasets])
     return HttpResponse("[%s]" % dlist)
 
+@admin_only
 def samples(request):
     """Returns all of the samples
     """
@@ -518,7 +557,7 @@ def paper_submission(request):
                               locals(),
                               context_instance=RequestContext(request))
 
-@login_required
+@admin_only
 def submissions_admin(request):
     """View of paper submissions where curators can change the status"""
     title = "Submission Admin page"
@@ -564,7 +603,7 @@ def _import_paper(pmid, user):
     return tmp
     
 
-@login_required
+@admin_only
 def auto_paper_import(request):
     """View of auto_paper importer where curators can try to fetch GEO
     information using pubmed ids"""
@@ -579,6 +618,7 @@ def auto_paper_import(request):
                               locals(),
                               context_instance=RequestContext(request))
 
+@admin_only
 def paper_profile(request, paper_id):
     """View of the paper_profile page"""
     paper = models.Papers.objects.get(id=paper_id)
@@ -588,13 +628,14 @@ def paper_profile(request, paper_id):
                               locals(),
                               context_instance=RequestContext(request))
                 
-@login_required
+@admin_only
 def admin(request):
     """Admin page"""
     papers = models.Papers.objects.all()
     return render_to_response('datacollection/admin.html', locals(),
                               context_instance=RequestContext(request))
 
+@admin_only
 def dataset_profile(request, dataset_id):
     """View of the paper_profile page"""
     dataset = models.Datasets.objects.get(id=dataset_id)
@@ -607,6 +648,7 @@ def dataset_profile(request, dataset_id):
                               locals(),
                               context_instance=RequestContext(request))
 
+@admin_only
 def sample_profile(request, sample_id):
     """View of the paper_profile page"""
     sample = models.Samples.objects.get(id=sample_id)
@@ -616,7 +658,7 @@ def sample_profile(request, sample_id):
                               locals(),
                               context_instance=RequestContext(request))
 
-@login_required
+@admin_only
 def report(request):
     """Generates the weekly report page
     Takes an optional url param date that tells us which date to generate the
@@ -670,7 +712,7 @@ def report(request):
                               locals(),
                               context_instance=RequestContext(request))
 
-@login_required
+@admin_only
 def teams(request):
     """A page to list the current teams and assign users to different teams"""
     return render_to_response('datacollection/teams.html',
@@ -690,7 +732,7 @@ def _allSameOrNone(objs, attr):
     else:
         return None
     
-@login_required
+@admin_only
 def batch_update_datasets(request):
     """A page that allows the user to make batch updates to a set of datasets.
     the datasets are specified in the 'dataset' url
@@ -739,13 +781,13 @@ def delete_view_factory(name, model, redirect='home'):
             for o in tmp:
                 o.delete()
         return HttpResponseRedirect(reverse(redirect))
-    return login_required(generic_delete_view)
+    return admin_only(generic_delete_view)
 
 delete_datasets = delete_view_factory('datasets', models.Datasets, 'datasets')
 delete_papers = delete_view_factory('papers', models.Papers, 'papers')
 delete_samples = delete_view_factory('samples', models.Samples, 'samples')
 
-@login_required
+@admin_only
 def generic_delete(request, model_name):
     """Not to be confused with the inner-fn of delete_view_factory, this 
     view supports the model pages, e.g. platforms, factors delete btn
@@ -889,7 +931,7 @@ def dcstats(request):
     return render_to_response('datacollection/dcstats.html',
                               locals(),
                               context_instance=RequestContext(request))
-@login_required
+@admin_only
 def admin_help(request, page):
     """Help page for administrators, w/ optional page param"""
     if page:
@@ -932,7 +974,7 @@ def _check_for_files(sample):
     return missing_files_list
     
 
-@login_required
+@admin_only
 def check_raw_files(request, sample_id):
     """If the sample's status is 'new', checks to see if that the raw files
     are uploaded/loaded for all of the datasets assoc. w/ the sample
@@ -960,7 +1002,7 @@ def check_raw_files(request, sample_id):
     #redirect to the samples view
     return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
 
-@login_required
+@admin_only
 def run_analysis(request, sample_id):
     """
     Tries to: 
@@ -1003,7 +1045,7 @@ def run_analysis(request, sample_id):
     return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
 
 
-@login_required
+@admin_only
 def download_file(request, dataset_id):
     """Tries to download the file for the given dataset"""
     dataset = models.Datasets.objects.get(pk=dataset_id)
@@ -1058,7 +1100,7 @@ def _auto_dataset_import(paper, user, gsmids):
             (tmp.species, ignored) = models.Species.objects.get_or_create(name=geoQuery.species)
             tmp.save()
 
-@login_required
+@admin_only
 def import_datasets(request, paper_id):
     """Tries to import the datasets associated with the paper.
     NOTE: before we returned JSON, but now we are making it more action-btn 
@@ -1078,7 +1120,7 @@ def import_datasets(request, paper_id):
     #redirect to the papers view
     return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
 
-@login_required
+@admin_only
 def download_paper_datasets(request, paper_id):
     """Tries to download the datasets associated with the paper--calls the 
     download_dataset fn
@@ -1133,7 +1175,7 @@ def modelPagesFactory(model, base_name):
         return render_to_response('datacollection/generic_table.html', 
                                   locals(),
                                   context_instance=RequestContext(request))
-    return login_required(generic_model_view)
+    return admin_only(generic_model_view)
 
 
 #DUPLICATE!!! kind of!
