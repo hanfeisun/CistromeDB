@@ -147,7 +147,10 @@ def EntrezQuery(tool, params):
     tools, but for now, I'm just going to support the two main tools-- esummary
     and elink; and secondarily efetch and esearch.
     """
-    
+    #ENSURE mode=xml is a param
+    if 'mode' not in params:
+        params['mode'] = 'xml'
+
     URLparams = "&".join(["%s=%s" % (k, params[k]) for k in params])
     
     URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/%s.fcgi?%s" % \
@@ -250,5 +253,74 @@ class PubmedSummary:
         tmp = ",".join(["'%s':%s" % (a, json.dumps(getattr(self, a))) \
                         for a in self._attrs])
         return "{%s}" % tmp
+
+class PubmedArticle:
+    """like pubmed summary, BUT instead of going to geo for the abstract,
+    we actually get the full pubmed record.
+    NOTE: the key is to use efetch instead of esummary!
+
+    --Supports the auto_import_paper page, and will replace PubmedSummary
+    for pubmed retrievals
+    """
+    
+    def __init__(self, pmid):
+        self._attrs = ['pmid', 'gseid', 'title', 'authors', 'abstract',
+                       'pub_date', 'journal', 'issn', 'published']
+        self.pmid = pmid
+        
+        params0 = {'db':'pubmed', 'id':pmid, 'mode':'xml'}
+        pubmed = EntrezQuery('efetch', params0)
+        
+        self.gseid=pubmed.getElementsByTagName("AccessionNumber")[0]['_value']
+        self.title = pubmed.getElementsByTagName("ArticleTitle")[0]['_value']
+        auths = pubmed.getElementsByTagName("Author")
+        lst = []
+        for a in auths:
+            tmp = filter(lambda x: x['_tagName'] == "LastName", a['_children'])
+            lastn = tmp[0]['_value']
+            #print lastn
+
+            tmp = filter(lambda x: x['_tagName'] == "Initials", a['_children'])
+            inits = tmp[0]['_value']
+            #print inits
+
+            lst.append("%s %s" % (lastn, inits))
+        self.authors = lst
+
+        self.abstract= pubmed.getElementsByTagName("AbstractText")[0]['_value']
+        
+        pub_date = pubmed.getElementsByTagName("DateCreated")[0]
+        tmp = filter(lambda x: x['_tagName'] == "Year", pub_date['_children'])
+        year = tmp[0]['_value']
+        tmp = filter(lambda x: x['_tagName'] == "Month", pub_date['_children'])
+        month = tmp[0]['_value']
+        tmp = filter(lambda x: x['_tagName'] == "Day", pub_date['_children'])
+        day = tmp[0]['_value']
+
+        self.pub_date = "%s-%s-%s" % (year, month, day)
+
+        journal = pubmed.getElementsByTagName("Journal")[0]
+        #NOTE: in journal, there's the official title, and the common name
+        #<Title>Science (New York, N.Y.)</Title>
+        #<ISOAbbreviation>Science</ISOAbbreviation>
+        self.journal = filter(lambda x: x['_tagName'] == "ISOAbbreviation", 
+                              journal['_children'])[0]['_value']
+        self.issn = filter(lambda x: x['_tagName'] == "ISSN", 
+                           journal['_children'])[0]['_value']
+
+        self.published = "%s, %s" % (self.journal, self.pub_date)
+
+
+    def __str__(self):
+        """returns the string repr of the PubmedSummary"""
+        return "\n".join(["%s:%s" % (a, getattr(self, a)) \
+                          for a in self._attrs])
+
+    def to_json(self):
+        """returns the json repr of the PubmedSummary"""
+        tmp = ",".join(["'%s':%s" % (a, json.dumps(getattr(self, a))) \
+                        for a in self._attrs])
+        return "{%s}" % tmp
+
 #------------------------------------------------------------------------------
 # Adapter classes have moved to datacollection/entrez.py
