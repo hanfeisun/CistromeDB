@@ -262,7 +262,16 @@ class PubmedArticle:
     --Supports the auto_import_paper page, and will replace PubmedSummary
     for pubmed retrievals
     """
-    
+    @staticmethod
+    def _getValue(nodeList, field, val):
+        """within the nodelist, tries to field the field that matches the
+        val, and return the _value
+        """
+        tmp = filter(lambda x: x[field] == val, nodeList) 
+        if len(tmp) > 0:
+            return tmp[0]['_value']
+        return None
+
     def __init__(self, pmid):
         self._attrs = ['pmid', 'gseid', 'title', 'authors', 'abstract',
                        'pub_date', 'journal', 'issn', 'published']
@@ -271,43 +280,59 @@ class PubmedArticle:
         params0 = {'db':'pubmed', 'id':pmid, 'mode':'xml'}
         pubmed = EntrezQuery('efetch', params0)
         
-        self.gseid=pubmed.getElementsByTagName("AccessionNumber")[0]['_value']
+        #NOTE: GSEID is a list of gseids
+        gseid = pubmed.getElementsByTagName("AccessionNumber")
+        if (len(gseid) > 0):
+            self.gseid = [gse['_value'] for gse in gseid]
+        else:
+            #try to get the gseid from geo
+            params1 = {'dbfrom':'pubmed', 'db':'gds', 'id':pmid}
+            ent = EntrezQuery("elink", params1)
+        
+            lsd = ent.getElementsByTagName('LinkSetDb')
+            if len(lsd):
+                gdsid = lsd[0]['_children'][2]['_children'][0]['_value']
+                #print gdsid
+                params2 = {'db':'gds', 'id':gdsid}
+                gds = EntrezQuery('esummary', params2)
+
+                items = gds.getElementsByTagName('Item')
+
+                #search for the item where attribute Name='GSE'            
+                #print items
+                gseid = filter(lambda node: node['_attribs']['Name'] == 'GSE',
+                             items)
+                if len(gseid) > 0:
+                    self.gseid = ["GSE"+gse['_value'] for gse in gseid]
+
         self.title = pubmed.getElementsByTagName("ArticleTitle")[0]['_value']
         auths = pubmed.getElementsByTagName("Author")
         lst = []
+        def helper(fld, val):
+            return PubmedArticle._getValue(fld, '_tagName', val)
+
         for a in auths:
-            tmp = filter(lambda x: x['_tagName'] == "LastName", a['_children'])
-            lastn = tmp[0]['_value']
-            #print lastn
-
-            tmp = filter(lambda x: x['_tagName'] == "Initials", a['_children'])
-            inits = tmp[0]['_value']
-            #print inits
-
+            lastn = helper(a['_children'], "LastName")
+            inits = helper(a['_children'], "Initials")
             lst.append("%s %s" % (lastn, inits))
         self.authors = lst
 
         self.abstract= pubmed.getElementsByTagName("AbstractText")[0]['_value']
         
+        #pub date
         pub_date = pubmed.getElementsByTagName("DateCreated")[0]
-        tmp = filter(lambda x: x['_tagName'] == "Year", pub_date['_children'])
-        year = tmp[0]['_value']
-        tmp = filter(lambda x: x['_tagName'] == "Month", pub_date['_children'])
-        month = tmp[0]['_value']
-        tmp = filter(lambda x: x['_tagName'] == "Day", pub_date['_children'])
-        day = tmp[0]['_value']
-
+        year = helper(pub_date['_children'], 'Year')
+        month = helper(pub_date['_children'], 'Month')
+        day = helper(pub_date['_children'], 'Day')
         self.pub_date = "%s-%s-%s" % (year, month, day)
 
         journal = pubmed.getElementsByTagName("Journal")[0]
         #NOTE: in journal, there's the official title, and the common name
         #<Title>Science (New York, N.Y.)</Title>
         #<ISOAbbreviation>Science</ISOAbbreviation>
-        self.journal = filter(lambda x: x['_tagName'] == "ISOAbbreviation", 
-                              journal['_children'])[0]['_value']
-        self.issn = filter(lambda x: x['_tagName'] == "ISSN", 
-                           journal['_children'])[0]['_value']
-
+        #self.journal = helper(journal['_children'], "Title")
+        self.journal = helper(journal['_children'], "ISOAbbreviation")
+        self.issn = helper(journal['_children'], "ISSN")
         self.published = "%s, %s" % (self.journal, self.pub_date)
 
 
