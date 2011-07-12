@@ -97,10 +97,10 @@ import models
     
 #     return HttpResponse("{%s}" % xmlToJSON(dom.documentElement))
 
-def GetPubmedSummary(request):
+def GetPubmedArticle(request):
     """Tries to retrieve the pubmed summary information"""
     if request.GET['id']:
-        tmp = models.PubmedSummary(request.GET['id'])
+        tmp = models.PubmedArticle(request.GET['id'])
         return HttpResponse(tmp.to_json())
     else:
         return HttpResponse("{'success':false, 'err':'No PMID given!'}")

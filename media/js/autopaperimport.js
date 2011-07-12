@@ -13,7 +13,7 @@ var currPMID = "";
 //Function that tries to grab the paper info from ENTREZ dbs
 function fetch(pmid) {
     //var URL = "/entrez/eutils/esummary";
-    var URL = SUB_SITE+"entrez/GetPubmedSummary/";
+    var URL = SUB_SITE+"entrez/GetPubmedArticle/";
 
     var cbFn = function(req) {
 	//alert(req.responseText);

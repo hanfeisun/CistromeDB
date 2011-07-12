@@ -3,6 +3,10 @@
 SYNOPSIS: previous to 2011-05-05, paper authors were being set to the list
 defined by GEO.  It should actually come from PUBMED.  This simple script
 corrects that error.
+
+2011-07012 NOTE: should check out the checkPaperFields.py script instead. and
+moved to PubmedArticle instead of PubmedSummary
+
 """
 import sys
 import traceback
@@ -28,7 +32,7 @@ def main():
     papers = models.Papers.objects.all()
     changed = []
     for p in papers:
-        pubmed = emodels.PubmedSummary(p.pmid)
+        pubmed = emodels.PubmedArticle(p.pmid)
         auths = ",".join(pubmed.authors)
         if p.authors != auths:
             try:
