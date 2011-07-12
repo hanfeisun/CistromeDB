@@ -165,94 +165,95 @@ def EntrezQuery(tool, params):
     #print tmp.root
 
 #------------------------------------------------------------------------------
-class PubmedSummary:
-    """stores the information from a pubmed summary:--usually the stuff from
-    an esummary call on a pubmed id:
-    pmid - pubmed id
-    gseid - geo series id
-    title - paper title
-    authors - list of authors
-    abstract - paper abstract
-    published - e.g. Science, Aug. 2010
+#DEPRECATED
+# class PubmedSummary:
+#     """stores the information from a pubmed summary:--usually the stuff from
+#     an esummary call on a pubmed id:
+#     pmid - pubmed id
+#     gseid - geo series id
+#     title - paper title
+#     authors - list of authors
+#     abstract - paper abstract
+#     published - e.g. Science, Aug. 2010
 
-    --SUPPORTS auto_import_paper page
-    """
-    @staticmethod
-    def _getValue(items, field, val):
-        """many calls were like this:
-            self.title = filter(lambda node:node['_attribs']['Name']=='Title',
-                                pubmedItems)[0]['_value']
-           This is to clean up the call, so it's now like:
-           self.title = PubmedSummary._getValue(pubmedItems, 'Name', 'Title')
+#     --SUPPORTS auto_import_paper page
+#     """
+#     @staticmethod
+#     def _getValue(items, field, val):
+#         """many calls were like this:
+#             self.title = filter(lambda node:node['_attribs']['Name']=='Title',
+#                                 pubmedItems)[0]['_value']
+#            This is to clean up the call, so it's now like:
+#            self.title = PubmedSummary._getValue(pubmedItems, 'Name', 'Title')
 
-           NOTE: this is what the record looks like-
-           [{'_tagName': u'Item', '_value': u'0092-8674', '_attribs': {u'Type': u'String', u'Name': u'ISSN'}, '_children': None}]
+#            NOTE: this is what the record looks like-
+#            [{'_tagName': u'Item', '_value': u'0092-8674', '_attribs': {u'Type': u'String', u'Name': u'ISSN'}, '_children': None}]
            
-           It would be cool if we could do something like:
-           _getValue(foo, '_tagName', 'Item') --> [domList _tags]
-           _getValue(foo, '_attr.Name', 'ISSN') --> u'0092-8674'
+#            It would be cool if we could do something like:
+#            _getValue(foo, '_tagName', 'Item') --> [domList _tags]
+#            _getValue(foo, '_attr.Name', 'ISSN') --> u'0092-8674'
 
-        """
-        tmp = filter(lambda node: node['_attribs'][field] == val,
-                     items)
+#         """
+#         tmp = filter(lambda node: node['_attribs'][field] == val,
+#                      items)
         
-        if len(tmp) > 0:
-            if '_value' in tmp[0]:
-                return tmp[0]['_value']
-        return None
+#         if len(tmp) > 0:
+#             if '_value' in tmp[0]:
+#                 return tmp[0]['_value']
+#         return None
 
-    def __init__(self, pmid):
-        self._attrs = ['pmid', 'gseid', 'title', 'authors', 'abstract',
-                       'pub_date', 'journal', 'issn', 'published']
-        self.pmid = pmid
+#     def __init__(self, pmid):
+#         self._attrs = ['pmid', 'gseid', 'title', 'authors', 'abstract',
+#                        'pub_date', 'journal', 'issn', 'published']
+#         self.pmid = pmid
 
-        params0 = {'db':'pubmed', 'id': pmid}
-        pubmed = EntrezQuery('esummary', params0)
-        pubmedItems = pubmed.getElementsByTagName("Item")
-        if len(pubmedItems):
-            #NOTE: almost all of the fields should come from pubmed!!!
-            #gseid - below in geo
-            self.title = PubmedSummary._getValue(pubmedItems,'Name','Title')
-            auths = filter(lambda node: node['_attribs']['Name'] == 'Author',
-                         pubmedItems)
-            self.authors = [n['_value'] for n in auths]
-            #abstract - below in geo
+#         params0 = {'db':'pubmed', 'id': pmid}
+#         pubmed = EntrezQuery('esummary', params0)
+#         pubmedItems = pubmed.getElementsByTagName("Item")
+#         if len(pubmedItems):
+#             #NOTE: almost all of the fields should come from pubmed!!!
+#             #gseid - below in geo
+#             self.title = PubmedSummary._getValue(pubmedItems,'Name','Title')
+#             auths = filter(lambda node: node['_attribs']['Name'] == 'Author',
+#                          pubmedItems)
+#             self.authors = [n['_value'] for n in auths]
+#             #abstract - below in geo
 
-            self.pub_date=PubmedSummary._getValue(pubmedItems,'Name','PubDate')
-            self.journal = PubmedSummary._getValue(pubmedItems,'Name','Source')
-            self.issn = PubmedSummary._getValue(pubmedItems, 'Name', 'ISSN')
-            self.published = "%s, %s" % (self.journal, self.pub_date)
+#             self.pub_date=PubmedSummary._getValue(pubmedItems,'Name','PubDate')
+#             self.journal = PubmedSummary._getValue(pubmedItems,'Name','Source')
+#             self.issn = PubmedSummary._getValue(pubmedItems, 'Name', 'ISSN')
+#             self.published = "%s, %s" % (self.journal, self.pub_date)
 
-        #print pubmed.root
+#         #print pubmed.root
         
-        params1 = {'dbfrom':'pubmed', 'db':'gds', 'id':pmid}
-        ent = EntrezQuery("elink", params1)
+#         params1 = {'dbfrom':'pubmed', 'db':'gds', 'id':pmid}
+#         ent = EntrezQuery("elink", params1)
         
-        lsd = ent.getElementsByTagName('LinkSetDb')
-        if len(lsd):
-            gdsid = lsd[0]['_children'][2]['_children'][0]['_value']
-            params2 = {'db':'gds', 'id':gdsid}
-            gds = EntrezQuery('esummary', params2)
+#         lsd = ent.getElementsByTagName('LinkSetDb')
+#         if len(lsd):
+#             gdsid = lsd[0]['_children'][2]['_children'][0]['_value']
+#             params2 = {'db':'gds', 'id':gdsid}
+#             gds = EntrezQuery('esummary', params2)
 
-            items = gds.getElementsByTagName('Item')
+#             items = gds.getElementsByTagName('Item')
             
-            #search for the item where attribute Name='GSE'
-            tmp = PubmedSummary._getValue(items, 'Name', 'GSE')
-            self.gseid = "GSE"+tmp
+#             #search for the item where attribute Name='GSE'
+#             tmp = PubmedSummary._getValue(items, 'Name', 'GSE')
+#             self.gseid = "GSE"+tmp
 
-            self.abstract = PubmedSummary._getValue(items, 'Name', 'summary')
+#             self.abstract = PubmedSummary._getValue(items, 'Name', 'summary')
 
-    def __str__(self):
-        """returns the string repr of the PubmedSummary"""
-        #attr = ['pmid', 'gseid', 'title', 'authors', 'abstract', 'published']
-        return "\n".join(["%s:%s" % (a, getattr(self, a)) \
-                          for a in self._attrs])
+#     def __str__(self):
+#         """returns the string repr of the PubmedSummary"""
+#         #attr = ['pmid', 'gseid', 'title', 'authors', 'abstract', 'published']
+#         return "\n".join(["%s:%s" % (a, getattr(self, a)) \
+#                           for a in self._attrs])
 
-    def to_json(self):
-        """returns the json repr of the PubmedSummary"""
-        tmp = ",".join(["'%s':%s" % (a, json.dumps(getattr(self, a))) \
-                        for a in self._attrs])
-        return "{%s}" % tmp
+#     def to_json(self):
+#         """returns the json repr of the PubmedSummary"""
+#         tmp = ",".join(["'%s':%s" % (a, json.dumps(getattr(self, a))) \
+#                         for a in self._attrs])
+#         return "{%s}" % tmp
 
 class PubmedArticle:
     """like pubmed summary, BUT instead of going to geo for the abstract,
@@ -337,12 +338,12 @@ class PubmedArticle:
 
 
     def __str__(self):
-        """returns the string repr of the PubmedSummary"""
+        """returns the string repr of the PubmedArticle"""
         return "\n".join(["%s:%s" % (a, getattr(self, a)) \
                           for a in self._attrs])
 
     def to_json(self):
-        """returns the json repr of the PubmedSummary"""
+        """returns the json repr of the PubmedArticle"""
         tmp = ",".join(["'%s':%s" % (a, json.dumps(getattr(self, a))) \
                         for a in self._attrs])
         return "{%s}" % tmp

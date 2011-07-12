@@ -5,20 +5,21 @@ class PaperAdapter:
     all of the information necessary to create a Paper object"""
     
     def __init__(self, pmid):
-        pubmed = entrez.PubmedSummary(pmid)
+        pubmed = entrez.PubmedArticle(pmid)
 
         self.pmid = pmid
-        self.gseid = pubmed.gseid
+        #NOTE: pubmed article returns a list of gseids!
+        self.gseid = pubmed.gseid[0]
         self.title = pubmed.title
         self.abstract = pubmed.abstract
-        #self.pub_date = pubmed.pub_date #Can't take this b/c not in YYYY-MM-DD
+        self.pub_date = pubmed.pub_date 
         self.authors = pubmed.authors
         self.journal = pubmed.journal
         self.issn = pubmed.issn
         
         geo = entrez.GeoQuery(self.gseid)
-        self.pub_date = geo._getValue("Release-Date")
-        contributors = geo.getElementsByTagName("Contributor")
+        #self.pub_date = geo._getValue("Release-Date")
+        #contributors = geo.getElementsByTagName("Contributor")
 
         self.design = geo._getValue("Overall-Design")
         self.type = geo._getValue("Type")
