@@ -185,7 +185,3 @@ span.value2 {
 }
 /* END: info styling */
 
-/*hide the sample section for now--while the NAR paper is under review*/
-#sample_section {
-    display:none;
-}
