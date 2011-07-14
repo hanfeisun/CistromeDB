@@ -1,7 +1,9 @@
 //create the class
-var Model = ModelFactory(["papersList", "currPaper"],[]);
+var Model = ModelFactory(["papersList", "currPaper", "currResultsCol"],
+			 ["currResultsAscending", "origPapersList"]);
 //Instantiate the class
-var pgModel = new Model({"papersList":null, "currPaper":null});
+var pgModel = new Model({"papersList":null, "currPaper":null, 
+			 "currResultsCol":null});
 
 //MENG asked me to remove this for now...but i like this so i'm just going to 
 //disable it
@@ -56,6 +58,48 @@ function init() {
     pgModel.currPaperEvent.register(function() { paperInfoView.makeHTML();});
     pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
+    
+    //overrider the setter fn to account for ascending fld- optional field asc
+    pgModel.setCurrResultsCol = function(field, asc) {
+	var oldCol = pgModel.getCurrResultsCol();
+	if (oldCol == field) {
+	    //toggle
+	    pgModel["currResultsAscending"] = !pgModel["currResultsAscending"];
+	} else {
+	    pgModel["currResultsCol"] = field;
+	    pgModel["currResultsAscending"] = true;
+	}
+	if (asc != null) {
+	    pgModel["currResultsAscending"] = asc;
+	}
+	pgModel["currResultsColEvent"].notify();
+    }
+
+    //a fn to listen for the currCol being set, and then tries to sort the 
+    //results list accordingly
+    var sortResultsCol = function() {
+	var field = pgModel.getCurrResultsCol();
+	var asc = pgModel.getCurrResultsAscending();
+	var pList = pgModel.getPapersList();
+	//NOTE: sort is destructive
+	pList.sort(function(p1, p2) {
+		//REMEMBER: -1 means put before, 0 put equal, 1 put after
+		var val1 = getattr(p1, field);
+		var val2 = getattr(p2, field);
+		if (val1 == val2) {
+		    return 0;
+		} else if (val1 < val2) {
+		    //-1 = put before
+		    return asc ? -1 : 1;
+		} else {
+		    return asc ? 1 : -1;
+		}
+	    });
+	//just re-draw the list w/o notifying the change
+	resultsView.redraw();	
+    }
+    pgModel.currResultsColEvent.register(sortResultsCol);
+
     //Draw the results view
     //resultsView.makeHTML();
 
@@ -91,6 +135,11 @@ function getPapers(type, model) {
     var cb = function(req) {
 	var resp = eval("("+req.responseText+")");
 	model.setPapersList(resp);
+	//save the original b/c sorting will be destructive
+	model.origPapersList = resp;
+	//default ordering: pub_date, descending
+	model.setCurrResultsCol("pub_date", false);
+
     }
 
     var call = new Ajax.Request(SUB_SITE+"front/"+type+"/", 
@@ -127,20 +176,68 @@ function ResultsView(container, model) {
 	outer.container.innerHTML = "";
 
 	//BEGIN: draw the title row
-	var newTbl = $D('table');
-	var titles = [" ", "Authors", "Title", "Journal", "Date", "Rating",
-		      "Last Viewed"];
-	var newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
+	var newTbl = $D('table', {"id":"resultsTable"});
+	var titles = [["status", " "], ["authors", "Authors"], 
+		      ["title", "Title"], ["journal.name", "Journal"], 
+		      ["pub_date", "Date"], ["rating", "Rating"],
+		      ["last_viewed", "Last Viewed"]];
+	//the following are not click-sortable
+	var exceptions = ["status", "rating", "last_viewed"];
+	//var newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
+	var newTr = $D('tr');
 	for (var i = 0; i < titles.length; i++) {
-	    newTr.appendChild($D('th',{'innerHTML':titles[i]}));
+	    var newTh = $D('th');
+	    var newSpan = $D('span', {'innerHTML':titles[i][1]});
+	    
+	    newSpan._name = titles[i][0];
+	    if (exceptions.indexOf(titles[i][0]) == -1) { //NOT an exception!
+		newSpan.onclick = function (field) {
+		    return function (event) {
+			outer.model.setCurrResultsCol(field);
+		    }
+		} (titles[i][0]);
+		newSpan.style.cursor = "pointer";
+	    }
+
+	    newSpan._draw = function() {
+		var currCol = outer.model.getCurrResultsCol();
+		if (this._name != currCol) {
+		    this.style.textDecoration = "none";
+		} else {
+		    //check ascending
+		    //NOTE: THIS GETS RE-DRAWN on the notify!
+		    var asc = outer.model.getCurrResultsAscending();
+		    this.style.textDecoration = (asc)? "underline":"overline";
+		}
+	    }
+	    
+	    outer.model.currResultsColEvent.register(function(span) {
+		    return function() { span._draw();}
+		} (newSpan)
+		);
+	    
+	    newTh.appendChild(newSpan);
+	    newTr.appendChild(newTh);
 	}
 	newTbl.appendChild(newTr);
 	//END: draw the title row
 
-	var i = 0;
+	//MOVING the papers list to a new section so we can reuse it
+	outer.makePaperRows(newTbl);
+
+	//make the liquid cols for the tabl
+	outer.container.appendChild(newTbl);
+	//NOTE: this call to liquid cols MUST be AFTER we append the newTbl,
+	//otherwise the widths of the elms will be 0
+	var liquidCols = new LiquidCols(newTbl);
+    }
+
+    //adds the paper rows to the tableElm
+    this.makePaperRows = function(tableElm) {
+	var currPaper = outer.model.getCurrPaper();
 	var papers = (outer.model.getPapersList() == null)? []:outer.model.getPapersList();
 	var fields = ["authors", "title", "journal.name", "pub_date", "", ""]
-	for (; i < papers.length; i++) {
+	for (var i = 0; i < papers.length; i++) {
 	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
 	    //try to save this information so we can restore it
 	    newTr.rowInfo = newTr.className;
@@ -169,6 +266,12 @@ function ResultsView(container, model) {
 		    outer.model.setCurrPaper(p);
 		}
 	    }(papers[i]);
+	    
+	    //handle selected rows: check if this is the current paper
+	    if (currPaper && (papers[i].id == currPaper.id)) {
+		newTr.className = "selected";
+		outer.prevTr = newTr;
+	    }
 
 	    //add the icons
 	    var iconTd = $D('td');
@@ -187,8 +290,9 @@ function ResultsView(container, model) {
 		newTr.appendChild($D('td', {'innerHTML':shrt, '_val':val}));
 	    }
 
-	    newTbl.appendChild(newTr);
+	    tableElm.appendChild(newTr);
 	}
+	/*
 	//build until min papers
 	for (; i < outer.minPapers; i++) {
 	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
@@ -199,17 +303,38 @@ function ResultsView(container, model) {
 	    }
 	    newTbl.appendChild(newTr);
 	}
-	//make the liquid cols for the tabl
-	outer.container.appendChild(newTbl);
-	//NOTE: this call to liquid cols MUST be AFTER we append the newTbl,
-	//otherwise the widths of the elms will be 0
-	var liquidCols = new LiquidCols(newTbl);
+	*/
+    }
+
+    this.redraw = function() {
+	//this is a fn we use to redraw the paper rows of the table w/o
+	//creating a new table--used in the sorting cols
+	var rows = $$("#resultsTable tr");
+	
+	//always skip the first
+	var currTbl;
+	if (rows.length > 0) {
+	    currTbl = rows[0].parentNode;
+	} else {
+	    return;
+	}
+
+	for (var i = 1; i < rows.length; i++) {
+	    currTbl.removeChild(rows[i]);
+	}
+	outer.makePaperRows(currTbl);
+	    
     }
 }
 
 function searchCb(req) {
     var resp = eval("("+req.responseText+")");
     pgModel.setPapersList(resp);
+    //save the original b/c sorting will be destructive
+    pgModel.origPapersList = resp;
+    //default ordering: pub_date, descending
+    pgModel.setCurrResultsCol("pub_date", false);
+
     //reset the search btn
     $('searchBtn').disabled = false;
 }
