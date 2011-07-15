@@ -7,30 +7,6 @@ from new import classobj
 _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
 
-# class PaperForm(forms.Form):
-#     pmid = forms.IntegerField()
-#     gseid = forms.CharField()
-#     title = forms.CharField()
-#     abstract = forms.CharField(widget=forms.Textarea)
-#     pub_date = forms.DateField()
-#     last_auth = forms.CharField()
-#     last_auth_email = forms.EmailField()
-
-# class PaperForm(forms.ModelForm):
-#     class Meta:
-#         model = models.Papers
-#         exclude = ('date_collected', 'user', 'status', 'comments')
-#     labels = {'pmid':'Pubmed ID', 'gseid':'GEO Series ID',
-#               'pub_date':'Publication Date',
-#               #'last_auth':'Last Author',
-#               #'last_auth_email': 'Last Author Email'
-#               }
-#     def __init__(self, post=None):
-#         super(PaperForm, self).__init__(post)
-#         for k in self.labels.keys():
-#             self.fields[k].label = self.labels[k]
-
-
 def FormFactory(name, model):
     return classobj(name, (forms.ModelForm,),
                     {'Meta': classobj('Meta',(),{'model':model})})
@@ -124,21 +100,22 @@ class UpdateSampleForm(forms.ModelForm):
 class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
+        fields = ('status', 'comments',
+                  'user', 'uploader', 'curator', 
+                  )
+        exclude = tuple([f.name for f in model._meta.fields \
+                         if f.name not in fields])
+
+class BatchUpdateSamplesForm(forms.ModelForm):
+    class Meta:
+        model = models.Samples
         fields = ('factor', 'platform', 'species', 'assembly', 
                   'cell_type', 'cell_line',
                   'cell_pop', 'strain', 'condition', 'disease_state',
                   'status', 'comments',
-                  'user', 'uploader', 'curator', 'description',)
+                  'user', 'uploader', #'curator', 
+                  'description',
+                  )
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
 
-#realized that this doesn't have much usefulness
-# class BatchUpdatePapersForm(forms.ModelForm):
-#     class Meta:
-#         model = models.Papers
-#         fields = ('user',
-#                   'title', 'abstract', 'pub_date',
-#                   'date_collected', 'authors', 'last_auth_email',
-#                   'journal', 'status', 'comments')
-#         exclude = tuple([f.name for f in model._meta.fields \
-#                          if f.name not in fields])

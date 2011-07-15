@@ -16,7 +16,7 @@ onload="init();"
 {% block content %}
 <!-- NOTE: the content is created in javascript -->
       {% if user.is_authenticated %}
-      <!--<input type="button" id="batchEdit" value="batch edit"/>-->
+      <input type="button" id="batchEdit" value="batch edit"/>
       <input type="button" id="deleteBtn" value="delete"/>
       {% endif %}
       {% if pg.paginator.num_pages %}
@@ -46,14 +46,20 @@ onload="init();"
 	     {% endif %}
 	     <th>ID</th>
 	     <th>Paper</th>
-	     <th>Pubmed ID</th>
-	     <th>GSEID</th>
 	     <th>Treatments</th>
 	     <th>Controls</th>
+	     <th>Factor / Antibody</th>
+	     <th>Experiment Type / Platform</th>
+	     <th>Species</th>
+	     <th>Cell / Tissue Type</th>
+	     <th>Cell Line</th>
+	     <th>Cell Pop</th>
+	     <th>Strain</th>
+	     <th>Condition</th>
+	     <th>Disease State</th>
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>Uploader</th>
-	     <th>Upload Date</th>
 	     {% if user.is_authenticated %}
 	     <th>Action</th>
 	     {% endif %}
@@ -66,11 +72,32 @@ onload="init();"
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url sample_profile s.id %}">{{ s.id }}</a></td>
-	     <td><a href="{% url paper_profile s.paper.id %}">{{ s.paper.id }}</a></td>
-	     <td><a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a></td>
-	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a></td>
+	     <td>
+	       <a href="{% url paper_profile s.paper.id %}">paper profile</a><br/><br/>
+	       <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a><br/><br/>
+	       <a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a>
+	     </td>
 	     <td>{{ s.treatments }}</td>
 	     <td>{{ s.controls }}</td>
+	     <td>
+	       <a href="{% url samples %}?factor={{s.factor.id}}">{{s.factor.name}}</a><br/><br/>
+	       <a href="{% url samples %}?antibody={{s.factor.id}}">{{s.factor.antibody}}</a>
+	     </td>
+	     <td>
+	       {{s.platform.get_experiment_type_display}}<br/><br/>
+	       <a href="{%url samples %}?platform={{s.platform.id}}">{{s.platform.name}}</a>
+	     </td>
+	     <td><a href="{% url samples %}?species={{s.species.id}}">{{s.species}}</a></td>
+	     <td>
+	       <a href="{% url samples %}?celltype={{s.cell_type.id}}">{{s.cell_type.name}}</a><br/><br/>
+	       <a href="{% url samples %}?tissuetype={{s.cell_type.id}}">{{s.cell_type.tissue_type}}</a>
+	     </td>
+	     <td><a href="{% url samples %}?cellline={{s.cell_line.id}}">{{s.cell_line.name}}</a></td>
+	     <td><a href="{% url samples %}?cellpop={{s.cell_pop.id}}">{{s.cell_pop.name}}</a></td>
+	     <td><a href="{% url samples %}?strain={{s.strain.id}}">{{s.strain.name}}</a></td>
+	     <td><a href="{% url samples %}?condition={{s.condition.id}}">{{s.condition.name}}</a></td>
+	     <td><a href="{% url samples %}?diseasestate={{s.disease_state.id}}">{{s.disease_state.name}}</a></td>
+
 	     {% ifequal s.status "new" %}
 	     <td class="new_row">{{ s.get_status_display }}</td>
 	     {% else %} {% ifequal s.status "checked" %}
@@ -85,8 +112,9 @@ onload="init();"
 	     <td>{{ s.get_status_display }}</td>
 	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
 	     <td>{{ s.comments }}</td>
-	     <td>{{ s.uploader }}</td>
-	     <td>{{ s.upload_date|date:"Y-m-d" }}</td>
+	     <td>{{ s.uploader }}<br/><br/>
+	         {{ s.upload_date|date:"Y-m-d" }}
+	     </td>
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_authenticated %}
 	     {% ifequal s.status "new" %}

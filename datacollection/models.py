@@ -128,20 +128,20 @@ class Papers(DCModel):
         """Returns a list of the species objs associated with the papers, i.e.
         the set of species that are found in the paper's datasets"""
         tmp = []
-        dsets = Datasets.objects.filter(paper=self.id)
-        for d in dsets:
-            if d.species and d.species.name not in tmp:
-                tmp.append(smart_str(d.species.name))
+        samples = Samples.objects.filter(paper=self.id)
+        for s in samples:
+            if s.species and s.species.name not in tmp:
+                tmp.append(smart_str(s.species.name))
         return tmp
 
     def _get_factors(self):
         """Returns a list of the factors associated w/ the paper, i.e.
         returns the set of factors that are found in the paper's datasets"""
         tmp = []
-        dsets = Datasets.objects.filter(paper=self.id)
-        for d in dsets:
-            if d.factor and d.factor.name not in tmp:
-                tmp.append(smart_str(d.factor.name))
+        samples = Samples.objects.filter(paper=self.id)
+        for s in samples:
+            if s.factor and s.factor.name not in tmp:
+                tmp.append(smart_str(s.factor.name))
         return tmp
 
     def _get_lab(self):
@@ -229,26 +229,30 @@ class Datasets(DCModel):
     #IF everything is done by auto import we might not need this
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
-    factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
+    #BONZAI! moving this meta info to samples, soon to be renamed datasets
+    # factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
 
-    platform = models.ForeignKey('Platforms',
-                                 null=True, blank=True, default=None)
-    species = models.ForeignKey('Species',
-                                null=True, blank=True, default=None)
-    assembly = models.ForeignKey('Assemblies',
-                                 null=True, blank=True, default=None)
-    #in description, we can add additional info e.g. protocols etc
-    description = models.TextField(blank=True)
-    cell_type = models.ForeignKey('CellTypes',
-                                  null=True, blank=True, default=None)
-    cell_line = models.ForeignKey('CellLines',
-                                  null=True, blank=True, default=None)
-    cell_pop = models.ForeignKey('CellPops',
-                                 null=True, blank=True, default=None)
-    strain = models.ForeignKey('Strains',
-                               null=True, blank=True, default=None)
-    condition = models.ForeignKey('Conditions',
-                                  null=True, blank=True, default=None)
+    # platform = models.ForeignKey('Platforms',
+    #                              null=True, blank=True, default=None)
+    # species = models.ForeignKey('Species',
+    #                             null=True, blank=True, default=None)
+    # assembly = models.ForeignKey('Assemblies',
+    #                              null=True, blank=True, default=None)
+    # # #in description, we can add additional info e.g. protocols etc
+    # description = models.TextField(blank=True)
+    # cell_type = models.ForeignKey('CellTypes',
+    #                               null=True, blank=True, default=None)
+    # cell_line = models.ForeignKey('CellLines',
+    #                               null=True, blank=True, default=None)
+    # cell_pop = models.ForeignKey('CellPops',
+    #                              null=True, blank=True, default=None)
+    # strain = models.ForeignKey('Strains',
+    #                            null=True, blank=True, default=None)
+    # condition = models.ForeignKey('Conditions',
+    #                               null=True, blank=True, default=None)
+
+    # disease_state = models.ForeignKey('DiseaseStates',
+    #                                   null=True, blank=True, default=None)
     
     status = models.CharField(max_length=255, choices=DATASET_STATUS,
                               default="imported")
@@ -260,8 +264,6 @@ class Datasets(DCModel):
                                  related_name="uploader")
     upload_date = models.DateTimeField(blank=True, null=True, default=None)
     
-    disease_state = models.ForeignKey('DiseaseStates',
-                                      null=True, blank=True, default=None)
     #curator = the person who double checks the info
     curator = models.ForeignKey(User, null=True, blank=True, default=None,
                                 related_name="curator")
@@ -463,6 +465,31 @@ class Samples(DCModel):
     uploader = models.ForeignKey(User, null=True, blank=True, default=None,
                                  related_name="sample_uploader")
     upload_date = models.DateTimeField(blank=True, null=True, default=None)
+
+    #meta info
+    factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
+
+    platform = models.ForeignKey('Platforms',
+                                 null=True, blank=True, default=None)
+    species = models.ForeignKey('Species',
+                                null=True, blank=True, default=None)
+    assembly = models.ForeignKey('Assemblies',
+                                 null=True, blank=True, default=None)
+    #in description, we can add additional info e.g. protocols etc
+    description = models.TextField(null=True, blank=True, default="")
+    cell_type = models.ForeignKey('CellTypes',
+                                  null=True, blank=True, default=None)
+    cell_line = models.ForeignKey('CellLines',
+                                  null=True, blank=True, default=None)
+    cell_pop = models.ForeignKey('CellPops',
+                                 null=True, blank=True, default=None)
+    strain = models.ForeignKey('Strains',
+                               null=True, blank=True, default=None)
+    condition = models.ForeignKey('Conditions',
+                                  null=True, blank=True, default=None)
+    disease_state = models.ForeignKey('DiseaseStates',
+                                      null=True, blank=True, default=None)
+    #end meta info
 
     status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
                               default="new")

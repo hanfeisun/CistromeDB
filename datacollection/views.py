@@ -340,78 +340,6 @@ def datasets(request, user_id):
     else:
         datasets = models.Datasets.objects.all()
 
-    #note: we have to keep track of these URL params so that we can feed them
-    #into the paginator, e.g. if we click on platform=1, then when we paginate
-    #we want the platform param to be carried through
-    rest = ""
-    if 'species' in request.GET:
-        #dict = {'hs':'Homo sapiens', 'mm':'Mus Musculus'}
-        #if request.GET['species'] in dict:
-        #    datasets = datasets.filter(species__name=\
-        #                               dict[request.GET['species']])
-        datasets = datasets.filter(species=request.GET['species'])
-        rest += "&species=%s" % request.GET['species']
-        
-    if 'ftype' in request.GET:
-        datasets = datasets.filter(factor__type=request.GET['ftype'])
-        rest += "&ftype=%s" % request.GET['ftype']
-
-    if 'paper' in request.GET:
-        datasets = datasets.filter(paper=request.GET['paper'])
-        rest += "&paper=%s" % request.GET['paper']
-
-    if 'factor' in request.GET:
-        factor = models.Factors.objects.get(pk=request.GET['factor'])
-        datasets = datasets.filter(factor__name=factor.name)
-        rest += "&factor=%s" % request.GET['factor']
-
-    if 'antibody' in request.GET:
-        factor = models.Factors.objects.get(pk=request.GET['antibody'])
-        datasets = datasets.filter(factor__antibody=factor.antibody)
-        rest += "&antibody=%s" % request.GET['antibody']
-
-    if 'platform' in request.GET:
-        datasets = datasets.filter(platform=request.GET['platform'])
-        rest += "&platform=%s" % request.GET['platform']
-        
-    if 'celltype' in request.GET:
-        celltype = models.CellTypes.objects.get(pk=request.GET['celltype'])
-        datasets = datasets.filter(cell_type__name=celltype.name)
-        rest += "&celltype=%s" % request.GET['celltype']
-
-    if 'tissuetype' in request.GET:
-        celltype = models.CellTypes.objects.get(pk=request.GET['tissuetype'])
-        datasets = datasets.filter(cell_type__tissue_type=celltype.tissue_type)
-        rest += "&tissuetype=%s" % request.GET['tissuetype']
-
-    if 'cellline' in request.GET:
-        datasets = datasets.filter(cell_line=request.GET['cellline'])
-        rest += "&cellline=%s" % request.GET['cellline']
-
-    if 'cellpop' in request.GET:
-        datasets = datasets.filter(cell_pop=request.GET['cellpop'])
-        rest += "&cellpop=%s" % request.GET['cellpop']
-                
-    if 'strain' in request.GET:
-        datasets = datasets.filter(strain=request.GET['strain'])
-        rest += "&strain=%s" % request.GET['strain']
-
-    if 'condition' in request.GET:
-        datasets = datasets.filter(condition=request.GET['condition'])
-        rest += "&condition=%s" % request.GET['condition']
-
-    if 'disease_state' in request.GET:
-        datasets = datasets.filter(disease_state=request.GET['disease_state'])
-        rest += "&disease_state=%s" % request.GET['disease_state']
-
-    if 'lab' in request.GET:
-        datasets = [d for d in datasets \
-                    if smart_str(d.paper.lab) == smart_str(request.GET['lab'])]
-        rest += "&lab=%s" % request.GET['lab']
-    
-    #here is where we order things by paper and then gsmid for the admins
-    datasets = datasets.order_by("paper", "gsmid")
-
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
@@ -484,6 +412,75 @@ def samples(request):
     """Returns all of the samples
     """
     samples = models.Samples.objects.all()
+
+    #note: we have to keep track of these URL params so that we can feed them
+    #into the paginator, e.g. if we click on platform=1, then when we paginate
+    #we want the platform param to be carried through
+    rest = ""
+    if 'species' in request.GET:
+        samples = samples.filter(species=request.GET['species'])
+        rest += "&species=%s" % request.GET['species']
+        
+    if 'ftype' in request.GET:
+        samples = samples.filter(factor__type=request.GET['ftype'])
+        rest += "&ftype=%s" % request.GET['ftype']
+
+    if 'paper' in request.GET:
+        samples = samples.filter(paper=request.GET['paper'])
+        rest += "&paper=%s" % request.GET['paper']
+
+    if 'factor' in request.GET:
+        factor = models.Factors.objects.get(pk=request.GET['factor'])
+        samples = samples.filter(factor__name=factor.name)
+        rest += "&factor=%s" % request.GET['factor']
+
+    if 'antibody' in request.GET:
+        factor = models.Factors.objects.get(pk=request.GET['antibody'])
+        samples = samples.filter(factor__antibody=factor.antibody)
+        rest += "&antibody=%s" % request.GET['antibody']
+
+    if 'platform' in request.GET:
+        samples = samples.filter(platform=request.GET['platform'])
+        rest += "&platform=%s" % request.GET['platform']
+        
+    if 'celltype' in request.GET:
+        celltype = models.CellTypes.objects.get(pk=request.GET['celltype'])
+        samples = samples.filter(cell_type__name=celltype.name)
+        rest += "&celltype=%s" % request.GET['celltype']
+
+    if 'tissuetype' in request.GET:
+        celltype = models.CellTypes.objects.get(pk=request.GET['tissuetype'])
+        samples = samples.filter(cell_type__tissue_type=celltype.tissue_type)
+        rest += "&tissuetype=%s" % request.GET['tissuetype']
+
+    if 'cellline' in request.GET:
+        samples = samples.filter(cell_line=request.GET['cellline'])
+        rest += "&cellline=%s" % request.GET['cellline']
+
+    if 'cellpop' in request.GET:
+        samples = samples.filter(cell_pop=request.GET['cellpop'])
+        rest += "&cellpop=%s" % request.GET['cellpop']
+                
+    if 'strain' in request.GET:
+        samples = samples.filter(strain=request.GET['strain'])
+        rest += "&strain=%s" % request.GET['strain']
+
+    if 'condition' in request.GET:
+        samples = samples.filter(condition=request.GET['condition'])
+        rest += "&condition=%s" % request.GET['condition']
+
+    if 'disease_state' in request.GET:
+        samples = samples.filter(disease_state=request.GET['disease_state'])
+        rest += "&disease_state=%s" % request.GET['disease_state']
+
+    if 'lab' in request.GET:
+        samples = [d for d in samples \
+                    if smart_str(d.paper.lab) == smart_str(request.GET['lab'])]
+        rest += "&lab=%s" % request.GET['lab']
+    
+    #here is where we order things by paper and then gsmid for the admins
+    samples = samples.order_by("paper")
+
     paginator = Paginator(samples, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
@@ -733,6 +730,36 @@ def _allSameOrNone(objs, attr):
         return None
     
 @admin_only
+def batch_update_samples(request):
+    """A page that allows the user to make batch updates to a set of samples.
+    the samples are specified in the 'samples' url
+    """
+    title = "Batch Update Samples"
+    fields = forms.BatchUpdateSamplesForm.Meta.fields
+    if request.method == "POST":
+        samples = [models.Samples.objects.get(pk=id) \
+                       for id in request.GET['samples'].split(',')]
+        for s in samples:
+            form = forms.BatchUpdateSamplesForm(request.POST, instance=s)
+            if form.is_valid():
+                tmp = form.save()
+        return HttpResponseRedirect(request.POST['next'])
+    else:
+        if 'next' in request.GET:
+            next = request.GET['next']
+        if 'samples' in request.GET:
+            samp = request.GET['samples']
+            samples = [models.Samples.objects.get(pk=sid) \
+                           for sid in samp.split(',')]
+            tmp = models.Samples()
+            for f in fields:
+                setattr(tmp, f, _allSameOrNone(samples, f))
+            form = forms.BatchUpdateSamplesForm(instance=tmp)
+    return render_to_response('datacollection/batch_update_samples_form.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
+@admin_only
 def batch_update_datasets(request):
     """A page that allows the user to make batch updates to a set of datasets.
     the datasets are specified in the 'dataset' url
@@ -761,6 +788,7 @@ def batch_update_datasets(request):
     return render_to_response('datacollection/batch_update_datasets_form.html',
                               locals(),
                               context_instance=RequestContext(request))
+
 #OBSOLETE
 # def search(request):
 #     """the search page"""
@@ -1221,7 +1249,7 @@ def search(request):
         res = SearchQuerySet().filter(content=key)
         for r in res:
             #NOTE: r.model, r.model_name, r.object
-            if r.model is models.Datasets:
+            if (r.model is models.Datasets) or (r.model is models.Samples):
                 p = r.object.paper
             else:
                 p = r.object
