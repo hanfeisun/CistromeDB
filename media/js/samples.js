@@ -56,19 +56,17 @@ function init() {
 	masterHandler(tmp);
     }
 
-    /*
     var btn = $('batchEdit');
     btn.onclick = function(event) {
 	//redirect
-	if (paperModel.papers.length > 0) { //check for empty list
-	    window.location = SUB_SITE + "batch_update_papers/?papers="+ paperModel.papers;
+	if (sampleModel.samples.length > 0) { //check for empty list
+	    window.location = SUB_SITE + "batch_update_samples/?samples="+ sampleModel.samples+"&next="+window.location;
 	}
 	//NOTE: TODO--acutally the best way to do it is to just run down the 
 	//list of selected rows--i.e. generate dsetModel IN/AFTER onclick
 	//and not rely on dsetModel, b/c if you hit the back btn, the 
 	//item will still be checked but dsetModel is not populated.
     }
-    */
 
     var deleteBtn = $('deleteBtn');
     deleteBtn.onclick = function(event) {

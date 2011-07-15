@@ -46,18 +46,6 @@ onload="init();"
 	     <th>ID</th>
 	     <th>GSMID</th>
 	     <th>Paper</th>
-	     <th>Factor</th>
-	     <th>Antibody</th>
-	     <th>Experiment Type</th>
-	     <th>Platform</th>
-	     <th>Species</th>
-	     <th>Cell Type</th>
-	     <th>Tissue Type</th>
-	     <th>Cell Line</th>
-	     <th>Cell Pop</th>
-	     <th>Strain</th>
-	     <th>Condition</th>
-	     <th>Disease State</th>
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>User</th>
@@ -81,18 +69,6 @@ onload="init();"
 	      <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{d.paper.pmid}}" target="_blank">{{d.paper.pmid}}</a></br></br>
 	      <a href="{% url paper_profile d.paper.id %}">paper profile</a>
 	     </td>
-	     <td><a href="{% url datasets %}?factor={{d.factor.id}}">{{d.factor.name}}</a></td>
-	     <td><a href="{% url datasets %}?antibody={{d.factor.id}}">{{d.factor.antibody}}</a></td>
-	     <td>{{d.platform.get_experiment_type_display}}</td>
-	     <td><a href="{%url datasets %}?platform={{d.platform.id}}">{{d.platform.name}}</a></td>
-	     <td><a href="{% url datasets %}?species={{d.species.id}}">{{d.species}}</a></td>
-	     <td><a href="{% url datasets %}?celltype={{d.cell_type.id}}">{{d.cell_type.name}}</a></td>
-	     <td><a href="{% url datasets %}?tissuetype={{d.cell_type.id}}">{{d.cell_type.tissue_type}}</a></td>
-	     <td><a href="{% url datasets %}?cellline={{d.cell_line.id}}">{{d.cell_line.name}}</a></td>
-	     <td><a href="{% url datasets %}?cellpop={{d.cell_pop.id}}">{{d.cell_pop.name}}</a></td>
-	     <td><a href="{% url datasets %}?strain={{d.strain.id}}">{{d.strain.name}}</a></td>
-	     <td><a href="{% url datasets %}?condition={{d.condition.id}}">{{d.condition.name}}</a></td>
-	     <td><a href="{% url datasets %}?diseasestate={{d.disease_state.id}}">{{d.disease_state.name}}</a></td>
 	     {% ifequal d.status "imported" %}
 	     <td class="imported_row">{{ d.get_status_display }}</td>
 	     {% else %} {% ifequal d.status "info" %}

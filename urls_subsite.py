@@ -39,6 +39,8 @@ urlpatterns = patterns('',
               url(r'^datasets/$', views.datasets, name="datasets"),
               url(r'^batch_update_datasets/$', views.batch_update_datasets,
                   name="batch_update_datasets"),
+              url(r'^batch_update_samples/$', views.batch_update_samples,
+                  name="batch_update_samples"),
               #See haystack below
               #url(r'^search/$', views.search, name="search"),
               url(r'^delete_datasets/$', views.delete_datasets,
