@@ -481,6 +481,18 @@ def samples(request):
     #here is where we order things by paper and then gsmid for the admins
     samples = samples.order_by("paper")
 
+    def getdataset_gsmid(did):
+        try:
+            tmp = models.Datasets.objects.get(pk=did)
+            return tmp.gsmid
+        except:
+            return did
+    for s in samples:
+        s.treatments_gsmid = map(getdataset_gsmid, s.treatments.split(",")) \
+            if s.treatments else []
+        s.controls_gsmid = map(getdataset_gsmid, s.controls.split(",")) \
+            if s.controls else []
+
     paginator = Paginator(samples, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
