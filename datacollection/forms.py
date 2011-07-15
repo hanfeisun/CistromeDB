@@ -118,4 +118,17 @@ class BatchUpdateSamplesForm(forms.ModelForm):
                   )
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
+        #map fields to models
+        form_dict = {'factor': models.Factors, 'platform': models.Platforms,
+                     'species':models.Species, 'assembly': models.Assemblies,
+                     'cell_type':models.CellTypes, 
+                     'cell_line': models.CellLines, 'cell_pop':models.CellPops,
+                     'strain': models.Strains, 'condition':models.Conditions,
+                     'disease_state': models.DiseaseStates}
+
+    def __init__(self, *args, **kwargs):
+        super(BatchUpdateSamplesForm, self).__init__(*args, **kwargs)   
+        #self.fields['factor'].queryset=models.Factors.objects.order_by('name')
+        for k in BatchUpdateSamplesForm.Meta.form_dict:
+            self.fields[k].queryset = BatchUpdateSamplesForm.Meta.form_dict[k].objects.order_by('name')
 
