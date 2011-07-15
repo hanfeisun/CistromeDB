@@ -77,8 +77,14 @@ onload="init();"
 	       <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a><br/><br/>
 	       <a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a>
 	     </td>
-	     <td>{{ s.treatments }}</td>
-	     <td>{{ s.controls }}</td>
+	     <td>{% for g in s.treatments_gsmid %}
+	         <span>{{g}}</span>
+		 {% endfor %}
+	     </td>
+	     <td>{% for g in s.controls_gsmid %}
+	         <span>{{g}}</span>
+		 {% endfor %}
+	     </td>
 	     <td>
 	       <a href="{% url samples %}?factor={{s.factor.id}}">{{s.factor.name}}</a><br/><br/>
 	       <a href="{% url samples %}?antibody={{s.factor.id}}">{{s.factor.antibody}}</a>
