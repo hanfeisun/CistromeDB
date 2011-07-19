@@ -107,15 +107,18 @@ class Papers(DCModel):
     #    super(Papers, self).__init__(*args)
     #    self._meta._donotSerialize = ['user']
 
-    pmid = models.IntegerField(unique=True)
-    gseid = models.CharField(max_length=8,unique=True)
-    user = models.ForeignKey(User)
-    title = models.CharField(max_length=255)
-    abstract = models.TextField()
-    pub_date = models.DateField()
-    date_collected = models.DateTimeField()
-    authors = models.CharField(max_length=255)
-    last_auth_email = models.EmailField(null=True, blank=True)
+    pmid = models.IntegerField(null=True, blank=True, default=None)
+    gseid = models.CharField(max_length=255, null=True, blank=True, 
+                             default="")
+    user = models.ForeignKey(User, null=True, blank=True, default=None)
+    title = models.CharField(max_length=255, null=True, blank=True, 
+                             default="")
+    abstract = models.TextField(null=True, blank=True, default="")
+    pub_date = models.DateField(null=True, blank=True, default=None)
+    date_collected = models.DateTimeField(null=True, blank=True, default=None)
+    authors = models.CharField(max_length=255, null=True, blank=True, 
+                               default="")
+    last_auth_email = models.EmailField(null=True, blank=True, default=None)
         
     journal = models.ForeignKey('Journals',
                                 null=True, blank=True, default=None)
@@ -203,13 +206,14 @@ class Datasets(DCModel):
     #    super(Datasets, self).__init__(*args)
     #    self._meta._donotSerialize = ['user']
     
-    gsmid = models.CharField(max_length=9)
+    gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
     #Name comes from "title" in the geo sample information
-    name = models.CharField(max_length=255, blank=True)
-    chip_page = models.URLField(blank=True)
-    control_gsmid = models.CharField(max_length=9, blank=True)
-    control_page = models.URLField(blank=True)
-    date_collected = models.DateTimeField()
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
+    chip_page = models.URLField(null=True, blank=True, default="")
+    control_gsmid = models.CharField(max_length=255, null=True, blank=True, 
+                                     default="")
+    control_page = models.URLField(null=True, blank=True, default="")
+    date_collected = models.DateTimeField(null=True, blank=True, default=None)
     #FILES--maybe these should be in a different table, but for now here they r
     raw_file = models.FileField(upload_to=upload_factory("raw"),
                                 null=True, blank=True)
@@ -227,8 +231,8 @@ class Datasets(DCModel):
                                 null=True, blank=True)
     
     #IF everything is done by auto import we might not need this
-    user = models.ForeignKey(User)
-    paper = models.ForeignKey('Papers')
+    user = models.ForeignKey(User, null=True, blank=True, default=None)
+    paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
     #BONZAI! moving this meta info to samples, soon to be renamed datasets
     # factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
 
@@ -492,9 +496,9 @@ class Samples(DCModel):
     #end meta info
 
     status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
-                              default="new")
+                              null=True, blank=True, default="new")
 
-    comments = models.TextField(blank=True, default="")
+    comments = models.TextField(null=True, blank=True, default="")
 
 
     def _printInfo(self):
