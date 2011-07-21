@@ -10,6 +10,10 @@ var pgModel = new Model({"papersList":null, "currPaper":null,
 var msg = "Search Cistrome DC";
 //var msg = "                   ";
 
+var tearDownResultsEvent = new ModelEvent(null);
+var resultsCBEvent = new ModelEvent(null);
+var minOverlayH = 30;
+
 //NOTE: an empty search might mean "all" and not none.
 function init() {
     var searchFld = $('search');
@@ -35,7 +39,8 @@ function init() {
 	if (searchFld.value != msg) {
 	    var srch = new Ajax.Request(SUB_SITE+"search/", 
     {method:"get", parameters: {"q":searchFld.value}, onComplete: searchCb});
-	    this.disabled = true;
+	    //this.disabled = true;
+	    tearDownResultsEvent.notify();
 	}
     }
 
@@ -46,18 +51,26 @@ function init() {
 	}
     }
 
+    tearDownResultsEvent.register(function() { searchBtn.disabled = true; searchFld.disabled = true;});
+    resultsCBEvent.register(function() { searchBtn.disabled = false; searchFld.disabled = false;});
 
     var resultsView = new ResultsView($('results'), pgModel);
     var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
     var datasetsView = new DatasetsView($('datasets'), pgModel);
     var samplesView = new SamplesView($('samples'), pgModel);
 
+    //overlays
+    tearDownResultsEvent.register(function() { resultsView.drawOverlay(); });
+    resultsCBEvent.register(function() { resultsView.clearOverlay(); });
+
     pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
     //when a new paperList is set, clear the current paper
     pgModel.papersListEvent.register(function() {pgModel.setCurrPaper(null);});
+
     pgModel.currPaperEvent.register(function() { paperInfoView.makeHTML();});
     pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
+
     
     //overrider the setter fn to account for ascending fld- optional field asc
     pgModel.setCurrResultsCol = function(field, asc) {
@@ -139,12 +152,14 @@ function getPapers(type, model) {
 	model.origPapersList = resp;
 	//default ordering: pub_date, descending
 	model.setCurrResultsCol("pub_date", false);
-
+	resultsCBEvent.notify();
     }
 
     var call = new Ajax.Request(SUB_SITE+"front/"+type+"/", 
 				{method:"get", parameters: {}, 
 				 onComplete: cb});
+    //Notify that we are getting new papers
+    tearDownResultsEvent.notify();
     
 }
 
@@ -170,6 +185,7 @@ function ResultsView(container, model) {
     this.minPapers = 10;
     this.model = model;
     this.container = container;
+
     var outer = this;
     this.makeHTML = function() {
 	//clear
@@ -325,6 +341,36 @@ function ResultsView(container, model) {
 	outer.makePaperRows(currTbl);
 	    
     }
+
+    //OVERLAY stuff!
+    this.initOverlay = function() {
+	var div = $D('div');
+	div.style.backgroundImage = "url("+SUB_SITE+"static/img/black_75.png)";
+	div.style.position = "relative";
+	var loadingImg = $D('img', {'src':SUB_SITE+"static/img/loading.gif", 'className':"loadingImg"});
+	div.appendChild(loadingImg);
+	return div;
+    }
+
+    this.overlay = this.initOverlay();
+
+    this.drawOverlay = function() {
+	var w = outer.container.getWidth();
+	var h = outer.container.getHeight();
+	if (h < minOverlayH) {
+	    h = minOverlayH;
+	}
+	outer.overlay.style.top = "-"+h+"px";
+	outer.overlay.style.width = w+"px";
+	outer.overlay.style.height = h+"px";
+
+	outer.container.appendChild(outer.overlay);
+    }
+
+    this.clearOverlay = function() {
+	outer.container.removeChild(outer.overlay);
+    }
+    //END OVERLAY
 }
 
 function searchCb(req) {
@@ -335,8 +381,9 @@ function searchCb(req) {
     //default ordering: pub_date, descending
     pgModel.setCurrResultsCol("pub_date", false);
 
-    //reset the search btn
-    $('searchBtn').disabled = false;
+    resultsCBEvent.notify();
+    //reset the search btn--DROP: now an event lstnr
+    //$('searchBtn').disabled = false;
 }
 
 function PaperInfoView(container, model) {
@@ -418,29 +465,6 @@ function DatasetsView(container, model) {
 		     ["peak_file", "Peak"], ["wig_file", "Wig"], 
 		     ["bw_file", "Big Wig"]];
 
-	/* This has moved to Samples
-	var info1 = [
-		     ["species.name", "Species:"],
-		     ["assembly.name", "Assembly:"],		    
-		     ["factor.name", "Factor:"], 
-		     ["factor.antibody", "Antibody:"], 
-		     ["factor.type", "Factor Type:"],
-		     ["cell_type.name", "Cell Type:"],
-		     ["cell_type.tissue_type", "Cell Tissue Type:"],
-		     ["cell_line.name", "Cell Line:"],
-		     ["cell_pop.name", "Cell Pop.:"]
-		     ];
-	var info2 = [
-		     ["strain.name", "Strain:"],
-		     ["condition.name", "Condition:"],
-		     ["disease_state.name", "Disease State:"],
-		     ["platform.gplid", "GPLID:"],
-		     ["platform.name", "Platform Name:"],
-		     ["platform.technology", "Technology:"],
-		     ["platform.experiment_type", "Experiment Type:"]
-		     ];
-	*/
-
 	//LIKE this:
 	//	  <tr class="row">
 	//	    <td>GSM1234</td>
@@ -455,26 +479,6 @@ function DatasetsView(container, model) {
 	    var newA = $D('a', {innerHTML:gsmid, target:'_blank',
 				href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmid});
 	    tr.appendChild($D('td').appendChild(newA));
-
-	    /*
-	    //build the info tds
-	    var info = [info1, info2];
-	    for (var z = 0; z < info.length; z++) {
-		var newTd = $D('td');
-		for (var j = 0; j < info[z].length; j++) {
-		    var val = getattr(d, info[z][j][0], true);
-		    //NOTE: null evals to false
-		    if (val && val != "") {
-			newTd.appendChild($D('span', {'className':'label',
-					'innerHTML':info[z][j][1]}));
-			newTd.appendChild($D('span', {'className':'value2',
-					'innerHTML':val}));
-			newTd.appendChild($D('br'));
-		    }
-		}
-		tr.appendChild(newTd);
-	    }
-	    */
 
 	    //Build the files
 	    var td = $D('td');
@@ -509,6 +513,7 @@ function DatasetsView(container, model) {
 	var resp = eval("("+req.responseText+")");
 	outer.datasets = resp;
 	outer.makeHTML();
+	outer.clearOverlay();
     }
 
     this.currPaperLstnr = function() {
@@ -519,12 +524,43 @@ function DatasetsView(container, model) {
 				 {method:"get",
 				  parameters:{"paper":currPaper.id}, 
 				  onComplete: outer.cb});
+	    outer.drawOverlay();
 	} else {
 	    //clear
 	    outer.container.innerHTML = "";
 	}
 
     }
+
+    //OVERLAY stuff!
+    this.initOverlay = function() {
+	var div = $D('div');
+	div.style.backgroundImage = "url("+SUB_SITE+"static/img/black_75.png)";
+	div.style.position = "relative";
+	var loadingImg = $D('img', {'src':SUB_SITE+"static/img/loading.gif", 'className':"loadingImg"});
+	div.appendChild(loadingImg);
+	return div;
+    }
+
+    this.overlay = this.initOverlay();
+
+    this.drawOverlay = function() {
+	var w = outer.container.getWidth();
+	var h = outer.container.getHeight();
+	if (h < minOverlayH) {
+	    h = minOverlayH;
+	}
+	outer.overlay.style.top = "-"+h+"px";
+	outer.overlay.style.width = w+"px";
+	outer.overlay.style.height = h+"px";
+
+	outer.container.appendChild(outer.overlay);
+    }
+
+    this.clearOverlay = function() {
+	outer.container.removeChild(outer.overlay);
+    }
+    //END OVERLAY
 
 }
 
@@ -671,6 +707,7 @@ function SamplesView(container, model) {
 	var resp = eval("("+req.responseText+")");
 	outer.samples = resp;
 	outer.makeHTML();
+	outer.clearOverlay();
     }
 
     this.currPaperLstnr = function() {
@@ -681,12 +718,43 @@ function SamplesView(container, model) {
 				 {method:"get", 
 				  parameters:{"paper":currPaper.id}, 
 				  onComplete: outer.cb});
+	    outer.drawOverlay();
 	} else {
 	    //clear
 	    outer.container.innerHTML = "";
 	}
 	
     }
+
+    //OVERLAY stuff!
+    this.initOverlay = function() {
+	var div = $D('div');
+	div.style.backgroundImage = "url("+SUB_SITE+"static/img/black_75.png)";
+	div.style.position = "relative";
+	var loadingImg = $D('img', {'src':SUB_SITE+"static/img/loading.gif", 'className':"loadingImg"});
+	div.appendChild(loadingImg);
+	return div;
+    }
+
+    this.overlay = this.initOverlay();
+
+    this.drawOverlay = function() {
+	var w = outer.container.getWidth();
+	var h = outer.container.getHeight();
+	if (h < minOverlayH) {
+	    h = minOverlayH;
+	}
+	outer.overlay.style.top = "-"+h+"px";
+	outer.overlay.style.width = w+"px";
+	outer.overlay.style.height = h+"px";
+
+	outer.container.appendChild(outer.overlay);
+    }
+
+    this.clearOverlay = function() {
+	outer.container.removeChild(outer.overlay);
+    }
+    //END OVERLAY
 }
 
 

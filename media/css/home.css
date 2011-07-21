@@ -185,3 +185,9 @@ span.value2 {
 }
 /* END: info styling */
 
+.loadingImg {
+    width:30px;
+    height:30px;
+    display:block;
+    margin: 0 auto;
+}
