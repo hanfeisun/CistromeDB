@@ -60,6 +60,7 @@ onload="init();"
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>Uploader</th>
+	     <th>QC</th>
 	     {% if user.is_authenticated %}
 	     <th>Action</th>
 	     {% endif %}
@@ -120,6 +121,18 @@ onload="init();"
 	     <td>{{ s.comments }}</td>
 	     <td>{{ s.uploader }}<br/><br/>
 	         {{ s.upload_date|date:"Y-m-d" }}
+	     </td>
+	     <td>
+	       {% if s.read_qc %}<span>Read:{{s.read_qc}}</span><br/>{% endif %}
+	       {% if s.model_qc %}<span>Model:{{s.model_qc}}</span><br/>{% endif %}
+	       {% if s.fold_qc %}<span>Fold:{{s.fold_qc}}</span><br/>{% endif %}
+	       {% if s.fdr_qc %}<span>FDR:{{s.fdr_qc}}</span><br/>{% endif %}
+	       {% if s.replicate_qc %}<span>Replicate:{{s.replicate_qc}}</span><br/>{% endif %}
+	       {% if s.dnase_qc %}<span>DNase:{{s.dnase_qc}}</span><br/>{% endif %}
+	       {% if s.conserve_qc %}<span>Conserve:{{s.conserve_qc}}</span><br/>{% endif %}
+	       {% if s.ceas_qc %}<span>CEAS:{{s.ceas_qc}}</span><br/>{% endif %}
+	       {% if s.motif_qc %}<span>Motif:{{s.motif_qc}}</span><br/>{% endif %}
+	       {% if s.overall_qc %}<span>Overall:{{s.overall_qc}}</span><br/>{% endif %}
 	     </td>
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_authenticated %}
