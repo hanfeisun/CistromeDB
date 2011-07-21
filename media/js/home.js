@@ -407,7 +407,8 @@ function DatasetsView(container, model) {
 	tbl.appendChild(tr);
 
 	//build the table.th
-	var titles = ["GSMID", "Info", " ", "Files", "Rating"];
+	//var titles = ["GSMID", "Info", " ", "Files", "Rating"];
+	var titles = ["GSMID", "Files", "Rating"];
 	for (var i = 0; i < titles.length; i++) {
 	    tr.appendChild($D('th', {'innerHTML':titles[i]}));
 	}
@@ -416,6 +417,8 @@ function DatasetsView(container, model) {
 	var files = [["raw_file", "Raw"], ["treatment_file", "Treatment"], 
 		     ["peak_file", "Peak"], ["wig_file", "Wig"], 
 		     ["bw_file", "Big Wig"]];
+
+	/* This has moved to Samples
 	var info1 = [
 		     ["species.name", "Species:"],
 		     ["assembly.name", "Assembly:"],		    
@@ -435,8 +438,8 @@ function DatasetsView(container, model) {
 		     ["platform.name", "Platform Name:"],
 		     ["platform.technology", "Technology:"],
 		     ["platform.experiment_type", "Experiment Type:"]
-
 		     ];
+	*/
 
 	//LIKE this:
 	//	  <tr class="row">
@@ -453,6 +456,7 @@ function DatasetsView(container, model) {
 				href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmid});
 	    tr.appendChild($D('td').appendChild(newA));
 
+	    /*
 	    //build the info tds
 	    var info = [info1, info2];
 	    for (var z = 0; z < info.length; z++) {
@@ -470,6 +474,7 @@ function DatasetsView(container, model) {
 		}
 		tr.appendChild(newTd);
 	    }
+	    */
 
 	    //Build the files
 	    var td = $D('td');
@@ -538,43 +543,70 @@ function SamplesView(container, model) {
 	tbl.appendChild(tr);
 
 	//build the table.th
-	var titles = ["Treaments", "Controls", "Files", " ", " ", " ", " ",
-		      " ", " ", "Rating"];
+	var titles = ["Treaments", "Controls", 
+		      "Info", " ", 
+		      "QC Grades", " ",
+		      "Files", " ", 
+		      "Rating"];
 	for (var i = 0; i < titles.length; i++) {
 	    tr.appendChild($D('th', {'innerHTML':titles[i]}));
 	}
 
+	var info1 = [
+		     ["species.name", "Species:"],
+		     ["assembly.name", "Assembly:"],		    
+		     ["factor.name", "Factor:"], 
+		     ["factor.antibody", "Antibody:"], 
+		     ["factor.type", "Factor Type:"],
+		     ["cell_type.name", "Cell Type:"],
+		     ["cell_type.tissue_type", "Cell Tissue Type:"],
+		     ["cell_line.name", "Cell Line:"],
+		     ["cell_pop.name", "Cell Pop.:"]
+		     ];
+	var info2 = [
+		     ["strain.name", "Strain:"],
+		     ["condition.name", "Condition:"],
+		     ["disease_state.name", "Disease State:"],
+		     ["platform.gplid", "GPLID:"],
+		     ["platform.name", "Platform Name:"],
+		     ["platform.technology", "Technology:"],
+		     ["platform.experiment_type", "Experiment Type:"]
+		     ];
+	var info3 = [
+		     ["read_qc", "Read:"],
+		     ["model_qc", "Model:"],
+		     ["fold_qc", "Fold:"],
+		     ["fdr_qc", "FDR:"],
+		     ["replicate_qc", "Replicate:"]
+		     ];
+	var info4 = [
+		     ["dnase_qc", "DNase:"],
+		     ["conserve_qc", "Conserve:"],
+		     ["ceas_qc", "CEAS:"],
+		     ["motif_qc", "Motif:"],
+		     ["overall_qc", "Overall:"]
+		     ];
+
 	var files1 = [
 		      ["treatment_file", "Treatment"],
 		      ["peak_file", "Peak"],
-		      ["peak_xls_file", "Peak XLS"]
-		      ];
-
-	var files2 = [
+		      ["peak_xls_file", "Peak XLS"],
 		      ["summit_file", "Summit"],
 		      ["wig_file", "Wig"],
-		      ["bw_file", "Big Wig"]
-		      ];
-	var files3 = [
+		      ["bw_file", "Big Wig"],
 		      ["bed_graph_file", "Bed Graph"],
-		      ["control_bed_graph_file", "Control Bed Graph"]
-		      ];
-	var files4 = [
+		      ["control_bed_graph_file", "Control Bed Graph"],
 		      ["conservation_file", "Conservation"],
-		      ["conservation_r_file", "Conservation R"]
-		      ];
-	var files5 = [
+		      ["conservation_r_file", "Conservation_R"],
 		      ["qc_file", "QC"],
-		      ["qc_r_file", "QC R"]
-		      ];
-	var files6 = [
+		      ["qc_r_file", "QC R"],
 		      ["ceas_file", "CEAS"],
-		      ["ceas_r_file", "CEAS R"]
-		      ];
-	var files7 = [
+		      ["ceas_r_file", "CEAS R"],
 		      ["venn_file", "Venn Diagram"],
 		      ["seqpos_file", "Motif"]
+
 		      ];
+	var files2 = [];
 	for (var i = 0; i < outer.samples.length; i++) {
 	    var s = outer.samples[i];
 	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
@@ -582,8 +614,26 @@ function SamplesView(container, model) {
 	    tr.appendChild($D('td', {'innerHTML':s.treatments}));
 	    tr.appendChild($D('td', {'innerHTML':s.controls}));
 
+	    //build the info tds
+	    var info = [info1, info2, info3, info4];
+	    for (var z = 0; z < info.length; z++) {
+		var newTd = $D('td');
+		for (var j = 0; j < info[z].length; j++) {
+		    var val = getattr(s, info[z][j][0], true);
+		    //NOTE: null evals to false
+		    if (val && val != "") {
+			newTd.appendChild($D('span', {'className':'label',
+					'innerHTML':info[z][j][1]}));
+			newTd.appendChild($D('span', {'className':'value2',
+					'innerHTML':val}));
+			newTd.appendChild($D('br'));
+		    }
+		}
+		tr.appendChild(newTd);
+	    }
+
 	    //Build the files
-	    var ls = [files1, files2, files3, files4, files5, files6, files7];
+	    var ls = [files1, files2];
 	    for (var z = 0; z < ls.length; z++) {
 		var files = ls[z];
 		var td = $D('td');
