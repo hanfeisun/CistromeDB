@@ -88,24 +88,6 @@ class UpdateDatasetForm(forms.ModelForm):
     #      #raise forms.ValidationError("FOOBAR!")
     #      return cleaned_data
 
-class UpdateSampleForm(forms.ModelForm):
-    class Meta:
-        model = models.Samples
-        fields = ('user', 'paper', 'treatments', 'controls', 
-                  'uploader', 'upload_date',
-                  'status', 'comments')
-        exclude = tuple([f.name for f in model._meta.fields \
-                         if f.name not in fields])
-
-class BatchUpdateDatasetsForm(forms.ModelForm):
-    class Meta:
-        model = models.Datasets
-        fields = ('status', 'comments',
-                  'user', 'uploader', 'curator', 
-                  )
-        exclude = tuple([f.name for f in model._meta.fields \
-                         if f.name not in fields])
-
 class BatchUpdateSamplesForm(forms.ModelForm):
     class Meta:
         model = models.Samples
@@ -114,7 +96,7 @@ class BatchUpdateSamplesForm(forms.ModelForm):
                   'cell_pop', 'strain', 'condition', 'disease_state',
                   'status', 'comments',
                   'user', 'uploader', #'curator', 
-                  'description',
+                  'description', 'chip_page', 'control_page',
                   )
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
@@ -126,9 +108,34 @@ class BatchUpdateSamplesForm(forms.ModelForm):
                      'strain': models.Strains, 'condition':models.Conditions,
                      'disease_state': models.DiseaseStates}
 
+    #ORDER the select options by the field name--i.e. alphabetical order
     def __init__(self, *args, **kwargs):
         super(BatchUpdateSamplesForm, self).__init__(*args, **kwargs)   
-        #self.fields['factor'].queryset=models.Factors.objects.order_by('name')
         for k in BatchUpdateSamplesForm.Meta.form_dict:
             self.fields[k].queryset = BatchUpdateSamplesForm.Meta.form_dict[k].objects.order_by('name')
+
+class UpdateSampleForm(forms.ModelForm):
+    class Meta:
+        model = models.Samples
+        fields = ('paper', 'treatments', 'controls', 'upload_date') + \
+            BatchUpdateSamplesForm.Meta.fields
+        exclude = tuple([f.name for f in model._meta.fields \
+                         if f.name not in fields])
+    #ORDER the select options by the field name--i.e. alphabetical order
+    def __init__(self, *args, **kwargs):
+        super(UpdateSampleForm, self).__init__(*args, **kwargs)   
+        #NOTE: form_dict is not in this class!
+        for k in BatchUpdateSamplesForm.Meta.form_dict:
+            self.fields[k].queryset = BatchUpdateSamplesForm.Meta.form_dict[k].objects.order_by('name')
+
+
+class BatchUpdateDatasetsForm(forms.ModelForm):
+    class Meta:
+        model = models.Datasets
+        fields = ('status', 'comments',
+                  'user', 'uploader', 'curator', 
+                  )
+        exclude = tuple([f.name for f in model._meta.fields \
+                         if f.name not in fields])
+
 

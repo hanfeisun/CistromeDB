@@ -209,10 +209,11 @@ class Datasets(DCModel):
     gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    chip_page = models.URLField(null=True, blank=True, default="")
-    control_gsmid = models.CharField(max_length=255, null=True, blank=True, 
-                                     default="")
-    control_page = models.URLField(null=True, blank=True, default="")
+    #DROPPED
+    # chip_page = models.URLField(null=True, blank=True, default="")
+    # control_gsmid = models.CharField(max_length=255, null=True, blank=True, 
+    #                                  default="")
+    # control_page = models.URLField(null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
     #FILES--maybe these should be in a different table, but for now here they r
     raw_file = models.FileField(upload_to=upload_factory("raw"),
@@ -493,6 +494,8 @@ class Samples(DCModel):
                                   null=True, blank=True, default=None)
     disease_state = models.ForeignKey('DiseaseStates',
                                       null=True, blank=True, default=None)
+    chip_page = models.URLField(null=True, blank=True, default="")
+    control_page = models.URLField(null=True, blank=True, default="")
     #end meta info
 
     status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
