@@ -97,6 +97,9 @@ class BatchUpdateSamplesForm(forms.ModelForm):
                   'status', 'comments',
                   'user', 'uploader', #'curator', 
                   'description', 'chip_page', 'control_page',
+                  'read_qc', 'model_qc', 'fold_qc', 'fdr_qc', 'replicate_qc',
+                  'dnase_qc', 'conserve_qc', 'ceas_qc', 'motif_qc', 
+                  'overall_qc',
                   )
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
