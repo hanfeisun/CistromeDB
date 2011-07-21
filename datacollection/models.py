@@ -63,6 +63,14 @@ FACTOR_TYPES = (
     (u'other', u'other'),
     )
 
+GRADE_CHOICES = (
+    (u'A', u'A'),
+    (u'B', u'B'),
+    (u'C', u'C'),
+    (u'D', u'D'),
+    )
+
+
 #pending is the default submission status
 DEFAULT_SUBMISSION_STATUS = SUBMISSION_STATUS[0][0]
 
@@ -503,6 +511,27 @@ class Samples(DCModel):
 
     comments = models.TextField(null=True, blank=True, default="")
 
+    #QC fields
+    read_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                               null=True, blank=True, default=None)
+    model_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                                null=True, blank=True, default=None)
+    fold_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                               null=True, blank=True, default=None)
+    fdr_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                              null=True, blank=True, default=None)
+    replicate_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                                    null=True, blank=True, default=None)
+    dnase_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                                null=True, blank=True, default=None)
+    conserve_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                                  null=True, blank=True, default=None)
+    ceas_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                               null=True, blank=True, default=None)
+    motif_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                               null=True, blank=True, default=None)
+    overall_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                                  null=True, blank=True, default=None)
 
     def _printInfo(self):
         """Tries to print the treatment and controls list like this:
