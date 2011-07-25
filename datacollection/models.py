@@ -524,6 +524,8 @@ class Samples(DCModel):
                                     null=True, blank=True, default=None)
     dnase_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
                                 null=True, blank=True, default=None)
+    velcro_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+                                 null=True, blank=True, default=None)
     conserve_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
                                   null=True, blank=True, default=None)
     ceas_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
