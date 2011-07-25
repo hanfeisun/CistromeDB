@@ -70,6 +70,11 @@ GRADE_CHOICES = (
     (u'D', u'D'),
     )
 
+QC_CHOICES = (
+    (u'PASS', u'PASS'),
+    (u'FAIL', u'FAIL'),
+    )
+
 
 #pending is the default submission status
 DEFAULT_SUBMISSION_STATUS = SUBMISSION_STATUS[0][0]
@@ -512,25 +517,25 @@ class Samples(DCModel):
     comments = models.TextField(null=True, blank=True, default="")
 
     #QC fields
-    read_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    read_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                null=True, blank=True, default=None)
-    model_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    model_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                 null=True, blank=True, default=None)
-    fold_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    fold_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                null=True, blank=True, default=None)
-    fdr_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    fdr_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                               null=True, blank=True, default=None)
-    replicate_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    replicate_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                     null=True, blank=True, default=None)
-    dnase_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    dnase_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                 null=True, blank=True, default=None)
-    velcro_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    velcro_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                  null=True, blank=True, default=None)
-    conserve_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    conserve_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                   null=True, blank=True, default=None)
-    ceas_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    ceas_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                null=True, blank=True, default=None)
-    motif_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
+    motif_qc = models.CharField(max_length=255, choices=QC_CHOICES,
                                null=True, blank=True, default=None)
     overall_qc = models.CharField(max_length=255, choices=GRADE_CHOICES,
                                   null=True, blank=True, default=None)
