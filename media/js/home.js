@@ -617,6 +617,7 @@ function SamplesView(container, model) {
 		     ];
 	var info4 = [
 		     ["dnase_qc", "DNase:"],
+		     ["velcro_qc", "Velcro:"],
 		     ["conserve_qc", "Conserve:"],
 		     ["ceas_qc", "CEAS:"],
 		     ["motif_qc", "Motif:"],
