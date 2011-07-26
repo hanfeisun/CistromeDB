@@ -1,0 +1,7 @@
+#!/bin/bash
+#INFO  @ Thu, 19 May 2011 22:43:32: Run: /home/lentaing/liulab/lenlib/newdc/pipeline/mock_tools/mock_bedGraphToBigWig 1_rep1_treat.bdg /home/lentaing/liulab/lenlib/newdc/pipeline/mock_tools/static_libraries/chromLen/mm9.len 1_rep1_treat.bw 
+
+#output last arg 1_rep1_treat.bw
+
+echo $3 > $3
+

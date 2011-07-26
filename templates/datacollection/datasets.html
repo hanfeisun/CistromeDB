@@ -1,0 +1,130 @@
+{% extends "datacollection/login_base.html" %}
+{% block title %}Cistrome Paper Collection - Datasets{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
+<script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/datasets.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block onload %}
+onload="init();"
+{% endblock %}
+
+{% block content %}
+      {% if user.is_authenticated %}
+      <input type="button" id="batchEdit" value="batch edit"/>
+      {% ifequal user.get_profile.team "admin" %}
+      <input type="button" id="deleteBtn" value="delete"/>
+      {% endifequal %}
+      {% endif %}
+      {% if datasets.paginator.num_pages %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if datasets.has_previous %}
+	      {% ifnotequal datasets.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
+              <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
+
+              {% if datasets.has_next %}
+              <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal datasets.next_page_number datasets.paginator.num_pages %}
+	      <a href="?page={{datasets.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
+              {% endif %}
+          </span>
+      </div>
+      {% endif %}
+      <table>
+         <tr>{% if user.is_authenticated %}
+	     <th><input type="checkbox" id="masterCheckbox"/></th>
+	     {% endif %}
+	     <th>ID</th>
+	     <th>GSMID</th>
+	     <th>Paper</th>
+	     <th>Status</th>
+	     <th>Comments</th>
+	     <th>User</th>
+	     <th>Uploader</th>
+	     <th>Curator</th>
+	     <th>Date Collected</th>
+	     {% if user.is_authenticated %}
+	     <th>Action</th>
+	     {% endif %}
+	 </tr>
+	 {% for d in datasets.object_list %}
+	 <tr>
+	     {% if user.is_authenticated %}
+	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/>
+	         <a href="{% url update_dataset_form d.id %}?next={% url datasets %}?page={{datasets.number}}">edit</a>
+	     </td>
+	     {% endif %}
+	     <td><a href="{% url dataset_profile d.id %}">{{d.id}}</a></td>
+	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{d.gsmid}}" target="_blank">{{d.gsmid}}</a></td>
+	     <td>
+	      <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{d.paper.pmid}}" target="_blank">{{d.paper.pmid}}</a></br></br>
+	      <a href="{% url paper_profile d.paper.id %}">paper profile</a>
+	     </td>
+	     {% ifequal d.status "imported" %}
+	     <td class="imported_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "info" %}
+	     <td class="info_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "valid" %}
+	     <td class="valid_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "transfer" %}
+	     <td class="transfer_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "downloaded" %}
+	     <td class="downloaded_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "error" %}
+	     <td class="error_row">{{ d.get_status_display }}</td>
+	     {% else %}
+	     <td>{{ d.get_status_display }}</td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+	     <td>{{ d.comments }}</td>
+	     <td><a href="{% url datasets %}{{d.user.id}}/">{{ d.user.username }}</a></td>
+	     <td>{{d.uploader.username}}</td>
+	     <td>{{d.curator.username}}</td>
+	     <td>{{ d.date_collected|date:"Y-m-d"}}</td>
+	     {% comment %} ACTIONS HERE {% endcomment %}
+	     {% if user.is_authenticated %}
+	     {% ifequal d.status "info" %}
+	     <td><input type="button" value="validate" onclick=""/></td>
+	     {% else %}{% ifequal d.status "valid" %}
+	     <td><input type="button" value="download raw file" onclick="downloadFile({{d.id}}, {{datasets.number}});"/></td>
+	     {% else %} {% ifequal d.status "transfer" %}
+	     <td><input type="button" value="download raw file" disabled="true"/></td>
+	     {% else %} 
+	     <td> </td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}
+	     {% endif %} 
+	 </tr>
+	 {% endfor %}
+      </table>
+<!-- from http://docs.djangoproject.com/en/1.1/topics/pagination/-->
+      {% if datasets.paginator.num_pages %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if datasets.has_previous %}
+	      {% ifnotequal datasets.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
+              <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
+
+              {% if datasets.has_next %}
+              <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal datasets.next_page_number datasets.paginator.num_pages %}
+	      <a href="?page={{datasets.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
+              {% endif %}
+          </span>
+      </div>
+      {% endif %}
+{% endblock %}
+

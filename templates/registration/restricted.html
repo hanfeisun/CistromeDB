@@ -1,0 +1,10 @@
+{% extends "datacollection/login_base.html" %}
+
+{% block title %}Restricted{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+{% block content %}
+   <header><h1 style="color:red">Sorry! The page you tried to access is restricted. To go back to the homepage, click <a href="{% url home %}">here</a></h1>
+   </header>
+{% endblock %}

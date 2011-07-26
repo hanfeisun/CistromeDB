@@ -1,0 +1,17 @@
+{% extends "datacollection/base.html" %}
+{% comment %} DEFINES the login form {% endcomment %}
+
+{% block login_form %}
+      {% if user.is_authenticated %}
+      <span id="login">Welcome, {{ user.username }}. <a href="{% url logout %}">logout</a></span>
+      {% else %}
+      <form action="{% url login %}" method="post" id="login">
+         <label for="username">Login:</label>
+	 <input type="text" name="username" id="username"/>
+         <label for="password">Password:</label>
+	 <input type="password" name="password" id="password"/>
+	 <input type="submit" name="login" value="login"/>
+	 <input type="hidden" name="next" value="{{ request.get_full_path }}"/>
+      </form>
+      {% endif %}
+{% endblock %}

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#INFO  @ Thu, 19 May 2011 22:19:05: Run: /home/lentaing/liulab/lenlib/newdc/pipeline/mock_tools/mock_macs14 -g mm  -w -S -t 1_rep1_treat.bam -n 1_rep1
+#INFO  @ Thu, 19 May 2011 22:19:05: Run: zcat 1_rep1_MACS_wiggle/treat/1_rep1_treat_afterfiting_all.wig.gz > 1_rep1_treat.wig
+#INFO  @ Thu, 19 May 2011 22:34:25: Run: zcat 1_rep1_MACS_bedGraph/treat/1_rep1_treat_afterfiting_all.bdg.gz > 1_rep1_treat.bdg 
+
+#a. have to take the last arg, and make a wig file
+#b. then gzip the wig file
+#c. NOTE: macs is run twice, on the first run we're going to generate 
+#   everything needed??
+#d. other files that macs generates: 1_rep1_peaks.xls, 1_rep1_peaks.bed,
+#   1_rep1_summits.bed
+
+#macs is run twice, we just generate all the files on the first pass
+
+export lastarg=${!#}
+
+if [ ! -e ${lastarg}_MACS_wiggle ]
+then
+export WIG=${lastarg}_treat_afterfitting_all.wig
+export BDG=${lastarg}_treat_afterfiting_all.bdg
+
+mkdir ${lastarg}_MACS_wiggle
+mkdir ${lastarg}_MACS_bedGraph
+
+mkdir ${lastarg}_MACS_wiggle/treat
+mkdir ${lastarg}_MACS_bedGraph/treat
+
+echo $WIG > ${lastarg}_MACS_wiggle/treat/$WIG
+echo $BDG > ${lastarg}_MACS_bedGraph/treat/$BDG
+
+gzip -q ${lastarg}_MACS_wiggle/treat/$WIG
+gzip -q ${lastarg}_MACS_bedGraph/treat/$BDG
+
+#other files
+echo "chr1	3002080	3002219	140	70	8	376.04	7.23	0.01
+chr1 3361547	3361669	123	61	6	433.23	13.09	0.01
+chr1 3366548	3366674	127	63	6	372.19	9.65	0.01
+" > ${lastarg}_peaks.xls
+echo ${lastarg}_peaks.bed > ${lastarg}_peaks.bed
+echo ${lastarg}_summits.bed > ${lastarg}_summits.bed
+fi
