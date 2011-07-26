@@ -26,15 +26,15 @@ SUBMISSION_STATUS = (
     )
 
 PAPER_STATUS = (
-    (u'imported', u'paper entered awaiting datasets'),
-    (u'datasets', u'datasets imported awaiting download'),
-    (u'transfer', u'datasets download in progress'),
-    (u'downloaded', u'datasets downloaded awaiting analysis'),
+    (u'imported', u'paper entered awaiting samples'),
+    (u'samples', u'samples imported awaiting download'),
+    (u'transfer', u'samples download in progress'),
+    (u'downloaded', u'samples downloaded awaiting analysis'),
     (u'complete', u'analysis complete/complete'),
     (u'error', u'error/hold- see comments'),
     )
 
-DATASET_STATUS = (
+SAMPLE_STATUS = (
     (u'imported', u'imported awaiting meta-info'),
     (u'info', u'meta-info inputted awaiting validation'),
     (u'valid', u'meta-info validated awaiting file download'),
@@ -43,8 +43,8 @@ DATASET_STATUS = (
     (u'error', u'error/hold- see comments'),
     )
 
-SAMPLE_STATUS = (
-    (u'new', u'sample created, awaiting check for raw files'),
+DATASET_STATUS = (
+    (u'new', u'dataset created, awaiting check for raw files'),
     (u'checked', u'raw files checked, awaiting run'),
     (u'running', u'analysis is running, awaiting completion'),
     (u'complete', u'analysis complete'),
@@ -144,20 +144,20 @@ class Papers(DCModel):
         """Returns a list of the species objs associated with the papers, i.e.
         the set of species that are found in the paper's datasets"""
         tmp = []
-        samples = Samples.objects.filter(paper=self.id)
-        for s in samples:
-            if s.species and s.species.name not in tmp:
-                tmp.append(smart_str(s.species.name))
+        datasets = Datasets.objects.filter(paper=self.id)
+        for d in datasets:
+            if d.species and d.species.name not in tmp:
+                tmp.append(smart_str(d.species.name))
         return tmp
 
     def _get_factors(self):
         """Returns a list of the factors associated w/ the paper, i.e.
         returns the set of factors that are found in the paper's datasets"""
         tmp = []
-        samples = Samples.objects.filter(paper=self.id)
-        for s in samples:
-            if s.factor and s.factor.name not in tmp:
-                tmp.append(smart_str(s.factor.name))
+        datasets = Datasets.objects.filter(paper=self.id)
+        for d in datasets:
+            if d.factor and d.factor.name not in tmp:
+                tmp.append(smart_str(d.factor.name))
         return tmp
 
     def _get_lab(self):
@@ -175,58 +175,27 @@ class Papers(DCModel):
 Papers._meta._donotSerialize = ['user']
 Papers._meta._virtualfields = ['lab','species','factors']
 
-class Datasets(DCModel):
-    """Datasets are the data associated with the papers.  They are usually
-    available for download from Geo.
-    The fields are:
-    gsmid - GEO sample identifier
-    chip_page - (not sure) the url of the platform? (optional)
-    control_gsmid - GEO sample identifier for control (optional)
-    control_page - (not sure) the url of the platform? (optional)
-    date_collected - the date we collected the sample from GEO
-    file - file path ref
-    user_id - the user who currated the dataset
-    paper_id - the paper that the dataset is associated with
-    factor_id - the factor associated with the sample
-
-    NOTE: from here on out, they are all optional, and they override the
-    paper field. e.g. if platform is defined for a dataset, then it takes
-    precedence over the dataset's paper's platform.  IF it is not defined,
-    then it inherits the paper's info.
-    
-    platform - the platform, e.g. Affymetrix Human Genome Version 2.0
-    species - the sample's species
-    factor - the sample's factor, e.g. PolII
-    cell_type - the sample's cell type, e.g. embryonic stem cell
-    cell_line, cell_pop, strain - the sample's cell line
-    condition - the sample's condition, e.g. PTIP-knockout
+#class Datasets(DCModel):
+class Samples(DCModel):
+    """!!DEPRECATED DOC!! PLEASE UPDATE ME!
     """
     def upload_factory(sub_dir):
         """a factory for generating upload_to_path fns--e.g. use to generate
         the various sub-directories we use to store the info associated w/
         a sample"""
         def upload_to_path(self, filename):
-            """Returns the upload_to path for this dataset.
+            """Returns the upload_to path for this sample.
             NOTE: we are going to store the files by gsmid, e.g. GSM566957
-            is going to be stored in: data/datasets/gsm566/957.
+            is going to be stored in: data/samples/gsm566/957.
             I'm not sure if this is the place to validate gsmids, but it maybe
             """
-            return os.path.join('data', 'datasets','gsm%s' % self.gsmid[3:6],
+            return os.path.join('data', 'samples','gsm%s' % self.gsmid[3:6],
                                 self.gsmid[6:], sub_dir, filename)
         return upload_to_path
-
-    #def __init__(self, *args):
-    #    super(Datasets, self).__init__(*args)
-    #    self._meta._donotSerialize = ['user']
     
     gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    #DROPPED
-    # chip_page = models.URLField(null=True, blank=True, default="")
-    # control_gsmid = models.CharField(max_length=255, null=True, blank=True, 
-    #                                  default="")
-    # control_page = models.URLField(null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
     #FILES--maybe these should be in a different table, but for now here they r
     raw_file = models.FileField(upload_to=upload_factory("raw"),
@@ -247,37 +216,11 @@ class Datasets(DCModel):
     #IF everything is done by auto import we might not need this
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
-    #BONZAI! moving this meta info to samples, soon to be renamed datasets
-    # factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
-
-    # platform = models.ForeignKey('Platforms',
-    #                              null=True, blank=True, default=None)
-    # species = models.ForeignKey('Species',
-    #                             null=True, blank=True, default=None)
-    # assembly = models.ForeignKey('Assemblies',
-    #                              null=True, blank=True, default=None)
-    # # #in description, we can add additional info e.g. protocols etc
-    # description = models.TextField(blank=True)
-    # cell_type = models.ForeignKey('CellTypes',
-    #                               null=True, blank=True, default=None)
-    # cell_line = models.ForeignKey('CellLines',
-    #                               null=True, blank=True, default=None)
-    # cell_pop = models.ForeignKey('CellPops',
-    #                              null=True, blank=True, default=None)
-    # strain = models.ForeignKey('Strains',
-    #                            null=True, blank=True, default=None)
-    # condition = models.ForeignKey('Conditions',
-    #                               null=True, blank=True, default=None)
-
-    # disease_state = models.ForeignKey('DiseaseStates',
-    #                                   null=True, blank=True, default=None)
     
-    status = models.CharField(max_length=255, choices=DATASET_STATUS,
+    status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
                               default="imported")
     comments = models.TextField(blank=True)
     
-    #user = the person who created this dataset (paper team)
-    #uploader = the person who uploaded the files (data team)
     uploader = models.ForeignKey(User, null=True, blank=True, default=None,
                                  related_name="uploader")
     upload_date = models.DateTimeField(blank=True, null=True, default=None)
@@ -286,138 +229,24 @@ class Datasets(DCModel):
     curator = models.ForeignKey(User, null=True, blank=True, default=None,
                                 related_name="curator")
     
-Datasets._meta._donotSerialize = ['user', 'uploader', 'curator']
+Samples._meta._donotSerialize = ['user', 'uploader', 'curator']
 
-class Platforms(DCModel):
-    """Platforms are the chips/assemblies used to generate the dataset.
-    For example, it can be an Affymetrix Human Genome U133 Plus 2.0 Array,
-    i.e. GPLID = GPL570
-    The fields are:
-    name- name of the platform
-    gplid - GEO Platform ID
-    experiment type- Choice: ChIP-Chip/ChIP-Seq
-    """
-    gplid = models.CharField(max_length=7)
-    name = models.CharField(max_length=255, blank=True)
-    technology = models.CharField(max_length=255, blank=True)
-    company = models.CharField(max_length=255, blank=True)
-    experiment_type = models.CharField(max_length=10, blank=True,
-                                       choices=EXPERIMENT_TYPE_CHOICES)
-                                       
-    def __str__(self):
-        return self.name
-
-
-class Factors(DCModel):
-    """The factors applied to the sample, e.g. PolII, H3K36me3, etc."""
-    name = models.CharField(max_length=255)
-    antibody = models.CharField(max_length=255, blank=True)
-    type = models.CharField(max_length=255, choices=FACTOR_TYPES,
-                            default="other")
-    def __str__(self):
-        if self.antibody:
-            return "%s:%s" % (self.name, self.antibody)
-        else:
-            return self.name
-
-class CellTypes(DCModel):
-    """Sample's tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
-    """
-    name = models.CharField(max_length=255)
-    tissue_type = models.CharField(max_length=255, blank=True)
-    def __str__(self):
-        if self.tissue_type:
-            return "%s:%s" % (self.name, self.tissue_type)
-        else:
-            return self.name
-
-class CellLines(DCModel):
-    """Sample's cell lines.  I really don't know what distinguishes
-    cell lines from cell populations or strains and mutations, but i'm going
-    to create the tables just to be inclusive
-    """
-    name = models.CharField(max_length=255)
-    def __str__(self):
-        return self.name
-
-class CellPops(DCModel):
-    name = models.CharField(max_length=255)
-    def __str__(self):
-        return self.name
-
-class Strains(DCModel):
-    name = models.CharField(max_length=255)
-    def __str__(self):
-        return self.name
-    
-class Conditions(DCModel):
-    """Experiment/sample conditions, e.g. PTIP-knockout, wild-type"""
-    name = models.CharField(max_length=255)
-    def __str__(self):
-        return smart_str(self.name)
-
-class Journals(DCModel):
-    """Journals that the papers are published in"""
-    name = models.CharField(max_length=255)
-    issn = models.CharField(max_length=9)
-    impact_factor = models.FloatField(default=0.0)
-    def __str__(self):
-        return self.name
-
-class PaperSubmissions(DCModel):
-    """Public paper submission page
-    we collect the ip address of the submitter just in case of malicious usr
-    pmid - pubmed id,
-    gseid - GEO series id,
-    NOTE: either pmid or gseid must be submitted
-    status- see submission status,
-    user- curator who last handled this submission
-    ip_addr - the ip address of the submitter
-    submitter_name - optional name of the submitter
-    comments - any comments a currator might attach to the submission
-    """        
-    pmid = models.IntegerField(default=0)
-    gseid = models.CharField(max_length=8, blank=True)
-    status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
-    user = models.ForeignKey(User, null=True, blank=True, default=None) 
-    ip_addr = models.CharField(max_length=15)
-    submitter_name = models.CharField(max_length=255, blank=True)
-    comments = models.TextField(blank=True)
-
-PaperSubmissions._meta._donotSerialize = ['user']
-
-class FileTypes(DCModel):
-    """File types for our geo datasets"""
-    name = models.CharField(max_length=20)
-    def __str__(self):
-        return self.name
-
-class Species(DCModel):
-    name = models.CharField(max_length=255)
-    def __str__(self):
-        return self.name
-    
-class Assemblies(DCModel):
-    name = models.CharField(max_length=255)
-    pub_date = models.DateField(blank=True)
-    def __str__(self):
-        return self.name
-
-class Samples(DCModel):
-    """a table to store all of the sample information: a sample is a
-    set of one or more datasets; it is associated with a paper (one paper to
-    many samples)"""
+#class Samples(DCModel):
+class Datasets(DCModel):
+    """a table to store all of the dataset information: a dataset is a
+    set of one or more samples; it is associated with a paper (one paper to
+    many datasets)"""
     def upload_factory(sub_dir):
         """a factory for generating upload_to_path fns--e.g. use to generate
         the various sub-directories we use to store the info associated w/
         a sample"""
         def upload_to_path(self, filename):
-            """Returns the upload_to path for this sample.
+            """Returns the upload_to path for this dataset.
             NOTE: we are going to store the files by the paper's gseid and
-            the sample id, e.g. gseid = GSE20852, sample id = 578
-            is going to be stored in: data/samples/gse20/852/578/[peak,wig,etc]
+            the sample id, e.g. gseid = GSE20852, dataset id = 578
+            is going to be stored in: data/datasets/gse20/852/578/[peak,wig,etc]
             """
-            return os.path.join('data', 'samples',
+            return os.path.join('data', 'datasets',
                                 'gse%s' % self.paper.gseid[3:5],
                                 self.paper.gseid[5:], str(self.id), sub_dir,
                                 filename)
@@ -425,8 +254,6 @@ class Samples(DCModel):
     
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
-    #DROPPING datasets in favor of a more robust way of defining which 
-    #datasets.
     treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
                                                    blank=True)
     controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
@@ -481,7 +308,7 @@ class Samples(DCModel):
 
     #uploader = the person who uploaded the files (data team)
     uploader = models.ForeignKey(User, null=True, blank=True, default=None,
-                                 related_name="sample_uploader")
+                                 related_name="dataset_uploader")
     upload_date = models.DateTimeField(blank=True, null=True, default=None)
 
     #meta info
@@ -511,7 +338,7 @@ class Samples(DCModel):
     control_page = models.URLField(null=True, blank=True, default="")
     #end meta info
 
-    status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
+    status = models.CharField(max_length=255, choices=DATASET_STATUS,
                               null=True, blank=True, default="new")
 
     comments = models.TextField(null=True, blank=True, default="")
@@ -556,36 +383,154 @@ class Samples(DCModel):
     def __str__(self):
         #return self._printInfo()
         return str(self.id)
-Samples._meta._donotSerialize = ['user', 'uploader']
+Datasets._meta._donotSerialize = ['user', 'uploader']
 
-class SampleControls(DCModel):
-    """a table to store all of the control files for a given sample.
-    The replicates of each sample uses the same control--so this is the
+#NOTE: WE NEED TO RENAME THIS!! and create a table!
+class Controls(DCModel):
+    """a table to store all of the control files for a given dataset.
+    The replicates of each dataset uses the same control--so this is the
     central repository.
     """
     def upload_factory(sub_dir):
         """a factory for generating upload_to_path fns--e.g. use to generate
         the various sub-directories we use to store the info associated w/
-        a samplecontrol"""
+        a control"""
         def upload_to_path(self, filename):
-            """Returns the upload_to path for this sample.
+            """Returns the upload_to path for this control.
             NOTE: we are going to store the files by the paper's gseid and
-            the sample id, e.g. gseid = GSE20852, sample id = 578
+            the dataset id, e.g. gseid = GSE20852, dataset id = 578
             is going to be stored in:data/controls/gse20/852/578/[peak,wig,etc]
             """
             return os.path.join('data', 'controls','gse%s' % \
-                                self.sample.paper.gseid[3:5],
-                                self.sample.paper.gseid[5:],
-                                str(self.sample.id), sub_dir, filename)
+                                self.dataset.paper.gseid[3:5],
+                                self.dataset.paper.gseid[5:],
+                                str(self.dataset.id), sub_dir, filename)
         return upload_to_path
     
-    sample = models.ForeignKey('Samples')
+    dataset = models.ForeignKey('Datasets', related_name="controls_dataset")
     treatment_file = models.FileField(upload_to=upload_factory("treatment"),
                                       null=True, blank=True)
     wig_file = models.FileField(upload_to=upload_factory("wig"),
                                 null=True, blank=True)
     bw_file = models.FileField(upload_to=upload_factory("bw"),
                                null=True, blank=True)
+
+class Platforms(DCModel):
+    """Platforms are the chips/assemblies used.
+    For example, it can be an Affymetrix Human Genome U133 Plus 2.0 Array,
+    i.e. GPLID = GPL570
+    The fields are:
+    name- name of the platform
+    gplid - GEO Platform ID
+    experiment type- Choice: ChIP-Chip/ChIP-Seq
+    """
+    gplid = models.CharField(max_length=7)
+    name = models.CharField(max_length=255, blank=True)
+    technology = models.CharField(max_length=255, blank=True)
+    company = models.CharField(max_length=255, blank=True)
+    experiment_type = models.CharField(max_length=10, blank=True,
+                                       choices=EXPERIMENT_TYPE_CHOICES)
+                                       
+    def __str__(self):
+        return self.name
+
+
+class Factors(DCModel):
+    """The factors applied e.g. PolII, H3K36me3, etc.
+    """
+    name = models.CharField(max_length=255)
+    antibody = models.CharField(max_length=255, blank=True)
+    type = models.CharField(max_length=255, choices=FACTOR_TYPES,
+                            default="other")
+    def __str__(self):
+        if self.antibody:
+            return "%s:%s" % (self.name, self.antibody)
+        else:
+            return self.name
+
+class CellTypes(DCModel):
+    """tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
+    """
+    name = models.CharField(max_length=255)
+    tissue_type = models.CharField(max_length=255, blank=True)
+    def __str__(self):
+        if self.tissue_type:
+            return "%s:%s" % (self.name, self.tissue_type)
+        else:
+            return self.name
+
+class CellLines(DCModel):
+    """cell lines.  I really don't know what distinguishes
+    cell lines from cell populations or strains and mutations, but i'm going
+    to create the tables just to be inclusive
+    """
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+
+class CellPops(DCModel):
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+
+class Strains(DCModel):
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+    
+class Conditions(DCModel):
+    """Experiment/conditions, e.g. PTIP-knockout, wild-type"""
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return smart_str(self.name)
+
+class Journals(DCModel):
+    """Journals that the papers are published in"""
+    name = models.CharField(max_length=255)
+    issn = models.CharField(max_length=9)
+    impact_factor = models.FloatField(default=0.0)
+    def __str__(self):
+        return self.name
+
+class PaperSubmissions(DCModel):
+    """Public paper submission page
+    we collect the ip address of the submitter just in case of malicious usr
+    pmid - pubmed id,
+    gseid - GEO series id,
+    NOTE: either pmid or gseid must be submitted
+    status- see submission status,
+    user- curator who last handled this submission
+    ip_addr - the ip address of the submitter
+    submitter_name - optional name of the submitter
+    comments - any comments a currator might attach to the submission
+    """        
+    pmid = models.IntegerField(default=0)
+    gseid = models.CharField(max_length=8, blank=True)
+    status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
+    user = models.ForeignKey(User, null=True, blank=True, default=None) 
+    ip_addr = models.CharField(max_length=15)
+    submitter_name = models.CharField(max_length=255, blank=True)
+    comments = models.TextField(blank=True)
+
+PaperSubmissions._meta._donotSerialize = ['user']
+
+class FileTypes(DCModel):
+    """File types for our geo datasets
+    """
+    name = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
+
+class Species(DCModel):
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+    
+class Assemblies(DCModel):
+    name = models.CharField(max_length=255)
+    pub_date = models.DateField(blank=True)
+    def __str__(self):
+        return self.name
     
 class UserProfiles(DCModel):
     """We want to add additional fields to the auth user model.  So creating
@@ -602,14 +547,14 @@ class UserProfiles(DCModel):
 
     
 class DiseaseStates(DCModel):
-    """Information field for datasets"""
+    """Disease state meta info"""
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return str(self.name)
 
-class SampleDhsStats(DCModel):
+class DhsStats(DCModel):
     """Stats about the sample"""
-    sample = models.ForeignKey('Samples', unique=True)
+    dataset = models.ForeignKey('Datasets', unique=True)
     total_peaks = models.IntegerField(default=0)
     peaks_in_dhs = models.IntegerField(default=0)
