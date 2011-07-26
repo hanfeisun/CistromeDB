@@ -36,24 +36,27 @@ class PaperForm(forms.ModelForm):
         model = models.Papers
         exclude = ('date_collected', 'user', 'status', 'comments')
 
-class DatasetForm(forms.ModelForm):
+#class DatasetForm(forms.ModelForm):
+class SampleForm(forms.ModelForm):
      class Meta:
-         model = models.Datasets
+         model = models.Samples
          exclude = ('date_collected', 'user', 'paper',
                     'raw_file', 'raw_file_type', 'raw_file_url',
                     'treatment_file', 'peak_file', 'wig_file', 'bw_file',
                     'assembly', 'description', 'comments', 'status',
                     'uploader', 'upload_date', 'curator')
 
-class SampleForm(forms.ModelForm):
-    class Meta:
-        model = models.Samples
-        exclude = ('user', 'paper', 'treatments', 'controls')
-
-#Used by the data team to upload dataset files
-class UploadDatasetForm(forms.ModelForm):
+#class SampleForm(forms.ModelForm):
+class DatasetForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
+        #exclude = ('user', 'paper', 'treatments', 'controls')
+
+#Used by the data team to upload dataset files
+#class UploadDatasetForm(forms.ModelForm):
+class UploadSampleForm(forms.ModelForm):
+    class Meta:
+        model = models.Samples
         #NOTE: for some reason fields isn't working, try exclude instead
         fields = ('raw_file', 'treatment_file', 'peak_file', 'wig_file',
                   'bw_file',
@@ -72,11 +75,12 @@ class UpdatePaperForm(forms.ModelForm):
     class Meta:
         model = models.Papers
 
-class UpdateDatasetForm(forms.ModelForm):
+#class UpdateDatasetForm(forms.ModelForm):
+class UpdateSampleForm(forms.ModelForm):
     class Meta:
-        model = models.Datasets
+        model = models.Samples
         #Don't include the files--use the Upload form for that
-        exclude = UploadDatasetForm.Meta.fields
+        exclude = UploadSampleForm.Meta.fields
         exclude = exclude + ("raw_file_url", "raw_file_type", )
     
     #NOTE: if you get validating errs, you can override the validators like
@@ -88,9 +92,10 @@ class UpdateDatasetForm(forms.ModelForm):
     #      #raise forms.ValidationError("FOOBAR!")
     #      return cleaned_data
 
-class BatchUpdateSamplesForm(forms.ModelForm):
+#class BatchUpdateSamplesForm(forms.ModelForm):
+class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:
-        model = models.Samples
+        model = models.Datasets
         fields = ('factor', 'platform', 'species', 'assembly', 
                   'cell_type', 'cell_line',
                   'cell_pop', 'strain', 'condition', 'disease_state',
@@ -113,28 +118,29 @@ class BatchUpdateSamplesForm(forms.ModelForm):
 
     #ORDER the select options by the field name--i.e. alphabetical order
     def __init__(self, *args, **kwargs):
-        super(BatchUpdateSamplesForm, self).__init__(*args, **kwargs)   
-        for k in BatchUpdateSamplesForm.Meta.form_dict:
-            self.fields[k].queryset = BatchUpdateSamplesForm.Meta.form_dict[k].objects.order_by('name')
+        super(BatchUpdateDatasetsForm, self).__init__(*args, **kwargs)   
+        for k in BatchUpdateDatasetsForm.Meta.form_dict:
+            self.fields[k].queryset = BatchUpdateDatasetsForm.Meta.form_dict[k].objects.order_by('name')
 
-class UpdateSampleForm(forms.ModelForm):
+#class UpdateSampleForm(forms.ModelForm):
+class UpdateDatasetForm(forms.ModelForm):
     class Meta:
-        model = models.Samples
+        model = models.Datasets
         fields = ('paper', 'treatments', 'controls', 'upload_date') + \
-            BatchUpdateSamplesForm.Meta.fields
+            BatchUpdateDatasetsForm.Meta.fields
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
     #ORDER the select options by the field name--i.e. alphabetical order
     def __init__(self, *args, **kwargs):
-        super(UpdateSampleForm, self).__init__(*args, **kwargs)   
+        super(UpdateDatasetForm, self).__init__(*args, **kwargs)   
         #NOTE: form_dict is not in this class!
-        for k in BatchUpdateSamplesForm.Meta.form_dict:
-            self.fields[k].queryset = BatchUpdateSamplesForm.Meta.form_dict[k].objects.order_by('name')
+        for k in BatchUpdateDatasetsForm.Meta.form_dict:
+            self.fields[k].queryset = BatchUpdateDatasetsForm.Meta.form_dict[k].objects.order_by('name')
 
-
-class BatchUpdateDatasetsForm(forms.ModelForm):
+#class BatchUpdateDatasetsForm(forms.ModelForm):
+class BatchUpdateSamplesForm(forms.ModelForm):
     class Meta:
-        model = models.Datasets
+        model = models.Samples
         fields = ('status', 'comments',
                   'user', 'uploader', 'curator', 
                   )
