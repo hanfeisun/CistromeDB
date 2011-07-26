@@ -656,12 +656,7 @@ def admin(request):
 @admin_only
 def dataset_profile(request, dataset_id):
     """View of the paper_profile page"""
-    dataset = models.Datasets.objects.get(id=dataset_id)
-    try:
-        summary = models.DhsStats.objects.get(dataset=dataset)
-    except:
-        pass
-    
+    dataset = models.Datasets.objects.get(id=dataset_id)    
     return render_to_response('datacollection/dataset_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
@@ -670,6 +665,10 @@ def dataset_profile(request, dataset_id):
 def sample_profile(request, sample_id):
     """View of the paper_profile page"""
     sample = models.Samples.objects.get(id=sample_id)
+    # try:
+    #     summary = models.DhsStats.objects.get(dataset=dataset)
+    # except:
+    #     pass
     return render_to_response('datacollection/sample_profile.html',
                               locals(),
                               context_instance=RequestContext(request))

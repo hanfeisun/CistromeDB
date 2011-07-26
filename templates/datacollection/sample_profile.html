@@ -1,5 +1,4 @@
 {% extends "datacollection/login_base.html" %}
-{% load dc_extras %}
 
 {% block title %}{{ title }}{% endblock %}
 {% block include %}
@@ -18,104 +17,195 @@ onload="init();"
 {% block content %}
     <!--ripped from paper_profile.html-->
     <section id="dataset_focus">
-        <header>Sample info: {{sample.id}}</header>
-	<table id="focus_tbl">
+        <!--<header>Dataset info:</header>-->
+        <table id="focus_tbl">
+	    <tr><td>
+	            <span class="label2">Sample:</span>
+	            <span id="dset_gsmid" class="value2"><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{sample.gsmid}}" target="_blank">{{sample.gsmid}}</a></span>
+		</td>
+		<td>
+	            <span class="label2">Date Collected:</span>
+	            <span id="dset_gsmid" class="value2">{{sample.date_collected|date:"Y-m-d"}}</span>
+		</td>
+	    </tr>
+	    <tr><td>
+	            <span class="label2">Name:</span>
+	            <span id="dset_name" class="value2">{{sample.name}}</span>
+	        </td>
+		<td>
+	            <span class="label2">Chip Page:</span>
+	            <span id="dset_name" class="value2">{{sample.chip_page}}</span>
+	        </td>
+	    </tr>
+	    <tr><td>
+	            <span class="label2">Control GSMID:</span>
+	            <span id="dset_name" class="value2">{{sample.control_gsmid}}</span>
+	        </td>
+		<td>
+	            <span class="label2">Control Chip Page:</span>
+	            <span id="dset_name" class="value2">{{sample.control_page}}</span>
+	        </td>
+	    </tr>
+	    <tr><td><span class="label2">Species:</span>
+	            <span id="dset_species" class="value2">{{sample.species.name}}</span>
+	        </td>
+		<td><span class="label2">Assembly:</span>
+	            <span id="dset_species" class="value2">{{sample.assembly.name}}</span>
+	        </td>
+	    </tr>
+	    <tr>
+		<td><span class="label2">Factor:</span>
+	            <span id="dset_factor" class="value2">{{sample.factor.name}}</span>
+	        </td>
+		<td><span class="label2">Antibody:</span>
+	            <span id="dset_antibody" class="value2">{{sample.factor.antibody}}</span>
+	        </td>
+	    </tr>
+	    <tr><td><span class="label2">Strain:</span>
+	            <span id="dset_strain" class="value2">{{sample.strain.name}}</span>
+	        </td>
+		<td><span class="label2">Condition:</span>
+	            <span id="dset_condition" class="value2">{{sample.condition.name}}</span>
+	        </td>
+	    </tr>
+	    <tr>		
+	        <td><span class="label2">Platform:</span>
+	            <span id="dset_platform" class="value2">{{sample.platform.name}}</span>
+	        </td>
+		<td><span class="label2">Exp. Type:</span>
+	            <span id="dset_exptype" class="value2">{{sample.platform.get_experiment_type_display}}</span>
+	        </td>
+	    </tr>
+	    <tr>
+	        <td><span class="label2">Tissue:</span>
+	            <span id="dset_tissue" class="value2">{{sample.cell_type.tissue_type}}</span>
+	        </td>
+	        <td><span class="label2">Cell Type:</span>
+	            <span id="dset_cell_type"class="value2">{{sample.cell_type.name}}</span>
+	        </td>
+	    </tr>
+	    <tr>
+	        <td><span class="label2">Cell Line:</span>
+	            <span id="dset_cell_line" class="value2">{{sample.cell_line.name}}</span>
+	        </td>
+	        <td><span class="label2">Cell Pop:</span>
+	            <span id="dset_cell_pop" class="value2">{{sample.cell_pop.name}}</span>
+	        </td>
+	     </tr>
 	     <tr>
-		<td><span class="label2">Treatment File:</span>
-		    {% if sample.treatment_file %}
-	            <span id="dset_file" class="value2"><a href="{{sample.treatment_file.url|sub_site}}">download</a></span>
+	        <td><span class="label2">Disease State:</span>
+	            <span id="dset_cell_line" class="value2">{{sample.disease_state.name}}</span>
+	        </td>
+		<td>
+		</td>
+	     </tr>
+	     {% comment %}
+	     <tr>
+	        <td><span class="label2"># Peaks:</span>
+	            <span id="dset_cell_line" class="value2">{{summary.total_peaks}}</span>
+	        </td>
+	        <td><span class="label2"># Peaks in DHS:</span>
+	            <span id="dset_cell_line" class="value2">{{summary.peaks_in_dhs}}</span>
+	        </td>
+	     </tr>
+	     {% endcomment %}
+	 </table>
+	 <table>
+	     <tr>
+		<td><span class="label2">Raw File:</span>
+		    {% if sample.raw_file %}
+	            <span id="dset_file" class="value2"><a href="{{sample.raw_file.url}}">download</a></span>
 		    {% endif %}
 	        </td>
 		<td><span class="label2">Summit File:</span>
 		    {% if sample.summit_file %}
-	            <span class="value2"><a href="{{sample.summit_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.summit_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 	    </tr>
 	    <tr><td><span class="label2">Peak File:</span>
 		    {% if sample.peak_file %}
-	            <span class="value2"><a href="{{sample.peak_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.peak_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">Peak XLS File:</span>
 		    {% if sample.peak_xls_file %}
-	            <span class="value2"><a href="{{sample.peak_xls_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.peak_xls_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 	    </tr>
 	    <tr>
 		<td><span class="label2">Wig File:</span>
 		    {% if sample.wig_file %}
-	            <span class="value2"><a href="{{sample.wig_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.wig_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">Control Wig File:</span>
 		    {% if sample.control_wig_file %}
-	            <span class="value2"><a href="{{sample.control_wig_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.control_wig_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
             </tr>
 	    <tr>
 		<td><span class="label2">Bed Graph File:</span>
 		    {% if sample.bed_graph_file %}
-	            <span class="value2"><a href="{{sample.bed_graph_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.bed_graph_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">Control Bed Graph File:</span>
 		    {% if sample.control_bed_graph_file %}
-	            <span class="value2"><a href="{{sample.control_bed_graph_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.control_bed_graph_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 	    </tr>
 	    <tr>
 		<td><span class="label2">Conservation File:</span>
 		    {% if sample.conservation_file %}
-	            <span class="value2"><a href="{{sample.conservation_file.url|sub_site}}"><img src="{{sample.conservation_file.url|sub_site}}"/></a></span>
+	            <span class="value2"><a href="{{sample.conservation_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">Conservation R File:</span>
 		    {% if sample.conservation_r_file %}
-	            <span class="value2"><a href="{{sample.conservation_r_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.conservation_r_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 	    </tr>
 	    <tr>
 	        <td><span class="label2">QC File:</span>
 		    {% if sample.qc_file %}
-	            <span class="value2"><a href="{{sample.qc_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.qc_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 	        <td><span class="label2">QC R File:</span>
 		    {% if sample.qc_r_file %}
-	            <span class="value2"><a href="{{sample.qc_r_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.qc_r_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
             </tr>
 	    <tr>
 		<td><span class="label2">CEAS File:</span>
 		    {% if sample.ceas_file %}
-	            <span class="value2"><a href="{{sample.ceas_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.ceas_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">CEAS R File:</span>
 		    {% if sample.ceas_r_file %}
-	            <span class="value2"><a href="{{sample.ceas_r_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.ceas_r_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 	    </tr>
 	    <tr>
 	        <td><span class="label2">Venn Diagram:</span>
 		    {% if sample.venn_file %}
-	            <span class="value2"><a href="{{sample.venn_file.url|sub_site}}"><img src="{{sample.venn_file.url|sub_site}}"/></a></span>
+	            <span class="value2"><a href="{{sample.venn_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 		<td><span class="label2">Seqpos Files:</span>
 		    {% if sample.seqpos_file %}
-	            <span class="value2"><a href="{{sample.seqpos_file.url|sub_site}}">download</a></span>
+	            <span class="value2"><a href="{{sample.seqpos_file.url}}">download</a></span>
 		    {% endif %}
 		</td>
 	    </tr>
-	</table>
-
+        </table>
     </section>
 {% endblock %}
