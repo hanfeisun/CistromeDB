@@ -1,6 +1,4 @@
 {% extends "datacollection/login_base.html" %}
-{% load dc_extras %}
-
 {% block title %}Cistrome Paper Collection - Samples{% endblock %}
 {% block include %}
 <link href="{% url static_url %}css/samples.css" rel="stylesheet" type="text/css"/>
@@ -14,135 +12,91 @@ onload="init();"
 {% endblock %}
 
 {% block content %}
-<!-- NOTE: the content is created in javascript -->
       {% if user.is_authenticated %}
       <input type="button" id="batchEdit" value="batch edit"/>
+      {% ifequal user.get_profile.team "admin" %}
       <input type="button" id="deleteBtn" value="delete"/>
+      {% endifequal %}
       {% endif %}
-      {% if pg.paginator.num_pages %}
+      {% if samples.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
-              {% if pg.has_previous %}
-	      {% ifnotequal pg.previous_page_number 1 %}
+              {% if samples.has_previous %}
+	      {% ifnotequal samples.previous_page_number 1 %}
 	      <a href="?page=1{{rest}}">first</a>
 	      {% endifnotequal %}
-              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              <a href="?page={{ samples.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
-              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+              <span class="current">Page {{ samples.number }} of {{ samples.paginator.num_pages }}.</span>
 
-              {% if pg.has_next %}
-              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
-	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
-	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+              {% if samples.has_next %}
+              <a href="?page={{ samples.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal samples.next_page_number samples.paginator.num_pages %}
+	      <a href="?page={{samples.paginator.num_pages}}{{rest}}">last</a>
 	      {% endifnotequal %}
               {% endif %}
           </span>
       </div>
       {% endif %}
-      <table class="datatable" id="samples_table">
+      <table>
          <tr>{% if user.is_authenticated %}
 	     <th><input type="checkbox" id="masterCheckbox"/></th>
 	     {% endif %}
 	     <th>ID</th>
+	     <th>GSMID</th>
 	     <th>Paper</th>
-	     <th>Treatments</th>
-	     <th>Controls</th>
-	     <th>Factor / Antibody</th>
-	     <th>Experiment Type / Platform</th>
-	     <th>Species</th>
-	     <th>Cell / Tissue Type</th>
-	     <th>Cell Line</th>
-	     <th>Cell Pop</th>
-	     <th>Strain</th>
-	     <th>Condition</th>
-	     <th>Disease State</th>
 	     <th>Status</th>
 	     <th>Comments</th>
+	     <th>User</th>
 	     <th>Uploader</th>
-	     <th>QC</th>
+	     <th>Curator</th>
+	     <th>Date Collected</th>
 	     {% if user.is_authenticated %}
 	     <th>Action</th>
 	     {% endif %}
 	 </tr>
-	 {% for s in pg.object_list %}
+	 {% for s in samples.object_list %}
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{s.id}}"/>
-	         <a href="{% url update_sample_form s.id %}?next={% url samples %}?page={{pg.number}}{{rest}}">edit</a>
+	         <a href="{% url update_sample_form s.id %}?next={% url samples %}?page={{samples.number}}">edit</a>
 	     </td>
 	     {% endif %}
-	     <td><a href="{% url sample_profile s.id %}">{{ s.id }}</a></td>
+	     <td><a href="{% url sample_profile s.id %}">{{s.id}}</a></td>
+	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.gsmid}}" target="_blank">{{s.gsmid}}</a></td>
 	     <td>
-	       <a href="{% url paper_profile s.paper.id %}">paper profile</a><br/><br/>
-	       <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a><br/><br/>
-	       <a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a>
+	      <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{s.paper.pmid}}</a></br></br>
+	      <a href="{% url paper_profile s.paper.id %}">paper profile</a>
 	     </td>
-	     <td>{% for g in s.treatments_gsmid %}
-	         <span>{{g}}</span>
-		 {% endfor %}
-	     </td>
-	     <td>{% for g in s.controls_gsmid %}
-	         <span>{{g}}</span>
-		 {% endfor %}
-	     </td>
-	     <td>
-	       <a href="{% url samples %}?factor={{s.factor.id}}">{{s.factor.name}}</a><br/><br/>
-	       <a href="{% url samples %}?antibody={{s.factor.id}}">{{s.factor.antibody}}</a>
-	     </td>
-	     <td>
-	       {{s.platform.get_experiment_type_display}}<br/><br/>
-	       <a href="{%url samples %}?platform={{s.platform.id}}">{{s.platform.name}}</a>
-	     </td>
-	     <td><a href="{% url samples %}?species={{s.species.id}}">{{s.species}}</a></td>
-	     <td>
-	       <a href="{% url samples %}?celltype={{s.cell_type.id}}">{{s.cell_type.name}}</a><br/><br/>
-	       <a href="{% url samples %}?tissuetype={{s.cell_type.id}}">{{s.cell_type.tissue_type}}</a>
-	     </td>
-	     <td><a href="{% url samples %}?cellline={{s.cell_line.id}}">{{s.cell_line.name}}</a></td>
-	     <td><a href="{% url samples %}?cellpop={{s.cell_pop.id}}">{{s.cell_pop.name}}</a></td>
-	     <td><a href="{% url samples %}?strain={{s.strain.id}}">{{s.strain.name}}</a></td>
-	     <td><a href="{% url samples %}?condition={{s.condition.id}}">{{s.condition.name}}</a></td>
-	     <td><a href="{% url samples %}?diseasestate={{s.disease_state.id}}">{{s.disease_state.name}}</a></td>
-
-	     {% ifequal s.status "new" %}
-	     <td class="new_row">{{ s.get_status_display }}</td>
-	     {% else %} {% ifequal s.status "checked" %}
-	     <td class="checked_row">{{ s.get_status_display }}</td>
-	     {% else %} {% ifequal s.status "running" %}
-	     <td class="running_row">{{ s.get_status_display }}</td>
-	     {% else %} {% ifequal s.status "complete" %}
-	     <td class="complete_row">{{ s.get_status_display }}</td>
+	     {% ifequal s.status "imported" %}
+	     <td class="imported_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "info" %}
+	     <td class="info_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "valid" %}
+	     <td class="valid_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "transfer" %}
+	     <td class="transfer_row">{{ s.get_status_display }}</td>
+	     {% else %} {% ifequal s.status "downloaded" %}
+	     <td class="downloaded_row">{{ s.get_status_display }}</td>
 	     {% else %} {% ifequal s.status "error" %}
 	     <td class="error_row">{{ s.get_status_display }}</td>
 	     {% else %}
 	     <td>{{ s.get_status_display }}</td>
-	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
 	     <td>{{ s.comments }}</td>
-	     <td>{{ s.uploader }}<br/><br/>
-	         {{ s.upload_date|date:"Y-m-d" }}
-	     </td>
-	     <td>
-	       {% if s.read_qc %}<span>Read:{{s.read_qc}}</span><br/>{% endif %}
-	       {% if s.model_qc %}<span>Model:{{s.model_qc}}</span><br/>{% endif %}
-	       {% if s.fold_qc %}<span>Fold:{{s.fold_qc}}</span><br/>{% endif %}
-	       {% if s.fdr_qc %}<span>FDR:{{s.fdr_qc}}</span><br/>{% endif %}
-	       {% if s.replicate_qc %}<span>Replicate:{{s.replicate_qc}}</span><br/>{% endif %}
-	       {% if s.dnase_qc %}<span>DNase:{{s.dnase_qc}}</span><br/>{% endif %}
-	       {% if s.velcro_qc %}<span>Velcro:{{s.velcro_qc}}</span><br/>{% endif %}
-	       {% if s.conserve_qc %}<span>Conserve:{{s.conserve_qc}}</span><br/>{% endif %}
-	       {% if s.ceas_qc %}<span>CEAS:{{s.ceas_qc}}</span><br/>{% endif %}
-	       {% if s.motif_qc %}<span>Motif:{{s.motif_qc}}</span><br/>{% endif %}
-	       {% if s.overall_qc %}<span>Overall:{{s.overall_qc}}</span><br/>{% endif %}
-	     </td>
+	     <td><a href="{% url samples %}{{s.user.id}}/">{{ s.user.username }}</a></td>
+	     <td>{{s.uploader.username}}</td>
+	     <td>{{s.curator.username}}</td>
+	     <td>{{ s.date_collected|date:"Y-m-d"}}</td>
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_authenticated %}
-	     {% ifequal s.status "new" %}
-	     <td><input type="button" value="check raw files" onclick="checkRawFiles({{s.id}}, {{pg.number}});"/></td>
-	     {% else %} {% ifequal s.status "checked" %}
-	     <td><input type="button" value="run!" onclick="runAnalysis({{s.id}}, {{pg.number}});"/></td>
-	     {% else %} {% ifequal s.status "running" %}
-	     <td><input type="button" value="run!" disabled="true"/></td>
+	     {% ifequal s.status "info" %}
+	     <td><input type="button" value="validate" onclick=""/></td>
+	     {% else %}{% ifequal s.status "valid" %}
+	     <td><input type="button" value="download raw file" onclick="downloadFile({{s.id}}, {{samples.number}});"/></td>
+	     {% else %} {% ifequal s.status "transfer" %}
+	     <td><input type="button" value="download raw file" disabled="true"/></td>
 	     {% else %} 
 	     <td> </td>
 	     {% endifequal %}{% endifequal %}{% endifequal %}
@@ -150,22 +104,23 @@ onload="init();"
 	 </tr>
 	 {% endfor %}
       </table>
-      {% if pg.paginator.num_pages %}
+<!-- from http://docs.djangoproject.com/en/1.1/topics/pagination/-->
+      {% if samples.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
-              {% if pg.has_previous %}
-	      {% ifnotequal pg.previous_page_number 1 %}
+              {% if samples.has_previous %}
+	      {% ifnotequal samples.previous_page_number 1 %}
 	      <a href="?page=1{{rest}}">first</a>
 	      {% endifnotequal %}
-              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              <a href="?page={{ samples.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
-              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+              <span class="current">Page {{ samples.number }} of {{ samples.paginator.num_pages }}.</span>
 
-              {% if pg.has_next %}
-              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
-	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
-	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+              {% if samples.has_next %}
+              <a href="?page={{ samples.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal samples.next_page_number samples.paginator.num_pages %}
+	      <a href="?page={{samples.paginator.num_pages}}{{rest}}">last</a>
 	      {% endifnotequal %}
               {% endif %}
           </span>
