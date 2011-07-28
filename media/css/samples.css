@@ -12,20 +12,24 @@ td, th {
     border: 1px dotted #000;
 }
 
-.new_row {
+.imported_row {
     /*background-color:#00cc00;*/
     background-color:#ffff00;
 }
 
-.checked_row {
+.info_row {
     background-color:#ff9900;
 }
 
-.running_row {
+.valid_row {
     background-color:#ff5500;
 }
 
-.complete_row {
+.transfer_row {
+    background-color:#808080;
+}
+
+.downloaded_row {
     background-color:#00cc00;
 }
 
