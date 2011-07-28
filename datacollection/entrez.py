@@ -33,7 +33,7 @@ class PaperAdapter:
                  "design", "type", "datasets", "journal"]
         return "\n".join(["%s:%s" % (a, getattr(self, a)) for a in attrs])
 
-class DatasetAdapter:
+class SampleAdapter:
     """Given a GSMID, this class adapter holds all of the information
     needed to create a Dataset instance.
     NOTE: things like factor, cell line, cell pop, strain, etc. must be
