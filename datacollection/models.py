@@ -136,9 +136,9 @@ class Papers(DCModel):
     journal = models.ForeignKey('Journals',
                                 null=True, blank=True, default=None)
     status = models.CharField(max_length=255, choices=PAPER_STATUS,
-                              default="imported")
+                              null=True, blank=True, default="imported")
     #a place for curators to add comments
-    comments = models.TextField(blank=True)
+    comments = models.TextField(null=True, blank=True, default="")
 
     def _get_species(self):
         """Returns a list of the species objs associated with the papers, i.e.
@@ -218,8 +218,8 @@ class Samples(DCModel):
     paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
     
     status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
-                              default="imported")
-    comments = models.TextField(blank=True)
+                              null=True, blank=True, default="imported")
+    comments = models.TextField(null=True, blank=True, default="")
     
     uploader = models.ForeignKey(User, null=True, blank=True, default=None,
                                  related_name="uploader")
@@ -506,7 +506,8 @@ class PaperSubmissions(DCModel):
     """        
     pmid = models.IntegerField(default=0)
     gseid = models.CharField(max_length=8, blank=True)
-    status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
+    status = models.CharField(max_length=255, choices=SUBMISSION_STATUS,
+                              null=True, blank=True, default="pending")
     user = models.ForeignKey(User, null=True, blank=True, default=None) 
     ip_addr = models.CharField(max_length=15)
     submitter_name = models.CharField(max_length=255, blank=True)
