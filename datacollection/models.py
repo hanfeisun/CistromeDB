@@ -27,7 +27,7 @@ SUBMISSION_STATUS = (
 
 PAPER_STATUS = (
     (u'imported', u'paper entered awaiting samples'),
-    (u'samples', u'samples imported awaiting download'),
+    (u'primed', u'samples imported awaiting download'),
     (u'transfer', u'samples download in progress'),
     (u'downloaded', u'samples downloaded awaiting analysis'),
     (u'complete', u'analysis complete/complete'),

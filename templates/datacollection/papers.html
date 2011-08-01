@@ -86,8 +86,8 @@ onload="init();"
 	     <td>{{p.last_auth_email}}</td>
 	     {% ifequal p.status "imported" %}
 	     <td class="imported_row">{{ p.get_status_display }}</td>
-	     {% else %} {% ifequal p.status "datasets" %}
-	     <td class="datasets_row">{{ p.get_status_display }}</td>
+	     {% else %} {% ifequal p.status "primed" %}
+	     <td class="primed_row">{{ p.get_status_display }}</td>
 	     {% else %} {% ifequal p.status "transfer" %}
 	     <td class="transfer_row">{{ p.get_status_display }}</td>
 	     {% else %} {% ifequal p.status "downloaded" %}
@@ -105,11 +105,11 @@ onload="init();"
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_authenticated %}
 	     {% ifequal p.status "imported" %}
-	     <td><input type="button" value="import datasets" onclick="importDatasets({{p.id}},{{pg.number}})"/></td>
-	     {% else %}{% ifequal p.status "datasets" %}
-	     <td><input type="button" value="download datasets" onclick="downloadPaperDatasets({{p.id}},{{pg.number}})"/></td>
+	     <td><input type="button" value="import samples" onclick="importSamples({{p.id}},{{pg.number}})"/></td>
+	     {% else %}{% ifequal p.status "primed" %}
+	     <td><input type="button" value="download samples" onclick="downloadPaperSamples({{p.id}},{{pg.number}})"/></td>
 	     {% else %} {% ifequal p.status "transfer" %}
-	     <td><input type="button" value="download datasets" disabled="true"/></td>
+	     <td><input type="button" value="download samples" disabled="true"/></td>
 	     {% else %} 
 	     <td> </td>
 	     {% endifequal %}{% endifequal %}{% endifequal %}
