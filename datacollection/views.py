@@ -690,38 +690,40 @@ def report(request):
     week = {'begin':begin, 'end':end}
 
     paperTeam = models.UserProfiles.objects.filter(team="paper")
-    #Get all of the papers and datasets the user created for the week
+    #Get all of the papers and samples the user created for the week
     for u in paperTeam:
         u.allPapers = models.Papers.objects.filter(user=u.user)
         u.weekPapers = u.allPapers.filter(date_collected__gte=begin).filter(date_collected__lte=end)
         for p in u.weekPapers:
-            p.datasets = models.Datasets.objects.filter(paper=p.id)
+            p.samples = models.Samples.objects.filter(paper=p.id)
 
-        u.allDatasets = models.Datasets.objects.filter(user=u.user)
-        u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin).filter(date_collected__lte=end)
-
-        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
-        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
-        #categories - NOTE: how we SPAN relationships w/ __
-        u.humanTF = u.allHuman.filter(factor__type="tf")
-        u.humanHM = u.allHuman.filter(factor__type="hm")
-        u.mouseTF = u.allMouse.filter(factor__type="tf")
-        u.mouseHM = u.allMouse.filter(factor__type="hm")
+        u.allSamples = models.Samples.objects.filter(user=u.user)
+        u.weekSamples = u.allSamples.filter(date_collected__gte=begin).filter(date_collected__lte=end)
+        
+        # NOTE: species has moved to Datasets!!! removing this for now
+        # u.allHuman = u.allSamples.filter(species__name="Homo Sapien")
+        # u.allMouse = u.allSamples.filter(species__name="Mus Musculus")
+        # #categories - NOTE: how we SPAN relationships w/ __
+        # u.humanTF = u.allHuman.filter(factor__type="tf")
+        # u.humanHM = u.allHuman.filter(factor__type="hm")
+        # u.mouseTF = u.allMouse.filter(factor__type="tf")
+        # u.mouseHM = u.allMouse.filter(factor__type="hm")
         
     #dataTeam = models.UserProfiles.objects.filter(team="data")
-    #The paper team can both create datasets and upload dataset data
+    #The paper team can both create samples and upload sample data
     dataTeam = models.UserProfiles.objects.filter(Q(team="data") | Q(team="paper"))
     for u in dataTeam:
-        u.allDatasets = models.Datasets.objects.filter(uploader=u.user)
-        u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin).filter(upload_date__lte=end)
+        u.allSamples = models.Samples.objects.filter(uploader=u.user)
+        u.weekSamples = u.allSamples.filter(upload_date__gte=begin).filter(upload_date__lte=end)
 
-        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
-        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
-        #categories
-        u.humanTF = u.allHuman.filter(factor__type="tf")
-        u.humanHM = u.allHuman.filter(factor__type="hm")
-        u.mouseTF = u.allMouse.filter(factor__type="tf")
-        u.mouseHM = u.allMouse.filter(factor__type="hm")
+        # NOTE: species has moved to Datasets!!! removing this for now
+        # u.allHuman = u.allSamples.filter(species__name="Homo Sapien")
+        # u.allMouse = u.allSamples.filter(species__name="Mus Musculus")
+        # #categories
+        # u.humanTF = u.allHuman.filter(factor__type="tf")
+        # u.humanHM = u.allHuman.filter(factor__type="hm")
+        # u.mouseTF = u.allMouse.filter(factor__type="tf")
+        # u.mouseHM = u.allMouse.filter(factor__type="hm")
 
     return render_to_response('datacollection/report.html',
                               locals(),
