@@ -123,6 +123,8 @@ class Papers(DCModel):
     pmid = models.IntegerField(null=True, blank=True, default=None)
     gseid = models.CharField(max_length=255, null=True, blank=True, 
                              default="")
+    generic_id = models.CharField(max_length=255, null=True, blank=True, 
+                                  default="")
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     title = models.CharField(max_length=255, null=True, blank=True, 
                              default="")
@@ -194,6 +196,8 @@ class Samples(DCModel):
         return upload_to_path
     
     gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
+    generic_id = models.CharField(max_length=255, null=True, blank=True,
+                                  default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
@@ -424,7 +428,9 @@ class Platforms(DCModel):
     gplid - GEO Platform ID
     experiment type- Choice: ChIP-Chip/ChIP-Seq
     """
-    gplid = models.CharField(max_length=7)
+    gplid = models.CharField(max_length=7, null=True, blank=True, default="")
+    generic_id = models.CharField(max_length=255, null=True, blank=True, 
+                                  default="")
     name = models.CharField(max_length=255, blank=True)
     technology = models.CharField(max_length=255, blank=True)
     company = models.CharField(max_length=255, blank=True)
