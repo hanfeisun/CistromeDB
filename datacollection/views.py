@@ -1156,7 +1156,7 @@ def import_samples(request, paper_id):
     if "page" in request.GET:
         page = request.GET['page']
 
-    paper.status = "samples"
+    paper.status = "primed"
     paper.save()
 
     #redirect to the papers view

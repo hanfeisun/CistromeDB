@@ -232,6 +232,8 @@ class Samples(DCModel):
     #curator = the person who double checks the info
     curator = models.ForeignKey(User, null=True, blank=True, default=None,
                                 related_name="curator")
+    def __str__(self):
+        return str(self.id)
     
 Samples._meta._donotSerialize = ['user', 'uploader', 'curator']
 

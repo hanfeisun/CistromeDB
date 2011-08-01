@@ -26,7 +26,7 @@ class PaperAdapter:
 
         #store the sample accession numbers
         samples = geo.getElementsByTagName('Sample')
-        self.datasets = ["%s" % s['_children'][0]['_value'] for s in samples]
+        self.samples = ["%s" % s['_children'][0]['_value'] for s in samples]
         
     def __str__(self):
         attrs = ["pmid", "gseid", "title", "abstract", "pub_date", "authors",

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-SYNOPSIS: this script takes a dataset id; datasets are assumed to have 
+SYNOPSIS: this script takes a sample id; samples are assumed to have 
 valid raw_file_urls.
 
 This script will:
@@ -28,8 +28,8 @@ from django.core.files import File
 
 from datacollection import models
 
-USAGE = """USAGE: SRADnlr.py [dataset id]
-Will try to retrieve the SRA file specified by dataset.raw_file_url
+USAGE = """USAGE: SRADnlr.py [sample id]
+Will try to retrieve the SRA file specified by sample.raw_file_url
 """
 
 _fastq_dump_path = os.path.join(settings.DEPLOY_DIR, "importer", "bin",
@@ -105,23 +105,23 @@ def main():
         print USAGE
         sys.exit(-1)
     
-    dataset_id = sys.argv[1]
-    dataset = models.Datasets.objects.get(pk=dataset_id)
+    sample_id = sys.argv[1]
+    sample = models.Samples.objects.get(pk=sample_id)
     
-    (new_path, sra_file) = sraDownload(dataset.raw_file_url)
+    (new_path, sra_file) = sraDownload(sample.raw_file_url)
 
     #use the new path for later access
     if new_path:
-        dataset.raw_file_url = new_path
+        sample.raw_file_url = new_path
 
     #convert the file
     ret_code = subprocess.call([_fastq_dump_path, sra_file.name])
     fastq_filename = sra_file.name.replace("sra", "fastq")
     #associate the file
-    dataset.raw_file = File(open(fastq_filename))
-    dataset.status = "downloaded"
+    sample.raw_file = File(open(fastq_filename))
+    sample.status = "downloaded"
     
-    dataset.save()
+    sample.save()
 
 if __name__=="__main__":
     main()
