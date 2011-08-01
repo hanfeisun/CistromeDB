@@ -312,6 +312,16 @@ def weekly_papers(request, user_id):
             #No date param, take the beginning of the week
             papers = papers.filter(date_collected__gte=begin)
 
+        paginator = Paginator(papers, _items_per_page) #25 items per page
+        try:
+            page = int(request.GET.get('page', '1'))
+        except ValueError:
+            page = 1
+        try:
+            pg = paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            pg = paginator.page(paginator.num_pages)
+
         #is this fragile?
         return render_to_response('datacollection/papers.html', locals(),
                                   context_instance=RequestContext(request))
@@ -354,9 +364,9 @@ def samples(request, user_id):
     except ValueError:
         page = 1
     try:
-        samples = paginator.page(page)
+        pg = paginator.page(page)
     except (EmptyPage, InvalidPage):
-        samples = paginator.page(paginator.num_pages)
+        pg = paginator.page(paginator.num_pages)
         
     return render_to_response('datacollection/samples.html', locals(),
                               context_instance=RequestContext(request))
@@ -391,6 +401,18 @@ def weekly_samples(request, user_id):
         else:
             #No date param, take the beginning of the week
             samples = samples.filter(date_collected__gte=begin)
+
+        #control things w/ paginator
+        #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
+        paginator = Paginator(samples, _items_per_page) #25 items per page
+        try:
+            page = int(request.GET.get('page', '1'))
+        except ValueError:
+            page = 1
+        try:
+            pg = paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            pg = paginator.page(paginator.num_pages)
 
         return render_to_response('datacollection/samples.html', locals(),
                                   context_instance=RequestContext(request))

@@ -18,22 +18,22 @@ onload="init();"
       <input type="button" id="deleteBtn" value="delete"/>
       {% endifequal %}
       {% endif %}
-      {% if samples.paginator.num_pages %}
+      {% if pg.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
-              {% if samples.has_previous %}
-	      {% ifnotequal samples.previous_page_number 1 %}
+              {% if pg.has_previous %}
+	      {% ifnotequal pg.previous_page_number 1 %}
 	      <a href="?page=1{{rest}}">first</a>
 	      {% endifnotequal %}
-              <a href="?page={{ samples.previous_page_number }}{{rest}}">previous</a>
+              <a href="?page={{ pg.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
-              <span class="current">Page {{ samples.number }} of {{ samples.paginator.num_pages }}.</span>
+              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
 
-              {% if samples.has_next %}
-              <a href="?page={{ samples.next_page_number }}{{rest}}">next</a>
-	      {% ifnotequal samples.next_page_number samples.paginator.num_pages %}
-	      <a href="?page={{samples.paginator.num_pages}}{{rest}}">last</a>
+              {% if pg.has_next %}
+              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
+	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
 	      {% endifnotequal %}
               {% endif %}
           </span>
@@ -56,11 +56,11 @@ onload="init();"
 	     <th>Action</th>
 	     {% endif %}
 	 </tr>
-	 {% for s in samples.object_list %}
+	 {% for s in pg.object_list %}
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{s.id}}"/>
-	         <a href="{% url update_sample_form s.id %}?next={% url samples %}?page={{samples.number}}">edit</a>
+	         <a href="{% url update_sample_form s.id %}?next={% url samples %}?page={{pg.number}}">edit</a>
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url sample_profile s.id %}">{{s.id}}</a></td>
@@ -94,7 +94,7 @@ onload="init();"
 	     {% ifequal s.status "info" %}
 	     <td><input type="button" value="validate" onclick=""/></td>
 	     {% else %}{% ifequal s.status "valid" %}
-	     <td><input type="button" value="download raw file" onclick="downloadFile({{s.id}}, {{samples.number}});"/></td>
+	     <td><input type="button" value="download raw file" onclick="downloadFile({{s.id}}, {{pg.number}});"/></td>
 	     {% else %} {% ifequal s.status "transfer" %}
 	     <td><input type="button" value="download raw file" disabled="true"/></td>
 	     {% else %} 
@@ -105,22 +105,22 @@ onload="init();"
 	 {% endfor %}
       </table>
 <!-- from http://docs.djangoproject.com/en/1.1/topics/pagination/-->
-      {% if samples.paginator.num_pages %}
+      {% if pg.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
-              {% if samples.has_previous %}
-	      {% ifnotequal samples.previous_page_number 1 %}
+              {% if pg.has_previous %}
+	      {% ifnotequal pg.previous_page_number 1 %}
 	      <a href="?page=1{{rest}}">first</a>
 	      {% endifnotequal %}
-              <a href="?page={{ samples.previous_page_number }}{{rest}}">previous</a>
+              <a href="?page={{ pg.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
-              <span class="current">Page {{ samples.number }} of {{ samples.paginator.num_pages }}.</span>
+              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
 
-              {% if samples.has_next %}
-              <a href="?page={{ samples.next_page_number }}{{rest}}">next</a>
-	      {% ifnotequal samples.next_page_number samples.paginator.num_pages %}
-	      <a href="?page={{samples.paginator.num_pages}}{{rest}}">last</a>
+              {% if pg.has_next %}
+              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
+	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
 	      {% endifnotequal %}
               {% endif %}
           </span>
