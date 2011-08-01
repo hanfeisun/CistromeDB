@@ -69,7 +69,7 @@ onload="init();"
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/>
-	         <a href="{% url update_dataset_form d.id %}?next={% url datasets %}?page={{pg.number}}{{rest}}">edit</a>
+	         <a href="{% url update_dataset_form d.id %}?next={{request.get_full_path|urlencode }}">edit</a>
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url dataset_profile d.id %}">{{ d.id }}</a></td>
