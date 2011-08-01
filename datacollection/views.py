@@ -180,11 +180,13 @@ def upload_sample_form(request, sample_id):
             tmp.upload_date = datetime.datetime.now()
             tmp.uploader = request.user
             tmp.save()
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(request.POST['next'])
         else:
             print "INVALID UPLOAD SAMPLE FORM"
     else:
         form = forms.UploadSampleForm()
+        if 'next' in request.GET:
+            next = request.GET['next']
     return render_to_response('datacollection/upload_sample_form.html',
                               locals(),
                               context_instance=RequestContext(request))

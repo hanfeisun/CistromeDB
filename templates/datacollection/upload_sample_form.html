@@ -18,6 +18,9 @@
          <h2 class="section_hdr">Sample Form:</h2>
 	 <form enctype="multipart/form-data" action="" method="post">
 	    {{ form.as_p }}
+	    {% if next %}
+	    <input type="hidden" name="next" value="{{ next|escape }}" />
+	    {% endif %}
 	    <input type="submit" value="Submit"/>
 	 </form>
 {% endblock %}
