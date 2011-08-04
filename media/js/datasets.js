@@ -71,7 +71,7 @@ function init() {
     var deleteBtn = $('deleteBtn');
     deleteBtn.onclick = function(event) {
 	//confirm
-	var resp = confirm("Are you sure you want to DELETE these papers?");
+	var resp = confirm("Are you sure you want to DELETE these datasets?");
 	if (resp && datasetModel.datasets.length > 0) {
 	    window.location = SUB_SITE+"delete_datasets/?datasets="+datasetModel.datasets;
 	}
