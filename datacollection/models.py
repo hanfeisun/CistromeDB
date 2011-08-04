@@ -76,6 +76,8 @@ QC_CHOICES = (
     )
 
 
+_BIN_SIZE = 1000
+
 #pending is the default submission status
 DEFAULT_SUBMISSION_STATUS = SUBMISSION_STATUS[0][0]
 
@@ -187,12 +189,12 @@ class Samples(DCModel):
         a sample"""
         def upload_to_path(self, filename):
             """Returns the upload_to path for this sample.
-            NOTE: we are going to store the files by gsmid, e.g. GSM566957
-            is going to be stored in: data/samples/gsm566/957.
-            I'm not sure if this is the place to validate gsmids, but it maybe
+            NOTE: we are going to store the files by sample id, e.g. 1957
+            is going to be stored in: data/smpls/1/1957. - bin by _BIN_SIZE
             """
-            return os.path.join('data', 'samples','gsm%s' % self.gsmid[3:6],
-                                self.gsmid[6:], sub_dir, filename)
+            return os.path.join('data', 'smpls',
+                                str((self.id / _BIN_SIZE) % _BIN_SIZE),
+                                str(self.id), sub_dir, filename)
         return upload_to_path
     
     gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
@@ -248,16 +250,15 @@ class Datasets(DCModel):
         a sample"""
         def upload_to_path(self, filename):
             """Returns the upload_to path for this dataset.
-            NOTE: we are going to store the files by the paper's gseid and
-            the sample id, e.g. gseid = GSE20852, dataset id = 578
-            is going to be stored in: data/datasets/gse20/852/578/[peak,wig,etc]
+            NOTE: we are going to store the files by the sample's id.
+            the sample id, e.g. 578 is going to be stored in: 
+            data/dsets/0/578/[peak,wig,etc]. where we bin by 1000
             """
-            return os.path.join('data', 'datasets',
-                                'gse%s' % self.paper.gseid[3:5],
-                                self.paper.gseid[5:], str(self.id), sub_dir,
-                                filename)
+            return os.path.join('data', 'dsets',
+                                str((self.id / _BIN_SIZE) % _BIN_SIZE),
+                                str(self.id), sub_dir, filename)
         return upload_to_path
-    
+
     user = models.ForeignKey(User)
     paper = models.ForeignKey('Papers')
     treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
@@ -403,13 +404,12 @@ class Controls(DCModel):
         a control"""
         def upload_to_path(self, filename):
             """Returns the upload_to path for this control.
-            NOTE: we are going to store the files by the paper's gseid and
-            the dataset id, e.g. gseid = GSE20852, dataset id = 578
-            is going to be stored in:data/controls/gse20/852/578/[peak,wig,etc]
+            NOTE: we are going to store the files by the control dataset id, 
+            e.g. dataset id = 1957 
+            is going to be stored in:data/cntls/1/1957/[peak,wig,etc]
             """
-            return os.path.join('data', 'controls','gse%s' % \
-                                self.dataset.paper.gseid[3:5],
-                                self.dataset.paper.gseid[5:],
+            return os.path.join('data', 'cntls',
+                                str((self.dataset.id / _BIN_SIZE) % _BIN_SIZE),
                                 str(self.dataset.id), sub_dir, filename)
         return upload_to_path
     
