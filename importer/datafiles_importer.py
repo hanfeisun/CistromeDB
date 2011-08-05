@@ -89,33 +89,33 @@ def readManifest():
 
 #A mapping from summary.txt file fields to dataset model file fields
 #NOTE: missing raw file!
-_Pipe2Samples_Dict = [("treat_bam", "treatment_file"),
-                      ("macs_peaks", "peak_file"),
-                      ("macs_xls", "peak_xls_file"),
-                      ("macs_summits", "summit_file"),
-                      ("macs_treat_wig", "wig_file"),
-                      ("macs_treat_bw", "bw_file"),
-                      ("macs_control_wig", "control_wig_file"),
-                      ("conservation_bmp", "conservation_file"),
-                      ("conservation_r", "conservation_r_file"),
-                      ("correlation_pdf", "qc_file"),
-                       ("correlation_r", "qc_r_file"),
-                      ("ceas_pdf", "ceas_file"),
-                      ("ceas_r", "ceas_r_file"),
-                      ("venn_diagram_png", "venn_file"),
-                      ("seqpos_zip", "seqpos_file"),
-                      ]
-
-_Pipe2Datasets_Dict = [("treatment_bam", "treatment_file"),
+_Pipe2Datasets_Dict = [("treat_bam", "treatment_file"),
                        ("macs_peaks", "peak_file"),
+                       ("macs_xls", "peak_xls_file"),
+                       ("macs_summits", "summit_file"),
                        ("macs_treat_wig", "wig_file"),
                        ("macs_treat_bw", "bw_file"),
+                       ("macs_control_wig", "control_wig_file"),
+                       ("conservation_bmp", "conservation_file"),
+                       ("conservation_r", "conservation_r_file"),
+                       ("correlation_pdf", "qc_file"),
+                       ("correlation_r", "qc_r_file"),
+                       ("ceas_pdf", "ceas_file"),
+                       ("ceas_r", "ceas_r_file"),
+                       ("venn_diagram_png", "venn_file"),
+                       ("seqpos_zip", "seqpos_file"),
                        ]
 
-_Pipe2SampleControls_Dict = [("control_bam", "treatment_file"),
-                             ("macs_control_wig", "wig_file"),
-                             ("macs_control_bw", "bw_file"),
-                             ]
+_Pipe2Samples_Dict = [("treatment_bam", "treatment_file"),
+                      ("macs_peaks", "peak_file"),
+                      ("macs_treat_wig", "wig_file"),
+                      ("macs_treat_bw", "bw_file"),
+                      ]
+
+_Pipe2Controls_Dict = [("control_bam", "treatment_file"),
+                       ("macs_control_wig", "wig_file"),
+                       ("macs_control_bw", "bw_file"),
+                       ]
 
 def main():
     parser = optparse.OptionParser(usage=USAGE)
@@ -141,94 +141,95 @@ def main():
                 tfile = tarfile.open(filepath)
                 tfile.extractall()
                 #NOTE: **important- the tar ball names are ALWAYS assumed to
-                #be in this form: sampleN.tar.gz--where N is the sample id;
-                #AND the tar ball extracts to a dir called sampleN
-                #AND the summary is ALWAYS sampleN_summary.txt
+                #be in this form: datasetN.tar.gz--where N is the dataset id;
+                #AND the tar ball extracts to a dir called datasetN
+                #AND the summary is ALWAYS datasetN_summary.txt
                 tmpdir = p.split(".")[0]
                 os.chdir(tmpdir)
                 #print os.getcwd()
                 
-                #read in sampleN_summary.txt
+                #read in datasetN_summary.txt
                 config = read_config(tmpdir+"_summary.txt")
                 #print config
                 #for k in config.keys():
                 #    if k.startswith("summary"):
                 #        print k
 
-                if ("sample.sample_id" not in config) or \
-                   ("sample.username" not in config):
+                if ("dataset.dataset_id" not in config) or \
+                   ("dataset.username" not in config):
                     failed(filepath)
                     continue
 
-                #try to get the sample model
-                s = models.Samples.objects.get(pk=config['sample.sample_id'])
-                u = User.objects.get(username=config['sample.username'])
-                s.uploader=u
-                s.upload_date=datetime.datetime.now()
+                #try to get the dataset model
+                d = models.Datasets.objects.get(pk=config['dataset.dataset_id'])
+                u = User.objects.get(username=config['dataset.username'])
+                d.uploader=u
+                d.upload_date=datetime.datetime.now()
                 
                 #try to set the sample fields
                 #NOTE: adding fault tolderance-if missing files, we don't fail;
                 missing_files = []
-                for f in _Pipe2Samples_Dict:
-                    if "sample."+f[0] in config:
-                        file_path = config["sample."+f[0]]
+                for f in _Pipe2Datasets_Dict:
+                    if "dataset."+f[0] in config:
+                        file_path = config["dataset."+f[0]]
                         if os.path.exists(file_path):
-                            setattr(s, f[1], File(open(file_path)))
+                            setattr(d, f[1], File(open(file_path)))
                         else: #add it to the error msg
                             missing_files.append(file_path)
                 #import meta files: conf, log, summary and dhs_file
-                meta_files = [("%s.conf" % s.id, "conf_file"), 
+                meta_files = [("%s.conf" % d.id, "conf_file"), 
                               ("log", "log_file"), 
-                              ("sample%s_summary.txt" % s.id, "summary_file"),
-                              ("%s_bedtools_dhs.txt" % s.id, "dhs_file")
+                              ("dataset%s_summary.txt" % d.id, "summary_file"),
+                              ("%s_bedtools_dhs.txt" % d.id, "dhs_file")
                               ]
                 for f in meta_files:
                     if os.path.exists(f[0]):
-                        setattr(s, f[1], File(open(f[0])))
+                        setattr(d, f[1], File(open(f[0])))
                     else:
                         missing_files.append(f[0])
                 
                 if missing_files:
-                    s.comments = "ERROR: missing files %s" % missing_files
-                s.status = "complete"
-                s.save()
+                    d.comments = "ERROR: missing files %s" % missing_files
+                d.status = "complete"
+                d.save()
 
                 #try to store the dataset files
-                dsets = [models.Datasets.objects.get(pk=id) \
-                         for id in s.treatments.split(",")]
-                for (i,d) in enumerate(dsets):
+                samples = [models.Samples.objects.get(pk=sid) \
+                               for sid in d.treatments.split(",")]
+                for (i, s) in enumerate(samples):
                     missing_files = []
-                    for f in _Pipe2Datasets_Dict:
+                    for f in _Pipe2Samples_Dict:
                         if "replicates."+f[0] in config:
                             reps = config["replicates."+f[0]].split(",")
                             if os.path.exists(reps[i]):
-                                setattr(d, f[1], File(open(reps[i])))
+                                setattr(s, f[1], File(open(reps[i])))
                             else:
                                 missing_files.append(reps[i])
                     #ignore missing_files
-                    d.uploader = u
-                    d.upload_date = datetime.datetime.now()
-                    d.save()
+                    s.uploader = u
+                    s.upload_date = datetime.datetime.now()
+                    s.save()
 
                 #try to save the control files
-                (sc, created) = models.SampleControls.objects.get_or_create(sample=s)
+                (c, created) = models.Controls.objects.get_or_create(dataset=d)
                 missing_files = []
-                for f in _Pipe2SampleControls_Dict:
-                    if "sample."+f[0] in config:
-                        file_path = config["sample."+f[0]]
+                for f in _Pipe2Controls_Dict:
+                    if "dataset."+f[0] in config:
+                        file_path = config["dataset."+f[0]]
                         if os.path.exists(file_path):
-                            setattr(sc, f[1], File(open(file_path)))
+                            setattr(c, f[1], File(open(file_path)))
                         else:
                             missing_files.append(file_path)
                 #ignore missing_files
-                sc.save()
+                c.save()
 
                 #try to store the summary info                
                 if ('summary.total_peaks' in config) and \
                    ('summary.peaks_overlapped_with_dhss' in config):
                     #print config['summary.total_peaks']
                     #print config['summary.peaks_overlapped_with_dhss']
-                    (dhs, created) = models.SampleDhsStats.objects.get_or_create(sample=s)
+                    (dhs, created) = \
+                        models.DhsStats.objects.get_or_create(dataset=d)
                     #dhs.sample = s
                     dhs.total_peaks = config['summary.total_peaks']
                     dhs.peaks_in_dhs = config['summary.peaks_overlapped_with_dhss']
