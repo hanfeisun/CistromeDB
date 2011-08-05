@@ -73,6 +73,7 @@ GRADE_CHOICES = (
 QC_CHOICES = (
     (u'PASS', u'PASS'),
     (u'FAIL', u'FAIL'),
+    (u'UNCLEAR', u'UNCLEAR'),
     )
 
 
