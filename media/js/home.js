@@ -5,10 +5,7 @@ var Model = ModelFactory(["papersList", "currPaper", "currResultsCol"],
 var pgModel = new Model({"papersList":null, "currPaper":null, 
 			 "currResultsCol":null});
 
-//MENG asked me to remove this for now...but i like this so i'm just going to 
-//disable it
 var msg = "Search Cistrome DC";
-//var msg = "                   ";
 
 var tearDownResultsEvent = new ModelEvent(null);
 var resultsCBEvent = new ModelEvent(null);
@@ -439,10 +436,11 @@ function PaperInfoView(container, model) {
     }
 }
 
-function DatasetsView(container, model) {
+//function DatasetsView(container, model) {
+function SamplesView(container, model) {
     this.container = container;
     this.model = model;
-    this.datasets = null;
+    this.samples = null;
     var outer = this;
     
     this.makeHTML = function() {
@@ -471,11 +469,10 @@ function DatasetsView(container, model) {
 	//	    <td><span class="value"><a href="">view</a></span>
 	//	        <span class="value"><a href="">download</a></span>
 	//	    </td>
-	//alert(outer.datasets.length);
-	for (var i = 0; i < outer.datasets.length; i++) {
-	    var d = outer.datasets[i];
+	for (var i = 0; i < outer.samples.length; i++) {
+	    var s = outer.samples[i];
 	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
-	    var gsmid = getattr(d, "gsmid");
+	    var gsmid = getattr(s, "gsmid");
 	    var newA = $D('a', {innerHTML:gsmid, target:'_blank',
 				href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmid});
 	    tr.appendChild($D('td').appendChild(newA));
@@ -483,7 +480,7 @@ function DatasetsView(container, model) {
 	    //Build the files
 	    var td = $D('td');
 	    for (var j = 0; j < files.length; j++) {
-		var url = getattr(d, files[j][0]);
+		var url = getattr(s, files[j][0]);
 		if (url && url != "") {
 		    var tmp = $D('span', {'className':'label',
 					  'innerHTML':files[j][1]+":"});
@@ -511,7 +508,7 @@ function DatasetsView(container, model) {
     
     this.cb = function(req) {
 	var resp = eval("("+req.responseText+")");
-	outer.datasets = resp;
+	outer.samples = resp;
 	outer.makeHTML();
 	outer.clearOverlay();
     }
@@ -519,8 +516,8 @@ function DatasetsView(container, model) {
     this.currPaperLstnr = function() {
 	var currPaper = outer.model.getCurrPaper();
 	if (currPaper != null) {
-	    var dsets = 
-		new Ajax.Request(SUB_SITE+"jsrecord/Datasets/find/",
+	    var samples = 
+		new Ajax.Request(SUB_SITE+"jsrecord/Samples/find/",
 				 {method:"get",
 				  parameters:{"paper":currPaper.id}, 
 				  onComplete: outer.cb});
@@ -564,10 +561,11 @@ function DatasetsView(container, model) {
 
 }
 
-function SamplesView(container, model) {
+//function SamplesView(container, model) {
+function DatasetsView(container, model) {
     this.container = container;
     this.model = model;
-    this.samples = null;
+    this.datasets = null;
     var outer = this;
     
     this.makeHTML = function() {
@@ -644,19 +642,19 @@ function SamplesView(container, model) {
 
 		      ];
 	var files2 = [];
-	for (var i = 0; i < outer.samples.length; i++) {
-	    var s = outer.samples[i];
+	for (var i = 0; i < outer.datasets.length; i++) {
+	    var d = outer.datasets[i];
 	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
 	    //Treatments & Controles
-	    tr.appendChild($D('td', {'innerHTML':s.treatments}));
-	    tr.appendChild($D('td', {'innerHTML':s.controls}));
+	    tr.appendChild($D('td', {'innerHTML':d.treatments}));
+	    tr.appendChild($D('td', {'innerHTML':d.controls}));
 
 	    //build the info tds
 	    var info = [info1, info2, info3, info4];
 	    for (var z = 0; z < info.length; z++) {
 		var newTd = $D('td');
 		for (var j = 0; j < info[z].length; j++) {
-		    var val = getattr(s, info[z][j][0], true);
+		    var val = getattr(d, info[z][j][0], true);
 		    //NOTE: null evals to false
 		    if (val && val != "") {
 			newTd.appendChild($D('span', {'className':'label',
@@ -675,7 +673,7 @@ function SamplesView(container, model) {
 		var files = ls[z];
 		var td = $D('td');
 		for (var j = 0; j < files.length; j++) {
-		    var url = getattr(s, files[j][0]);
+		    var url = getattr(d, files[j][0]);
 		    if (url && url != "") {
 			var tmp = $D('span', {'className':'label',
 					      'innerHTML':files[j][1]+":"});
@@ -706,7 +704,7 @@ function SamplesView(container, model) {
 
     this.cb = function(req) {
 	var resp = eval("("+req.responseText+")");
-	outer.samples = resp;
+	outer.datasets = resp;
 	outer.makeHTML();
 	outer.clearOverlay();
     }
@@ -714,8 +712,8 @@ function SamplesView(container, model) {
     this.currPaperLstnr = function() {
 	var currPaper = outer.model.getCurrPaper();
 	if (currPaper != null) {
-	    var samples = 
-		new Ajax.Request(SUB_SITE+"jsrecord/Samples/find/",
+	    var dsets = 
+		new Ajax.Request(SUB_SITE+"jsrecord/Datasets/find/",
 				 {method:"get", 
 				  parameters:{"paper":currPaper.id}, 
 				  onComplete: outer.cb});
