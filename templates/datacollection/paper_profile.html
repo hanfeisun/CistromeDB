@@ -33,7 +33,7 @@ onload="init();"
 	   </tr>
 	   {% for d in datasets %}
 	   {% cycle '<tr>' '' '' %}
-	       <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
+	       <td><a href="{% url dataset_profile d.id %}">{{d.id}}</a></td>
 	   {% cycle '' '' '</tr>' %}
 	   {% endfor %}
 	</table>
@@ -47,7 +47,7 @@ onload="init();"
 	   </tr>
 	   {% for s in samples %}
 	   {% cycle '<tr>' '' '' %}
-	       <td><a href="{% url sample_profile s.id %}">{{ s }}</a></td>
+	       <td><a href="{% url sample_profile s.id %}">{{s.id}}</a></td>
 	   {% cycle '' '' '</tr>' %}
 	   {% endfor %}
 	</table>
