@@ -84,11 +84,13 @@ section#sidebar{
 
 }
 
+/* moved to base.css
 .fakeLink {    
     color:#093955;
     text-decoration:underline;
     cursor:pointer;
 }
+*/
 
 /* END: sidebar */
 
