@@ -40,6 +40,16 @@ function init(model, this_pg) {
 	    var m = model;
 	    if (model == "Assembly") {
 		m = "Assemblies";
+	    } else if (model == "Celltypes") {
+		m = "CellTypes";
+	    } else if (model == "Celllines") {
+		m = "CellLines";
+	    } else if (model == "Cellpops") {
+		m = "CellPops";
+	    } else if (model == "FileTypes") {
+		m = "FileTypes";
+	    } else if (model == "Diseasestates") {
+		m = "DiseaseStates";
 	    }
 	    window.location = SUB_SITE+"generic_delete/"+m+"/?objects="+tmp+"&next="+next;
 	}
