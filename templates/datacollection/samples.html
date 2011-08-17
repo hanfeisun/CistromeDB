@@ -1,4 +1,6 @@
 {% extends "datacollection/login_base.html" %}
+{% load dc_extras %}
+
 {% block title %}Cistrome Paper Collection - Samples{% endblock %}
 {% block include %}
 <link href="{% url static_url %}css/samples.css" rel="stylesheet" type="text/css"/>
@@ -46,6 +48,7 @@ onload="init();"
 	     <th>ID</th>
 	     <th>GSMID</th>
 	     <th>Paper</th>
+	     <th>Files</th>
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>User</th>
@@ -69,6 +72,20 @@ onload="init();"
 	     <td>
 	      <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{s.paper.pmid}}</a></br></br>
 	      <a href="{% url paper_profile s.paper.id %}">paper profile</a>
+	     </td>
+	     <td>
+	       {% for f in s.getFileFields%}
+	       {% if f %}
+	       <span><a href="{{f.url|sub_site}}">{{f.field.name}}</a></span></br>
+	       {% endif %}
+	       {% endfor %}
+{% comment %}
+	       {% for f in fileFields %}
+	         {% ifnotequal get_attr(s, f) "" %}
+	         <a href="{{s|get_attr:f}}">{{f}}</a>
+		 {% endif %}
+	         {% endfor %}
+{% endcomment %}
 	     </td>
 	     {% ifequal s.status "imported" %}
 	     <td class="imported_row">{{ s.get_status_display }}</td>

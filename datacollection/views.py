@@ -21,6 +21,7 @@ from django.core.cache import cache
 from django.utils.encoding import smart_str
 from django.utils.http import urlquote
 from django.conf import settings as conf_settings
+from django.db.models.fields.files import FileField
 
 import models
 import forms
@@ -335,6 +336,49 @@ def weekly_papers(request, user_id):
         return render_to_response('datacollection/list_users.html', locals(),
                                   context_instance=RequestContext(request))
 
+#a nice fn, but overkill for what we need...i'm going to leave it around for
+#inspiration
+def _aggregateFiles(model_obj_list, add_to_obj=False):
+    """Given a list of model objects, whose models have FileFields, introspects
+    the obj and returns the FileFields of each obj as a list; 
+    uses the first object to introspect the model **SO WE ASSUME that 
+    the objects are of the same type**
+    if add_to_obj, then adds the filefields to the the obj as _fileFields"""
+    def getFileFields(self):
+        return self._fileFields
+
+    if len(model_obj_list) > 0:
+        #try to find the FileFields via introspection
+        fflds = [f.name for f in model_obj_list[0]._meta.fields \
+                     if isinstance(f, FileField)]
+        tmp = []
+        for o in model_obj_list:
+            foo = [getattr(o, f) for f in fflds]
+            if add_to_obj:
+                setattr(o, "_fileFields", foo)
+                #ADD getFileFields as an instance method b/c we can't access
+                #_fileFields in the templates!
+                setattr(o.__class__, "getFileFields", getFileFields)
+            tmp.append(foo)
+        return tmp
+    else:
+        return []    
+
+def _getFileFields(model_obj_list):
+    """Given a list of model objects, whose models have FileFields, introspects
+    the obj and returns the FileFields of the Model
+    uses the first object to introspect the model **SO WE ASSUME that 
+    the objects are of the same type**
+    inspired by _aggregateFiles"""
+    if len(model_obj_list) > 0:
+        #try to find the FileFields via introspection
+        fflds = [f.name for f in model_obj_list[0]._meta.fields \
+                     if isinstance(f, FileField)]
+        return fflds
+    else:
+        return [] 
+
+
 #NOTE: i sould cache these!!
 @admin_only
 #def datasets(request, user_id):
@@ -369,6 +413,9 @@ def samples(request, user_id):
         pg = paginator.page(page)
     except (EmptyPage, InvalidPage):
         pg = paginator.page(paginator.num_pages)
+
+    #prepare the fileFields for the Files col--note we do it here for efficien.
+    ignored = _aggregateFiles(pg.object_list, add_to_obj=True)
         
     return render_to_response('datacollection/samples.html', locals(),
                               context_instance=RequestContext(request))
