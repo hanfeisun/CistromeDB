@@ -20,7 +20,8 @@ form_dict = {'Paper': models.Papers, 'Dataset': models.Datasets,
              'Journal': models.Journals, 'Species':models.Species,
              'Filetype': models.FileTypes,
              'Assembly': models.Assemblies, 'Sample':models.Samples,
-             'Diseasestate': models.DiseaseStates}
+             'Diseasestate': models.DiseaseStates, 
+             'Control': models.Controls}
 
 
 for k in form_dict:
