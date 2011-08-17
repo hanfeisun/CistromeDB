@@ -79,13 +79,6 @@ onload="init();"
 	       <span><a href="{{f.url|sub_site}}">{{f.field.name}}</a></span></br>
 	       {% endif %}
 	       {% endfor %}
-{% comment %}
-	       {% for f in fileFields %}
-	         {% ifnotequal get_attr(s, f) "" %}
-	         <a href="{{s|get_attr:f}}">{{f}}</a>
-		 {% endif %}
-	         {% endfor %}
-{% endcomment %}
 	     </td>
 	     {% ifequal s.status "imported" %}
 	     <td class="imported_row">{{ s.get_status_display }}</td>

@@ -57,6 +57,7 @@ onload="init();"
 	     <th>Strain</th>
 	     <th>Condition</th>
 	     <th>Disease State</th>
+	     <th>Files</th>
 	     <th>Status</th>
 	     <th>Comments</th>
 	     <th>Uploader</th>
@@ -104,6 +105,14 @@ onload="init();"
 	     <td><a href="{% url datasets %}?strain={{d.strain.id}}">{{d.strain.name}}</a></td>
 	     <td><a href="{% url datasets %}?condition={{d.condition.id}}">{{d.condition.name}}</a></td>
 	     <td><a href="{% url datasets %}?diseasestate={{d.disease_state.id}}">{{d.disease_state.name}}</a></td>
+	     <td>	       
+	       {% for f in d.getFileFields%}
+	       {% if f %}
+	       <span><a href="{{f.url|sub_site}}">{{f.field.name}}</a></span></br>
+	       {% endif %}
+	       {% endfor %}
+
+	     </td>
 
 	     {% ifequal d.status "new" %}
 	     <td class="new_row">{{ d.get_status_display }}</td>

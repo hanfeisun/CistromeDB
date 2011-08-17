@@ -583,6 +583,9 @@ def datasets(request):
     except (EmptyPage, InvalidPage):
         pg = paginator.page(paginator.num_pages)
 
+    #prepare the fileFields for the Files col--note we do it here for efficien.
+    ignored = _aggregateFiles(pg.object_list, add_to_obj=True)
+
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
