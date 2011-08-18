@@ -420,6 +420,33 @@ def samples(request, user_id):
     return render_to_response('datacollection/samples.html', locals(),
                               context_instance=RequestContext(request))
 
+#NOTE: i sould cache these!!
+@admin_only
+def controls(request):
+    """View all of the controls in an excel like table
+    """
+    controls = models.Controls.objects.all()
+    current_path = request.get_full_path()
+
+    #control things w/ paginator
+    #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
+    paginator = Paginator(controls, _items_per_page) #25 items per page
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        pg = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        pg = paginator.page(paginator.num_pages)
+
+    #prepare the fileFields for the Files col--note we do it here for efficien.
+    ignored = _aggregateFiles(pg.object_list, add_to_obj=True)
+        
+    return render_to_response('datacollection/controls.html', locals(),
+                              context_instance=RequestContext(request))
+
+
 @admin_only
 #def weekly_datasets(request, user_id):
 def weekly_samples(request, user_id):
@@ -1298,7 +1325,7 @@ def modelPagesFactory(model, base_name):
 #DUPLICATE!!! kind of!
 generic_model_list = ["Platforms", "Factors", "CellTypes", "CellLines", 
                       "CellPops", "Strains", "Conditions", "Journals", 
-                      "FileTypes",  "DiseaseStates", "Species", "Controls",
+                      "FileTypes",  "DiseaseStates", "Species",
                       #"Assemblies",
                       ]
 
