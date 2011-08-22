@@ -338,8 +338,10 @@ class Datasets(DCModel):
                                  null=True, blank=True, default=None)
     strain = models.ForeignKey('Strains',
                                null=True, blank=True, default=None)
-    condition = models.ForeignKey('Conditions',
-                                  null=True, blank=True, default=None)
+    cond = models.CharField(max_length=255, null=True, blank=True, 
+                                 default="")
+    # condition = models.CharField(max_length=255, null=True, blank=True, 
+    #                              default="")
     disease_state = models.ForeignKey('DiseaseStates',
                                       null=True, blank=True, default=None)
     chip_page = models.URLField(null=True, blank=True, default="")
@@ -486,12 +488,13 @@ class Strains(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
         return self.name
-    
-class Conditions(DCModel):
-    """Experiment/conditions, e.g. PTIP-knockout, wild-type"""
-    name = models.CharField(max_length=255)
-    def __str__(self):
-        return smart_str(self.name)
+
+# DROP    
+# class Conditions(DCModel):
+#     """Experiment/conditions, e.g. PTIP-knockout, wild-type"""
+#     name = models.CharField(max_length=255)
+#     def __str__(self):
+#         return smart_str(self.name)
 
 class Journals(DCModel):
     """Journals that the papers are published in"""
