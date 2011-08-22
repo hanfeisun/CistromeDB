@@ -52,9 +52,10 @@ onload="init();"
 	     <th>Factor / Antibody</th>
 	     <th>Experiment Type / Platform</th>
 	     <th>Species</th>
-	     <th>Cell / Tissue Type</th>
+	     <th>Cell Type</th>
 	     <th>Cell Line</th>
 	     <th>Cell Pop</th>
+	     <th>Tissue Type</th>
 	     <th>Strain</th>
 	     <th>Cond</th>
 	     <th>Disease State</th>
@@ -98,11 +99,11 @@ onload="init();"
 	     </td>
 	     <td><a href="{% url datasets %}?species={{d.species.id}}">{{d.species}}</a></td>
 	     <td>
-	       <a href="{% url datasets %}?celltype={{d.cell_type.id}}">{{d.cell_type.name}}</a><br/><br/>
-	       <a href="{% url datasets %}?tissuetype={{d.cell_type.id}}">{{d.cell_type.tissue_type}}</a>
+	       <a href="{% url datasets %}?celltype={{d.cell_type.id}}">{{d.cell_type.name}}</a>
 	     </td>
 	     <td><a href="{% url datasets %}?cellline={{d.cell_line.id}}">{{d.cell_line.name}}</a></td>
 	     <td><a href="{% url datasets %}?cellpop={{d.cell_pop.id}}">{{d.cell_pop.name}}</a></td>
+	     <td><a href="{% url datasets %}?tissuetype={{d.tissue_type.id}}">{{d.tissue_type.name}}</a></td>
 	     <td><a href="{% url datasets %}?strain={{d.strain.id}}">{{d.strain.name}}</a></td>
 	     <td><a href="{% url datasets %}?cond={{d.cond}}">{{d.cond}}</a></td>
 	     <td><a href="{% url datasets %}?diseasestate={{d.disease_state.id}}">{{d.disease_state.name}}</a></td>

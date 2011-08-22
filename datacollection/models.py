@@ -336,6 +336,8 @@ class Datasets(DCModel):
                                   null=True, blank=True, default=None)
     cell_pop = models.ForeignKey('CellPops',
                                  null=True, blank=True, default=None)
+    tissue_type = models.ForeignKey('TissueTypes',
+                                    null=True, blank=True, default=None)
     strain = models.ForeignKey('Strains',
                                null=True, blank=True, default=None)
     cond = models.CharField(max_length=255, null=True, blank=True, 
@@ -463,12 +465,15 @@ class CellTypes(DCModel):
     """tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
     """
     name = models.CharField(max_length=255)
-    tissue_type = models.CharField(max_length=255, blank=True)
+    #tissue_type = models.CharField(max_length=255, blank=True)
     def __str__(self):
-        if self.tissue_type:
-            return "%s:%s" % (self.name, self.tissue_type)
-        else:
-            return self.name
+        return self.name
+
+class TissueTypes(DCModel):
+    """tissue type"""
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
 
 class CellLines(DCModel):
     """cell lines.  I really don't know what distinguishes
