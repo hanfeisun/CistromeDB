@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block onload %}
-onload="manage_files_init('Datasets', {{obj.id}});"
+onload="manage_files_init('{{model}}', {{obj.id}});"
 {% endblock %}
 
 {% block content %}
