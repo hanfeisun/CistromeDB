@@ -16,7 +16,7 @@ form_dict = {'Paper': models.Papers, 'Dataset': models.Datasets,
              'Platform': models.Platforms,
              'Factor': models.Factors, 'Celltype':models.CellTypes,
              'Cellline': models.CellLines, 'Cellpop':models.CellPops,
-             'Strain': models.Strains, 'Condition':models.Conditions,
+             'Strain': models.Strains, 
              'Journal': models.Journals, 'Species':models.Species,
              'Filetype': models.FileTypes,
              'Assembly': models.Assemblies, 'Sample':models.Samples,
@@ -99,7 +99,10 @@ class BatchUpdateDatasetsForm(forms.ModelForm):
         model = models.Datasets
         fields = ('factor', 'platform', 'species', 'assembly', 
                   'cell_type', 'cell_line',
-                  'cell_pop', 'strain', 'condition', 'disease_state',
+                  'cell_pop', 'strain', 
+                  #condition is a reserved word, so we use cond
+                  'cond', 
+                  'disease_state',
                   'status', 'comments',
                   'user', 'uploader', #'curator', 
                   'description', 'chip_page', 'control_page',
@@ -114,7 +117,7 @@ class BatchUpdateDatasetsForm(forms.ModelForm):
                      'species':models.Species, 'assembly': models.Assemblies,
                      'cell_type':models.CellTypes, 
                      'cell_line': models.CellLines, 'cell_pop':models.CellPops,
-                     'strain': models.Strains, 'condition':models.Conditions,
+                     'strain': models.Strains, 
                      'disease_state': models.DiseaseStates}
 
     #ORDER the select options by the field name--i.e. alphabetical order

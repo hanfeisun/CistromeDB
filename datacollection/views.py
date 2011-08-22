@@ -211,7 +211,7 @@ def form_view_factory(title_in, form_class):
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
-                      'strain', 'condition', 'journal', 'species', 'filetype',
+                      'strain', 'journal', 'species', 'filetype',
                       'assembly', "diseasestate", "control"]
 #new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
 #Generate the generic form views
@@ -572,9 +572,9 @@ def datasets(request):
         datasets = datasets.filter(strain=request.GET['strain'])
         rest += "&strain=%s" % request.GET['strain']
 
-    if 'condition' in request.GET:
-        datasets = datasets.filter(condition=request.GET['condition'])
-        rest += "&condition=%s" % request.GET['condition']
+    if 'cond' in request.GET:
+        datasets = datasets.filter(cond=request.GET['cond'])
+        rest += "&cond=%s" % request.GET['cond']
 
     if 'disease_state' in request.GET:
         datasets = datasets.filter(disease_state=request.GET['disease_state'])
@@ -1324,7 +1324,7 @@ def modelPagesFactory(model, base_name):
 
 #DUPLICATE!!! kind of!
 generic_model_list = ["Platforms", "Factors", "CellTypes", "CellLines", 
-                      "CellPops", "Strains", "Conditions", "Journals", 
+                      "CellPops", "Strains", "Journals", 
                       "FileTypes",  "DiseaseStates", "Species",
                       #"Assemblies",
                       ]
