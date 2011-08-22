@@ -7,6 +7,7 @@
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/datasets.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/manage_files.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block onload %}
@@ -146,16 +147,19 @@ onload="init();"
 	     </td>
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_authenticated %}
+	     <td>
 	     {% ifequal d.status "new" %}
-	     <td><input type="button" value="check raw files" onclick="checkRawFiles({{d.id}}, {{pg.number}});"/></td>
+	     <input type="button" value="check raw files" onclick="checkRawFiles({{d.id}}, {{pg.number}});"/>
 	     {% else %} {% ifequal d.status "checked" %}
-	     <td><input type="button" value="run!" onclick="runAnalysis({{d.id}}, {{pg.number}});"/></td>
+	     <input type="button" value="run!" onclick="runAnalysis({{d.id}}, {{pg.number}});"/>
 	     {% else %} {% ifequal d.status "running" %}
-	     <td><input type="button" value="run!" disabled="true"/></td>
+	     <input type="button" value="run!" disabled="true"/>
 	     {% else %} 
-	     <td> </td>
+	     <!-- no action -->
 	     {% endifequal %}{% endifequal %}{% endifequal %}
-	     {% endif %} 
+	     <input type="button" value="manage files" onclick="manageFiles('Datasets', {{d.id}});"/>
+	     </td>
+	     {% endif %} 	    
 	 </tr>
 	 {% endfor %}
       </table>

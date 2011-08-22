@@ -7,6 +7,7 @@
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/samples.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/manage_files.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block onload %}
@@ -64,7 +65,8 @@ onload="init();"
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{s.id}}"/>
 	         <a href="{% url update_sample_form s.id %}?next={{request.get_full_path|urlencode}}">edit</a><br/>
-	         <a href="{% url upload_sample_form s.id %}?next={{request.get_full_path|urlencode}}">upload</a>
+	         <!-- REPLACED by manage files
+		    <a href="{% url upload_sample_form s.id %}?next={{request.get_full_path|urlencode}}">upload</a>-->
 	     </td>
 	     {% endif %}
 	     <td><a href="{% url sample_profile s.id %}">{{s.id}}</a></td>
@@ -102,15 +104,18 @@ onload="init();"
 	     <td>{{ s.date_collected|date:"Y-m-d"}}</td>
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_authenticated %}
+	     <td>
 	     {% ifequal s.status "info" %}
-	     <td><input type="button" value="validate" onclick=""/></td>
+	     <input type="button" value="validate" onclick=""/>
 	     {% else %}{% ifequal s.status "valid" %}
-	     <td><input type="button" value="download raw file" onclick="downloadFile({{s.id}}, {{pg.number}});"/></td>
+	     <input type="button" value="download raw file" onclick="downloadFile({{s.id}}, {{pg.number}});"/>
 	     {% else %} {% ifequal s.status "transfer" %}
-	     <td><input type="button" value="download raw file" disabled="true"/></td>
+	     <input type="button" value="download raw file" disabled="true"/>
 	     {% else %} 
-	     <td> </td>
+	     <!-- no action -->
 	     {% endifequal %}{% endifequal %}{% endifequal %}
+	     <input type="button" value="manage files" onclick="manageFiles('Samples', {{s.id}});"/>
+	     </td>
 	     {% endif %} 
 	 </tr>
 	 {% endfor %}
