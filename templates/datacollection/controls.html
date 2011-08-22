@@ -7,6 +7,7 @@
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/generic_table.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/manage_files.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block onload %}
@@ -68,7 +69,9 @@ onload="init('controls', '{{current_path}}');"
 	     </td>
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_staff %}
-	     <td> </td>
+	     <td>
+	       <input type="button" value="manage files" onclick="manageFiles('Controls', {{c.id}});"/>
+	     </td>
 	     {% endif %} 
 	 </tr>
 	 {% endfor %}

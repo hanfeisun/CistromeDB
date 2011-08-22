@@ -1418,3 +1418,34 @@ def front(request, rtype):
     cache.set(rtype, ret, _timeout)
 
     return HttpResponse(ret)
+
+@admin_only
+def manage_files(request, model, obj_id):
+    """Given a model that contains files, i.e. Datasets, Samples, Controls, 
+    and an id, this page will show the admin page that will allow users to 
+    1. upload files; 2. disassociate files
+    """
+    m = getattr(models, model)
+    obj = m.objects.get(pk=obj_id)
+    fileFields = _aggregateFiles([obj], add_to_obj=True)
+
+    if request.method == "POST":
+        if request.FILES:
+            for k in request.FILES.keys():
+                fileField = getattr(obj, k)
+                up_file = request.FILES[k]
+                fileField.save(up_file.name, up_file)
+    else:
+        pass
+
+    return render_to_response('datacollection/manage_files.html', 
+                              locals(),
+                              context_instance=RequestContext(request))
+
+@admin_only
+def delete_file(request, model, obj_id, fileField):
+    m = getattr(models, model)
+    obj = m.objects.get(pk=obj_id)
+    setattr(obj, fileField, None)
+    obj.save()
+    return HttpResponse("{'success':true}")
