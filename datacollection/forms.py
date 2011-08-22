@@ -16,6 +16,7 @@ form_dict = {'Paper': models.Papers, 'Dataset': models.Datasets,
              'Platform': models.Platforms,
              'Factor': models.Factors, 'Celltype':models.CellTypes,
              'Cellline': models.CellLines, 'Cellpop':models.CellPops,
+             'Tissuetype':models.TissueTypes,
              'Strain': models.Strains, 
              'Journal': models.Journals, 'Species':models.Species,
              'Filetype': models.FileTypes,
@@ -115,8 +116,9 @@ class BatchUpdateDatasetsForm(forms.ModelForm):
         #map fields to models
         form_dict = {'factor': models.Factors, 'platform': models.Platforms,
                      'species':models.Species, 'assembly': models.Assemblies,
-                     'cell_type':models.CellTypes, 
+                     'cell_type':models.CellTypes,                     
                      'cell_line': models.CellLines, 'cell_pop':models.CellPops,
+                     'tissue_type':models.TissueTypes,
                      'strain': models.Strains, 
                      'disease_state': models.DiseaseStates}
 
