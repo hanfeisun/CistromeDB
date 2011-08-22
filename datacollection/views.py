@@ -1324,7 +1324,9 @@ def modelPagesFactory(model, base_name):
 
 #DUPLICATE!!! kind of!
 generic_model_list = ["Platforms", "Factors", "CellTypes", "CellLines", 
-                      "CellPops", "Strains", "Journals", 
+                      "CellPops", 
+                      "TissueTypes",
+                      "Strains", "Journals", 
                       "FileTypes",  "DiseaseStates", "Species",
                       #"Assemblies",
                       ]
