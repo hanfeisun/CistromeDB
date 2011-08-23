@@ -4,9 +4,10 @@ function init(dsets) {
     containers = ModelFormHooks("Datasets");
 
     fields = ["factor", "platform", "species", "assembly",
-	      "cell_type", "cell_line", "cell_pop",
+	      "cell_type", "cell_line", "cell_pop", "tissue_type",
 	      "strain", "condition", "disease_state"];
-    exceptions = ["cell_type", "cell_line", "cell_pop", "disease_state"]
+    exceptions = ["cell_type", "cell_line", "cell_pop", "tissue_type",
+		  "disease_state"]
     for (var i = 0; i < fields.length; i++) {
 	var newA = document.createElement("a");
 	//NOTE: we have to treat cell_type, cell_line and cell_pop differently;
