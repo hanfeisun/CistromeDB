@@ -211,6 +211,7 @@ def form_view_factory(title_in, form_class):
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
+                      'tissuetype',
                       'strain', 'journal', 'species', 'filetype',
                       'assembly', "diseasestate", "control"]
 #new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
