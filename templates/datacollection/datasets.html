@@ -105,7 +105,7 @@ onload="init();"
 	     <td><a href="{% url datasets %}?cellpop={{d.cell_pop.id}}">{{d.cell_pop.name}}</a></td>
 	     <td><a href="{% url datasets %}?tissuetype={{d.tissue_type.id}}">{{d.tissue_type.name}}</a></td>
 	     <td><a href="{% url datasets %}?strain={{d.strain.id}}">{{d.strain.name}}</a></td>
-	     <td><a href="{% url datasets %}?cond={{d.cond}}">{{d.cond}}</a></td>
+	     <td>{{d.cond}}</td>
 	     <td><a href="{% url datasets %}?diseasestate={{d.disease_state.id}}">{{d.disease_state.name}}</a></td>
 	     <td>	       
 	       {% for f in d.getFileFields%}
