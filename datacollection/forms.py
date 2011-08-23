@@ -100,7 +100,8 @@ class BatchUpdateDatasetsForm(forms.ModelForm):
         model = models.Datasets
         fields = ('factor', 'platform', 'species', 'assembly', 
                   'cell_type', 'cell_line',
-                  'cell_pop', 'strain', 
+                  'cell_pop', 'tissue_type',
+                  'strain', 
                   #condition is a reserved word, so we use cond
                   'cond', 
                   'disease_state',
