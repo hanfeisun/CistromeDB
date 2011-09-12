@@ -38,7 +38,7 @@ onload="init();"
 	</section>
       </section>
 
-      <section class="collapsable_box" id="sample_section"> 
+      <section class="collapsable_box" id="sample_section" style="visibility:hidden"> 
 	<header class="collapsable_box_header">Samples:<span id="samples_toggler" class="toggle">-</span></header> 
 	<section class="collapsable_box_content" id="samples_wrapper"> 
 	      <section id="samples"> </section> 
@@ -47,22 +47,22 @@ onload="init();"
 {% endblock %}
 
 {% block sidebar %}
-      <nav>
+      <!--<nav>
          <h3>Cistrome DC:</h3>
          <ul>
 	   <li><span class="fakeLink" id="recent_papers">Latest Papers</span></li>
-	    <li><span class="fakeLink" id="all_papers">Browse All Papers</span></li> 
+	    <li><span class="fakeLink" id="all_papers">Browse All Papers</span></li> -->
 	    <!--<li><span id="top_papers">Top Rated Papers</span></li>-->
 	    <!--<li><span id="downloaded_papers">Most Downloaded</span></li>-->
-	 </ul>
-      </nav>
+	 <!--</ul>
+      </nav>-->
       <nav>
 	 <h3>Help:</h3>
 	 <ul>
 	    <!--<li><span>About Cistrome DC</span></li>-->
 	    <!--<li><span>FAQ</span></li>-->
 	    <li><a href="{% url paper_submission %}">Submit a Paper</a></li>
-	    <li><a href="{% url dcstats %}">Cistrome DC Stats</a></li>
+	    <!--<li><a href="{% url dcstats %}">Cistrome DC Stats</a></li>-->
 	 </ul>
       </nav>
       {% if user.is_staff %}

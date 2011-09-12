@@ -7,7 +7,7 @@ var pgModel = new Model({"papersList":null, "currPaper":null,
 
 //MENG asked me to remove this for now...but i like this so i'm just going to 
 //disable it
-var msg = "Search Cistrome DC";
+var msg = "Search Cistrome PC";
 //var msg = "                   ";
 
 //NOTE: an empty search might mean "all" and not none.
@@ -114,15 +114,17 @@ function init() {
 				  $('samples_wrapper'), false);
 
     //sidebar links
+    /* These no longer exist
     $('all_papers').onclick = function(event) {
 	getPapers("all", pgModel);
     }
     $('recent_papers').onclick = function(event) {
 	getPapers("recent", pgModel);
     }
+    */
 
-    //init the results to just the most recent
-    $('recent_papers').onclick();
+    //DEFAULT/only view for paper collection homepage is ALL papers
+    getPapers("all", pgModel);
     //wait 1.5 secs and then show the results pane
     setTimeout(function() { results_tog.open();}, 1500);
 }
