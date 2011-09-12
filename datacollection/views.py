@@ -21,7 +21,6 @@ from django.core.cache import cache
 from django.utils.encoding import smart_str
 from django.utils.http import urlquote
 from django.conf import settings as conf_settings
-from django.db.models.fields.files import FileField
 
 import models
 import forms
@@ -118,10 +117,9 @@ def new_paper_form(request):
                               context_instance=RequestContext(request))
 
 @admin_only
-#def new_dataset_form(request):
-def new_sample_form(request):
+def new_dataset_form(request):
     if request.method == "POST":
-        form = forms.SampleForm(request.POST, request.FILES)
+        form = forms.DatasetForm(request.POST, request.FILES)
         if form.is_valid():
             tmp = form.save(commit=False)
             tmp.date_collected = datetime.datetime.now()
@@ -131,9 +129,9 @@ def new_sample_form(request):
             tmp.save()
             return HttpResponseRedirect(request.POST['next'])
         else:
-            print "INVALID SAMPLE FORM"
+            print "INVALID DATASET FORM"
     else:
-        form = forms.SampleForm()
+        form = forms.DatasetForm()
         #NOTE: we can't pass in the param as paper b/c when we post, it
         #clobbers the hidden input in our form
         if 'next' in request.GET:
@@ -141,14 +139,37 @@ def new_sample_form(request):
         if 'p' in request.GET:
             #paper = models.Papers.objects.get(id=request.GET['paper'])
             paper = request.GET['p']
-    return render_to_response('datacollection/new_sample_form.html', locals(),
+    return render_to_response('datacollection/new_dataset_form.html', locals(),
                               context_instance=RequestContext(request))
 
 @admin_only
-#def new_sample_form(request):
-def new_dataset_form(request):
+def upload_dataset_form(request, dataset_id):
+    """Given a dataset_id, generate or handle a form that will allow users
+    to upload the files associated with it
+    """
     if request.method == "POST":
-        tmp = models.Datasets()
+        dset = models.Datasets.objects.get(pk=dataset_id)
+        #we want to only update the record, not add a new one--hence instance
+        form = forms.UploadDatasetForm(request.POST, request.FILES,
+                                       instance=dset)
+        if form.is_valid():
+            tmp = form.save(commit=False)
+            tmp.upload_date = datetime.datetime.now()
+            tmp.uploader = request.user
+            tmp.save()
+            return HttpResponseRedirect(reverse('home'))
+        else:
+            print "INVALID UPLOAD DATASET FORM"
+    else:
+        form = forms.UploadDatasetForm()
+    return render_to_response('datacollection/upload_dataset_form.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
+@admin_only
+def new_sample_form(request):
+    if request.method == "POST":
+        tmp = models.Samples()
         tmp.user = request.user
         tmp.treatments = request.POST['treatments']
         tmp.controls = request.POST['controls']
@@ -156,39 +177,12 @@ def new_dataset_form(request):
         tmp.save()
         return HttpResponseRedirect(request.POST['next'])
     else:
-        form = forms.DatasetForm()
+        form = forms.SampleForm()
         if 'next' in request.GET:
             next = request.GET['next']
         if 'p' in request.GET:
             paper = request.GET['p']
-    return render_to_response('datacollection/new_dataset_form.html',
-                              locals(),
-                              context_instance=RequestContext(request))
-
-@admin_only
-#def upload_dataset_form(request, sample_id):
-def upload_sample_form(request, sample_id):
-    """Given a sample_id, generate or handle a form that will allow users
-    to upload the files associated with it
-    """
-    if request.method == "POST":
-        sample = models.Samples.objects.get(pk=sample_id)
-        #we want to only update the record, not add a new one--hence instance
-        form = forms.UploadSampleForm(request.POST, request.FILES,
-                                       instance=sample)
-        if form.is_valid():
-            tmp = form.save(commit=False)
-            tmp.upload_date = datetime.datetime.now()
-            tmp.uploader = request.user
-            tmp.save()
-            return HttpResponseRedirect(request.POST['next'])
-        else:
-            print "INVALID UPLOAD SAMPLE FORM"
-    else:
-        form = forms.UploadSampleForm()
-        if 'next' in request.GET:
-            next = request.GET['next']
-    return render_to_response('datacollection/upload_sample_form.html',
+    return render_to_response('datacollection/new_sample_form.html',
                               locals(),
                               context_instance=RequestContext(request))
 #------------------------------------------------------------------------------
@@ -211,9 +205,8 @@ def form_view_factory(title_in, form_class):
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
-                      'tissuetype',
-                      'strain', 'journal', 'species', 'filetype',
-                      'assembly', "diseasestate", "control"]
+                      'strain', 'condition', 'journal', 'species', 'filetype',
+                      'assembly', "diseasestate"]
 #new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
 #Generate the generic form views
 for name in generic_forms_list:
@@ -243,8 +236,6 @@ def update_form_factory(title_in, form_class):
         return render_to_response('datacollection/generic_form.html', locals(),
                                   context_instance=RequestContext(request))
     return admin_only(generic_update_view)
-
-#Generic Batch Update section HERE!
 
 #add papers,
 generic_update_list = generic_forms_list + ['paper', 'sample', 'dataset']
@@ -277,7 +268,7 @@ def papers(request, user_id):
 
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
-    paginator = Paginator(papers, _items_per_page) #25 items per page
+    paginator = Paginator(papers, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
@@ -316,16 +307,6 @@ def weekly_papers(request, user_id):
             #No date param, take the beginning of the week
             papers = papers.filter(date_collected__gte=begin)
 
-        paginator = Paginator(papers, _items_per_page) #25 items per page
-        try:
-            page = int(request.GET.get('page', '1'))
-        except ValueError:
-            page = 1
-        try:
-            pg = paginator.page(page)
-        except (EmptyPage, InvalidPage):
-            pg = paginator.page(paginator.num_pages)
-
         #is this fragile?
         return render_to_response('datacollection/papers.html', locals(),
                                   context_instance=RequestContext(request))
@@ -337,54 +318,10 @@ def weekly_papers(request, user_id):
         return render_to_response('datacollection/list_users.html', locals(),
                                   context_instance=RequestContext(request))
 
-#a nice fn, but overkill for what we need...i'm going to leave it around for
-#inspiration
-def _aggregateFiles(model_obj_list, add_to_obj=False):
-    """Given a list of model objects, whose models have FileFields, introspects
-    the obj and returns the FileFields of each obj as a list; 
-    uses the first object to introspect the model **SO WE ASSUME that 
-    the objects are of the same type**
-    if add_to_obj, then adds the filefields to the the obj as _fileFields"""
-    def getFileFields(self):
-        return self._fileFields
-
-    if len(model_obj_list) > 0:
-        #try to find the FileFields via introspection
-        fflds = [f.name for f in model_obj_list[0]._meta.fields \
-                     if isinstance(f, FileField)]
-        tmp = []
-        for o in model_obj_list:
-            foo = [getattr(o, f) for f in fflds]
-            if add_to_obj:
-                setattr(o, "_fileFields", foo)
-                #ADD getFileFields as an instance method b/c we can't access
-                #_fileFields in the templates!
-                setattr(o.__class__, "getFileFields", getFileFields)
-            tmp.append(foo)
-        return tmp
-    else:
-        return []    
-
-def _getFileFields(model_obj_list):
-    """Given a list of model objects, whose models have FileFields, introspects
-    the obj and returns the FileFields of the Model
-    uses the first object to introspect the model **SO WE ASSUME that 
-    the objects are of the same type**
-    inspired by _aggregateFiles"""
-    if len(model_obj_list) > 0:
-        #try to find the FileFields via introspection
-        fflds = [f.name for f in model_obj_list[0]._meta.fields \
-                     if isinstance(f, FileField)]
-        return fflds
-    else:
-        return [] 
-
-
 #NOTE: i sould cache these!!
 @admin_only
-#def datasets(request, user_id):
-def samples(request, user_id):
-    """View all of the samples in an excel like table; as with papers
+def datasets(request, user_id):
+    """View all of the datasets in an excel like table; as with papers
     if given a user_id, it will return a page of all of the datsets collected
     by the user
     IF given species, factor_type, and/or paper url params, then we further
@@ -397,135 +334,21 @@ def samples(request, user_id):
         if user_id.endswith("/"):
             user_id = user_id[:-1]
         if 'uploader' in request.GET:
-            samples = models.Samples.objects.filter(uploader=user_id)
+            datasets = models.Datasets.objects.filter(uploader=user_id)
         else:
-            samples = models.Samples.objects.filter(user=user_id)
+            datasets = models.Datasets.objects.filter(user=user_id)
     else:
-        samples = models.Samples.objects.all()
-
-    #control things w/ paginator
-    #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
-    paginator = Paginator(samples, _items_per_page) #25 items per page
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
-    try:
-        pg = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        pg = paginator.page(paginator.num_pages)
-
-    #prepare the fileFields for the Files col--note we do it here for efficien.
-    ignored = _aggregateFiles(pg.object_list, add_to_obj=True)
-        
-    return render_to_response('datacollection/samples.html', locals(),
-                              context_instance=RequestContext(request))
-
-#NOTE: i sould cache these!!
-@admin_only
-def controls(request):
-    """View all of the controls in an excel like table
-    """
-    controls = models.Controls.objects.all()
-    current_path = request.get_full_path()
-
-    #control things w/ paginator
-    #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
-    paginator = Paginator(controls, _items_per_page) #25 items per page
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
-    try:
-        pg = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        pg = paginator.page(paginator.num_pages)
-
-    #prepare the fileFields for the Files col--note we do it here for efficien.
-    ignored = _aggregateFiles(pg.object_list, add_to_obj=True)
-        
-    return render_to_response('datacollection/controls.html', locals(),
-                              context_instance=RequestContext(request))
-
-
-@admin_only
-#def weekly_datasets(request, user_id):
-def weekly_samples(request, user_id):
-    """Returns all of the samples that the user worked on since the given date
-    IF date is not given as a param, then assumes date = beginning of the week
-    IF a url param uploader is given, then we use uploader instead of user to
-    get the samples
-    IF NO user_id is given, returns a page allowing the user to select which
-    user to view
-    """
-    if user_id:
-        #NOTE: the current url regex doesn't parse out the / from the user_id
-        if user_id.endswith("/"):
-            user_id = user_id[:-1]
-        if 'uploader' in request.GET:
-            samples = models.Samples.objects.filter(uploader=user_id)
-        else:
-            samples = models.Samples.objects.filter(user=user_id)
-        today = datetime.date.today()
-        begin = today - datetime.timedelta(today.weekday())
-        if "date" in request.GET:
-            if re.match(_datePattern, request.GET['date']):
-                tmp = request.GET['date'].split("-")
-                d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
-            else:
-                d = begin
-            samples = samples.filter(date_collected__gte=d)
-        else:
-            #No date param, take the beginning of the week
-            samples = samples.filter(date_collected__gte=begin)
-
-        #control things w/ paginator
-        #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
-        paginator = Paginator(samples, _items_per_page) #25 items per page
-        try:
-            page = int(request.GET.get('page', '1'))
-        except ValueError:
-            page = 1
-        try:
-            pg = paginator.page(page)
-        except (EmptyPage, InvalidPage):
-            pg = paginator.page(paginator.num_pages)
-
-        return render_to_response('datacollection/samples.html', locals(),
-                                  context_instance=RequestContext(request))
-    else:
-        #list users
-        title = "Weekly Samples"
-        users = auth.models.User.objects.all()
-        url = reverse('weekly_samples')
-        return render_to_response('datacollection/list_users.html', locals(),
-                                  context_instance=RequestContext(request))
-
-#def get_datasets(request, paper_id):
-def get_samples(request, paper_id):
-    """return all of the samples associated w/ paper_id in json
-    Fields: gsmid, *platform, (platform)experiment_type, *species,
-    factor, *cell_type, file
-    * means that if it is set to 0, then inherit the paper's information
-    """
-    paper = models.Papers.objects.get(id=paper_id)
-    samples = models.Samples.objects.filter(paper=paper_id)
-    
-    slist = ",".join([jsrecord.views.jsonify(s) for s in samples])
-    return HttpResponse("[%s]" % slist)
-
-@admin_only
-#def samples(request):
-def datasets(request):
-    """Returns all of the datasets
-    """
-    datasets = models.Datasets.objects.all()
+        datasets = models.Datasets.objects.all()
 
     #note: we have to keep track of these URL params so that we can feed them
     #into the paginator, e.g. if we click on platform=1, then when we paginate
     #we want the platform param to be carried through
     rest = ""
     if 'species' in request.GET:
+        #dict = {'hs':'Homo sapiens', 'mm':'Mus Musculus'}
+        #if request.GET['species'] in dict:
+        #    datasets = datasets.filter(species__name=\
+        #                               dict[request.GET['species']])
         datasets = datasets.filter(species=request.GET['species'])
         rest += "&species=%s" % request.GET['species']
         
@@ -573,9 +396,9 @@ def datasets(request):
         datasets = datasets.filter(strain=request.GET['strain'])
         rest += "&strain=%s" % request.GET['strain']
 
-    if 'cond' in request.GET:
-        datasets = datasets.filter(cond=request.GET['cond'])
-        rest += "&cond=%s" % request.GET['cond']
+    if 'condition' in request.GET:
+        datasets = datasets.filter(condition=request.GET['condition'])
+        rest += "&condition=%s" % request.GET['condition']
 
     if 'disease_state' in request.GET:
         datasets = datasets.filter(disease_state=request.GET['disease_state'])
@@ -587,21 +410,81 @@ def datasets(request):
         rest += "&lab=%s" % request.GET['lab']
     
     #here is where we order things by paper and then gsmid for the admins
-    datasets = datasets.order_by("paper")
+    datasets = datasets.order_by("paper", "gsmid")
 
-    def getsample_gsmid(sid):
-        try:
-            tmp = models.Samples.objects.get(pk=sid)
-            return tmp.gsmid
-        except:
-            return sid
-    for d in datasets:
-        d.treatments_gsmid = map(getsample_gsmid, d.treatments.split(",")) \
-            if d.treatments else []
-        d.controls_gsmid = map(getsample_gsmid, d.controls.split(",")) \
-            if d.controls else []
+    #control things w/ paginator
+    #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
+    paginator = Paginator(datasets, _items_per_page) #25 dataset per page
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        datasets = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        datasets = paginator.page(paginator.num_pages)
+        
+    return render_to_response('datacollection/datasets.html', locals(),
+                              context_instance=RequestContext(request))
 
-    paginator = Paginator(datasets, _items_per_page) #25 items per page
+@admin_only
+def weekly_datasets(request, user_id):
+    """Returns all of the datasets that the user worked on since the given date
+    IF date is not given as a param, then assumes date = beginning of the week
+    IF a url param uploader is given, then we use uploader instead of user to
+    get the datasets
+    IF NO user_id is given, returns a page allowing the user to select which
+    user to view
+    """
+    if user_id:
+        #NOTE: the current url regex doesn't parse out the / from the user_id
+        if user_id.endswith("/"):
+            user_id = user_id[:-1]
+        if 'uploader' in request.GET:
+            datasets = models.Datasets.objects.filter(uploader=user_id)
+        else:
+            datasets = models.Datasets.objects.filter(user=user_id)
+        today = datetime.date.today()
+        begin = today - datetime.timedelta(today.weekday())
+        if "date" in request.GET:
+            if re.match(_datePattern, request.GET['date']):
+                tmp = request.GET['date'].split("-")
+                d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
+            else:
+                d = begin
+            datasets = datasets.filter(date_collected__gte=d)
+        else:
+            #No date param, take the beginning of the week
+            datasets = datasets.filter(date_collected__gte=begin)
+
+        return render_to_response('datacollection/datasets.html', locals(),
+                                  context_instance=RequestContext(request))
+    else:
+        #list users
+        title = "Weekly Datasets"
+        users = auth.models.User.objects.all()
+        url = reverse('weekly_datasets')
+        return render_to_response('datacollection/list_users.html', locals(),
+                                  context_instance=RequestContext(request))
+
+def get_datasets(request, paper_id):
+    """return all of the datasets associated w/ paper_id in json
+    Fields: gsmid, *platform, (platform)experiment_type, *species,
+    factor, *cell_type, file
+    * means that if it is set to 0, then inherit the paper's information
+    """
+    paper = models.Papers.objects.get(id=paper_id)
+    datasets = models.Datasets.objects.filter(paper=paper_id)
+    
+    dlist = ",".join([jsrecord.views.jsonify(d) for d in datasets])
+    return HttpResponse("[%s]" % dlist)
+
+@admin_only
+def samples(request):
+    """Returns all of the samples
+    """
+    samples = models.Samples.objects.all()
+    paginator = Paginator(samples, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
@@ -611,10 +494,7 @@ def datasets(request):
     except (EmptyPage, InvalidPage):
         pg = paginator.page(paginator.num_pages)
 
-    #prepare the fileFields for the Files col--note we do it here for efficien.
-    ignored = _aggregateFiles(pg.object_list, add_to_obj=True)
-
-    return render_to_response('datacollection/datasets.html', locals(),
+    return render_to_response('datacollection/samples.html', locals(),
                               context_instance=RequestContext(request))
 
 #DROP the FOLLOWING fn/view?
@@ -758,7 +638,12 @@ def admin(request):
 @admin_only
 def dataset_profile(request, dataset_id):
     """View of the paper_profile page"""
-    dataset = models.Datasets.objects.get(id=dataset_id)    
+    dataset = models.Datasets.objects.get(id=dataset_id)
+    try:
+        summary = models.DatasetDhsStats.objects.get(dataset=dataset)
+    except:
+        pass
+    
     return render_to_response('datacollection/dataset_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
@@ -767,10 +652,8 @@ def dataset_profile(request, dataset_id):
 def sample_profile(request, sample_id):
     """View of the paper_profile page"""
     sample = models.Samples.objects.get(id=sample_id)
-    # try:
-    #     summary = models.DhsStats.objects.get(dataset=dataset)
-    # except:
-    #     pass
+    #treatments = sample.treatments.split(",")
+    #datasets = [models.Datasets.objects.get(id=d) for d in dsets]
     return render_to_response('datacollection/sample_profile.html',
                               locals(),
                               context_instance=RequestContext(request))
@@ -792,40 +675,38 @@ def report(request):
     week = {'begin':begin, 'end':end}
 
     paperTeam = models.UserProfiles.objects.filter(team="paper")
-    #Get all of the papers and samples the user created for the week
+    #Get all of the papers and datasets the user created for the week
     for u in paperTeam:
         u.allPapers = models.Papers.objects.filter(user=u.user)
         u.weekPapers = u.allPapers.filter(date_collected__gte=begin).filter(date_collected__lte=end)
         for p in u.weekPapers:
-            p.samples = models.Samples.objects.filter(paper=p.id)
+            p.datasets = models.Datasets.objects.filter(paper=p.id)
 
-        u.allSamples = models.Samples.objects.filter(user=u.user)
-        u.weekSamples = u.allSamples.filter(date_collected__gte=begin).filter(date_collected__lte=end)
-        
-        # NOTE: species has moved to Datasets!!! removing this for now
-        # u.allHuman = u.allSamples.filter(species__name="Homo Sapien")
-        # u.allMouse = u.allSamples.filter(species__name="Mus Musculus")
-        # #categories - NOTE: how we SPAN relationships w/ __
-        # u.humanTF = u.allHuman.filter(factor__type="tf")
-        # u.humanHM = u.allHuman.filter(factor__type="hm")
-        # u.mouseTF = u.allMouse.filter(factor__type="tf")
-        # u.mouseHM = u.allMouse.filter(factor__type="hm")
+        u.allDatasets = models.Datasets.objects.filter(user=u.user)
+        u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin).filter(date_collected__lte=end)
+
+        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
+        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
+        #categories - NOTE: how we SPAN relationships w/ __
+        u.humanTF = u.allHuman.filter(factor__type="tf")
+        u.humanHM = u.allHuman.filter(factor__type="hm")
+        u.mouseTF = u.allMouse.filter(factor__type="tf")
+        u.mouseHM = u.allMouse.filter(factor__type="hm")
         
     #dataTeam = models.UserProfiles.objects.filter(team="data")
-    #The paper team can both create samples and upload sample data
+    #The paper team can both create datasets and upload dataset data
     dataTeam = models.UserProfiles.objects.filter(Q(team="data") | Q(team="paper"))
     for u in dataTeam:
-        u.allSamples = models.Samples.objects.filter(uploader=u.user)
-        u.weekSamples = u.allSamples.filter(upload_date__gte=begin).filter(upload_date__lte=end)
+        u.allDatasets = models.Datasets.objects.filter(uploader=u.user)
+        u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin).filter(upload_date__lte=end)
 
-        # NOTE: species has moved to Datasets!!! removing this for now
-        # u.allHuman = u.allSamples.filter(species__name="Homo Sapien")
-        # u.allMouse = u.allSamples.filter(species__name="Mus Musculus")
-        # #categories
-        # u.humanTF = u.allHuman.filter(factor__type="tf")
-        # u.humanHM = u.allHuman.filter(factor__type="hm")
-        # u.mouseTF = u.allMouse.filter(factor__type="tf")
-        # u.mouseHM = u.allMouse.filter(factor__type="hm")
+        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
+        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
+        #categories
+        u.humanTF = u.allHuman.filter(factor__type="tf")
+        u.humanHM = u.allHuman.filter(factor__type="hm")
+        u.mouseTF = u.allMouse.filter(factor__type="tf")
+        u.mouseHM = u.allMouse.filter(factor__type="hm")
 
     return render_to_response('datacollection/report.html',
                               locals(),
@@ -850,37 +731,7 @@ def _allSameOrNone(objs, attr):
         return tmp
     else:
         return None
-
-@admin_only
-def batch_update_samples(request):
-    """A page that allows the user to make batch updates to a set of samples.
-    the samples are specified in the 'samples' url
-    """
-    title = "Batch Update Samples"
-    fields = forms.BatchUpdateSamplesForm.Meta.fields
-    if request.method == "POST":
-        samples = [models.Samples.objects.get(pk=id) \
-                       for id in request.GET['samples'].split(',')]
-        for s in samples:
-            form = forms.BatchUpdateSamplesForm(request.POST, instance=s)
-            if form.is_valid():
-                tmp = form.save()
-        return HttpResponseRedirect(request.POST['next'])
-    else:
-        if 'next' in request.GET:
-            next = request.GET['next']
-        if 'samples' in request.GET:
-            samp = request.GET['samples']
-            samples = [models.Samples.objects.get(pk=sid) \
-                           for sid in samp.split(',')]
-            tmp = models.Samples()
-            for f in fields:
-                setattr(tmp, f, _allSameOrNone(samples, f))
-            form = forms.BatchUpdateSamplesForm(instance=tmp)
-    return render_to_response('datacollection/batch_update_samples_form.html',
-                              locals(),
-                              context_instance=RequestContext(request))
-
+    
 @admin_only
 def batch_update_datasets(request):
     """A page that allows the user to make batch updates to a set of datasets.
@@ -910,6 +761,12 @@ def batch_update_datasets(request):
     return render_to_response('datacollection/batch_update_datasets_form.html',
                               locals(),
                               context_instance=RequestContext(request))
+#OBSOLETE
+# def search(request):
+#     """the search page"""
+#     return render_to_response('datacollection/search.html',
+#                               locals(),
+#                               context_instance=RequestContext(request))
 
 def delete_view_factory(name, model, redirect='home'):
     """Generates generic delete views
@@ -1091,108 +948,107 @@ def admin_help(request, page):
 #------------------------------------------------------------------------------
 # Action Btns BEGIN
 #------------------------------------------------------------------------------
-def _check_for_files(dataset):
+def _check_for_files(sample):
     """Checks to make sure that the raw files associated for each of the 
-    dataset's sample is present.
-    Returns a list of samples whose raw files are missing; [] means the 
-    dataset's files are all there!
+    sample's dataset is present.
+    Returns a list of datasets whose raw files are missing; [] means the 
+    sample's files are all there!
     """
     missing_files_list = []
 
-    samples = [models.Samples.objects.get(pk=sid) \
-                    for sid in dataset.treatments.split(",")]
+    datasets = [models.Datasets.objects.get(pk=id) \
+                    for id in sample.treatments.split(",")]
     
-    if dataset.controls:
-        samples.extend([models.Samples.objects.get(pk=sid) \
-                             for sid in dataset.controls.split(",")])
+    if sample.controls:
+        datasets.extend([models.Datasets.objects.get(pk=id) \
+                             for id in sample.controls.split(",")])
 
-    for s in samples:
+    for d in datasets:
         #check db entry
-        if not s.raw_file:
-            missing_files_list.append(int(s.id))
+        if not d.raw_file:
+            missing_files_list.append(int(d.id))
         #check file existence
-        elif not os.path.exists(s.raw_file.path):
-            missing_files_list.append(s.raw_file.path)
+        elif not os.path.exists(d.raw_file.path):
+            missing_files_list.append(d.raw_file.path)
     
     return missing_files_list
     
 
 @admin_only
-def check_raw_files(request, dataset_id):
-    """If the dataset's status is 'new', checks to see if that the raw files
-    are uploaded/loaded for all of the samples assoc. w/ the dataset
+def check_raw_files(request, sample_id):
+    """If the sample's status is 'new', checks to see if that the raw files
+    are uploaded/loaded for all of the datasets assoc. w/ the sample
     IF this condition holds, changes the status to 'checked', 
     OTHERWISE the status is 'error' and a msg is appended to comments
     """
-    dataset = models.Datasets.objects.get(pk=dataset_id)
+    sample = models.Samples.objects.get(pk=sample_id)
     page = 1
     if "page" in request.GET:
         page = request.GET['page']
 
-    if dataset.status == "new":
-        missing_files_list = _check_for_files(dataset)
+    if sample.status == "new":
+        missing_files_list = _check_for_files(sample)
 
         if missing_files_list: #some missing files-->ERROR
-            dataset.status = "error"
-            dataset.comments = "Samples %s are missing files" % \
+            sample.status = "error"
+            sample.comments = "Datasets %s are missing files" % \
                 missing_files_list
-            dataset.save()
+            sample.save()
         else:
             #No err!
-            dataset.status = "checked"
-            dataset.save()
+            sample.status = "checked"
+            sample.save()
 
-    #redirect to the datasets view
-    return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))
+    #redirect to the samples view
+    return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
 
 @admin_only
-def run_analysis(request, dataset_id):
+def run_analysis(request, sample_id):
     """
     Tries to: 
     0. runs to make sure that all datasets have their files
        (redundant w/ check raw files)
-    1. calls pipeline runner script on the dataset
+    1. calls pipeline runner script on the sample
     
     BLAH! more here! but later!
     """
-    dataset = models.Datasets.objects.get(pk=dataset_id)
+    sample = models.Samples.objects.get(pk=sample_id)
     page = 1
     if "page" in request.GET:
         page = request.GET['page']
 
-    missing_files_list = _check_for_files(dataset)
+    missing_files_list = _check_for_files(sample)
     if missing_files_list:
-        dataset.status = "error"
-        dataset.comments = "Samples %s are missing files" % \
+        sample.status = "error"
+        sample.comments = "Datasets %s are missing files" % \
             missing_files_list
-        dataset.save()
-        return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))
+        sample.save()
+        return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
     else: # ok to proceed!
         cwd = os.getcwd()
         working_dir = os.path.join(settings.MEDIA_ROOT, "data", "tmp", 
-                                   "dataset%s" % dataset.id)
+                                   "sample%s" % sample.id)
         #if not os.path.exists(working_dir):
             #os.mkdir(working_dir)
             #os.chdir(working_dir)
-        conf_f = ConfGenerator.generate(dataset,request.user,working_dir,False)
-        run_sh = RunSHGenerator.generate(dataset, conf_f, request.user,
+        conf_f = ConfGenerator.generate(sample, request.user,working_dir,False)
+        run_sh = RunSHGenerator.generate(sample, conf_f, request.user,
                                          working_dir)
 
         # run the script as a daemon
         proc = subprocess.Popen(["python", "daemonize.py"], cwd=working_dir)
         
-        dataset.status = "running"
-        dataset.save()
+        sample.status = "running"
+        sample.save()
 
-    #redirect to the datasets view
-    return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))
+    #redirect to the samples view
+    return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
 
 
 @admin_only
-#def download_file(request, dataset_id):
-def download_file(request, sample_id):
-    """Tries to download the file for the given sample"""
-    sample = models.Samples.objects.get(pk=sample_id)
+def download_file(request, dataset_id):
+    """Tries to download the file for the given dataset"""
+    dataset = models.Datasets.objects.get(pk=dataset_id)
 
     page = 1
     if "page" in request.GET:
@@ -1202,36 +1058,36 @@ def download_file(request, sample_id):
     #pattern: ftp://(server) (path) (file)
     #NOTE: this pattern may be buggy!
     url_pattern = "^ftp://((\w|-)+\.?)+(/(\w|-)+)*(/((\w|-)+\.)*\w+)$"
-    if not re.match(url_pattern, sample.raw_file_url):
-        sample.status = "error"
-        sample.comments = "The file_url %s is invalid" % sample.raw_file_url
-        sample.save()
-        return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
+    if not re.match(url_pattern, dataset.raw_file_url):
+        dataset.status = "error"
+        dataset.comments = "The file_url %s is invalid" % dataset.raw_file_url
+        dataset.save()
+        return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))
     else: # ok to proceed!
         cwd = os.getcwd()
         working_dir = os.path.join(settings.MEDIA_ROOT, "data", "tmp", 
-                                   "sample%s" % sample.id)
-        dnld_sh = DnldSHGenerator.generate(sample, request.user, working_dir)
+                                   "dataset%s" % dataset.id)
+        dnld_sh = DnldSHGenerator.generate(dataset, request.user, working_dir)
         proc = subprocess.Popen(["python", "daemonize.py"], cwd=working_dir)
         
-    sample.status = "transfer" 
-    sample.save()
+    dataset.status = "transfer" 
+    dataset.save()
 
-    #redirect to the samples view
-    return HttpResponseRedirect(reverse('samples')+("?page=%s" % page))
+    #redirect to the datasets view
+    return HttpResponseRedirect(reverse('datasets')+("?page=%s" % page))
 
-def _auto_sample_import(paper, user, gsmids):
+def _auto_dataset_import(paper, user, gsmids):
     """Given a paper id and a set of gsmids, this fn tries to create the
-    samples and associate it with the paper
-    NOTE: we are also adding a check for the samples to see if they're 
+    datasets and associate it with the paper
+    NOTE: we are also adding a check for the datasets to see if they're 
     already in the system
     """
 
     for gsmid in gsmids:
-        #check if the sample already exists
-        (tmp, created) = models.Samples.objects.get_or_create(gsmid=gsmid, defaults={"date_collected": datetime.datetime.now(), "user":user, "paper":paper})
+        #check if the dataset already exists
+        (tmp, created) = models.Datasets.objects.get_or_create(gsmid=gsmid, defaults={"date_collected": datetime.datetime.now(), "user":user, "paper":paper})
         if created:
-            geoQuery = entrez.SampleAdapter(gsmid)
+            geoQuery = entrez.DatasetAdapter(gsmid)
         
             attrs = ['gsmid', 'name', 'raw_file_url']
             for a in attrs:
@@ -1245,42 +1101,41 @@ def _auto_sample_import(paper, user, gsmids):
             tmp.save()
 
 @admin_only
-def import_samples(request, paper_id):
-    """Tries to import the samples associated with the paper.
+def import_datasets(request, paper_id):
+    """Tries to import the datasets associated with the paper.
     NOTE: before we returned JSON, but now we are making it more action-btn 
     like check_raw_files, run_analysis, etc
     """
     paper = models.Papers.objects.get(pk=paper_id)
     geoQuery = entrez.PaperAdapter(paper.pmid)
-    _auto_sample_import(paper, paper.user, geoQuery.samples)
+    _auto_dataset_import(paper, paper.user, geoQuery.datasets)
     
     page = 1
     if "page" in request.GET:
         page = request.GET['page']
 
-    paper.status = "primed"
+    paper.status = "datasets"
     paper.save()
 
     #redirect to the papers view
     return HttpResponseRedirect(reverse('papers')+("?page=%s" % page))
 
 @admin_only
-#def download_paper_datasets(request, paper_id):
-def download_paper_samples(request, paper_id):
-    """Tries to download the samples associated with the paper--calls the 
-    download_sample fn
+def download_paper_datasets(request, paper_id):
+    """Tries to download the datasets associated with the paper--calls the 
+    download_dataset fn
     """
     paper = models.Papers.objects.get(pk=paper_id)
-    samples = models.Samples.objects.filter(paper=paper_id)
+    datasets = models.Datasets.objects.filter(paper=paper_id)
 
     page = 1
     if "page" in request.GET:
         page = request.GET['page']
 
     #call download_datasets but ignore the return
-    for s in samples:
+    for d in datasets:
         #sending request is ok--b/c request.page doesn't really affect things
-        ignored = download_file(request, s.id)
+        ignored = download_file(request, d.id)
 
     paper.status = "transfer"
     paper.save()
@@ -1325,10 +1180,8 @@ def modelPagesFactory(model, base_name):
 
 #DUPLICATE!!! kind of!
 generic_model_list = ["Platforms", "Factors", "CellTypes", "CellLines", 
-                      "CellPops", 
-                      "TissueTypes",
-                      "Strains", "Journals", 
-                      "FileTypes",  "DiseaseStates", "Species",
+                      "CellPops", "Strains", "Conditions", "Journals", 
+                      "FileTypes",  "DiseaseStates", "Species"
                       #"Assemblies",
                       ]
 
@@ -1368,7 +1221,7 @@ def search(request):
         res = SearchQuerySet().filter(content=key)
         for r in res:
             #NOTE: r.model, r.model_name, r.object
-            if (r.model is models.Datasets) or (r.model is models.Samples):
+            if r.model is models.Datasets:
                 p = r.object.paper
             else:
                 p = r.object
@@ -1421,34 +1274,3 @@ def front(request, rtype):
     cache.set(rtype, ret, _timeout)
 
     return HttpResponse(ret)
-
-@admin_only
-def manage_files(request, model, obj_id):
-    """Given a model that contains files, i.e. Datasets, Samples, Controls, 
-    and an id, this page will show the admin page that will allow users to 
-    1. upload files; 2. disassociate files
-    """
-    m = getattr(models, model)
-    obj = m.objects.get(pk=obj_id)
-    fileFields = _aggregateFiles([obj], add_to_obj=True)
-
-    if request.method == "POST":
-        if request.FILES:
-            for k in request.FILES.keys():
-                fileField = getattr(obj, k)
-                up_file = request.FILES[k]
-                fileField.save(up_file.name, up_file)
-    else:
-        pass
-
-    return render_to_response('datacollection/manage_files.html', 
-                              locals(),
-                              context_instance=RequestContext(request))
-
-@admin_only
-def delete_file(request, model, obj_id, fileField):
-    m = getattr(models, model)
-    obj = m.objects.get(pk=obj_id)
-    setattr(obj, fileField, None)
-    obj.save()
-    return HttpResponse("{'success':true}")

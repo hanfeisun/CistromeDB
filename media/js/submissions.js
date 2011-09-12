@@ -30,6 +30,17 @@ function PaperSubmissionsList(list, currPaper) {
 //helper function, takes optional param, opts, which is a dict e.g. innerHTML; 
 //tries to create the domElement, and set the innerHTML if provided
 function createHelper(elmType, opts) {
+    /*
+    var tmp = document.createElement(elmType);
+    if (opts) {
+	//set optional fields
+	for (var i in opts) {
+	    tmp[i] = opts[i];
+	}
+    }
+
+    return tmp;
+    */
     //NOTE: this has been renamed to $D in Utils.js
     return $D(elmType, opts);
 }
@@ -223,3 +234,65 @@ function init() {
     paperSubmissionsList.setList(PaperSubmissions.all());
 }
 
+//--- OLD stuff--DELETE!
+/*
+function changeStatus(id, currStatus) {
+    var status = [["pending", "Pending"], ["closed", "Imported/Closed"],
+		  ["n/a", "Not Appropriate"]]
+    tmp = document.getElementById('status_'+id);    
+    
+    //create a new form
+    form = document.createElement("form");
+    form.action = SUB_SITE + "change_status/"+id+"/";
+    form.method = "post";
+    //make selection
+    sel = document.createElement("select");
+    sel.name = "status";
+    sel.id = "id_status";
+    for (var i = 0; i < status.length; i++) {
+	opt = document.createElement("option");
+	opt.value = status[i][0];
+	opt.innerHTML = status[i][1];
+	if (status[i][0] == currStatus) {
+	    opt.selected = "selected";
+	}
+	sel.appendChild(opt);
+    }
+    form.appendChild(sel);
+    //add submit
+    submitBtn = document.createElement("input");
+    submitBtn.type = "submit";
+    submitBtn.value = "submit";    
+    form.appendChild(submitBtn);
+
+    //add cancel btn
+    cancelBtn = document.createElement("span");
+    cancelBtn.innerHTML = "cancel";
+    cancelBtn.onclick = function(event) { cancel(tmp, id, currStatus);}
+    cancelBtn.className = "clickable";
+    form.appendChild(cancelBtn);
+
+    //replace childnodes w/ form
+    replaceChildren(tmp, [form]);
+}
+
+function cancel(container, id, currStatus) {
+    container.innerHTML = currStatus;
+    changeBtn = document.createElement("span");
+    changeBtn.innerHTML = "change";
+    changeBtn.onclick = function(event) { changeStatus(id, currStatus);}
+    changeBtn.className = "clickable";
+    container.appendChild(changeBtn);
+}
+
+function replaceChildren(container, new_children) {
+    //remove current children
+    while (container.childNodes.length > 0) {
+	container.removeChild(container.firstChild);
+    }
+    for (var i = 0; i < new_children.length; i++) {
+	container.appendChild(new_children[i]);
+    }
+}
+
+*/

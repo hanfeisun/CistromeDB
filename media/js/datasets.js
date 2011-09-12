@@ -2,30 +2,30 @@
 
 function model() {
     //tracks the checkboxes (and corresponding datasets) which the user selects
-    this.datasets = [];
+    this.dsets = [];
     var outer = this;
 
     this.add = function(id) {
 	//try to add the id to the list IF it is not already there
-	if (outer.datasets.indexOf(id) == -1) {
-	    outer.datasets.push(id);
+	if (outer.dsets.indexOf(id) == -1) {
+	    outer.dsets.push(id);
 	}
     }
 
     this.remove = function(id) {
 	//remove the id from the list
-	var tmp = outer.datasets.indexOf(id);
+	var tmp = outer.dsets.indexOf(id);
 	if (tmp != -1) {
-	    outer.datasets.splice(tmp, 1);
+	    outer.dsets.splice(tmp, 1);
 	}
     }
 }
 
 function clickHandler(checkbox, datasetId) {
     if (checkbox.checked) {
-	datasetModel.add(datasetId);
+	dsetModel.add(datasetId);
     } else {
-	datasetModel.remove(datasetId);
+	dsetModel.remove(datasetId);
     }
 }
 
@@ -37,10 +37,10 @@ function masterHandler(masterChkBox) {
 }
 
 var rowSelects;
-var datasetModel;
+var dsetModel;
 
 function init() {
-    datasetModel = new model();
+    dsetModel = new model();
     rowSelects = $$('input.rowSelect');
     for (var i = 0; i < rowSelects.length; i++) {
 	//rowSelects[i].checked=false; --maybe i don't want this
@@ -59,8 +59,8 @@ function init() {
     var btn = $('batchEdit');
     btn.onclick = function(event) {
 	//redirect
-	if (datasetModel.datasets.length > 0) { //check for empty list
-	    window.location = SUB_SITE + "batch_update_datasets/?datasets="+ datasetModel.datasets+"&next="+window.location;
+	if (dsetModel.dsets.length > 0) { //check for empty list
+	    window.location = SUB_SITE + "batch_update_datasets/?datasets="+ dsetModel.dsets+"&next="+window.location;
 	}
 	//NOTE: TODO--acutally the best way to do it is to just run down the 
 	//list of selected rows--i.e. generate dsetModel IN/AFTER onclick
@@ -72,16 +72,12 @@ function init() {
     deleteBtn.onclick = function(event) {
 	//confirm
 	var resp = confirm("Are you sure you want to DELETE these datasets?");
-	if (resp && datasetModel.datasets.length > 0) {
-	    window.location = SUB_SITE+"delete_datasets/?datasets="+datasetModel.datasets;
+	if (resp && dsetModel.dsets.length > 0) {
+	    window.location = SUB_SITE+"delete_datasets/?datasets="+dsetModel.dsets;
 	}
     }
 }
 
-function checkRawFiles(datasetId, pg) {
-    window.location = SUB_SITE+"check_raw_files/"+datasetId+"/?page="+pg;
-}
-
-function runAnalysis(datasetId, pg) {
-    window.location = SUB_SITE+"run_analysis/"+datasetId+"/?page="+pg;
+function downloadFile(datasetId, pg) {
+    window.location = SUB_SITE+"download_file/"+datasetId+"/?page="+pg;
 }

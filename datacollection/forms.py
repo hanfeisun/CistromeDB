@@ -7,6 +7,30 @@ from new import classobj
 _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
 
+# class PaperForm(forms.Form):
+#     pmid = forms.IntegerField()
+#     gseid = forms.CharField()
+#     title = forms.CharField()
+#     abstract = forms.CharField(widget=forms.Textarea)
+#     pub_date = forms.DateField()
+#     last_auth = forms.CharField()
+#     last_auth_email = forms.EmailField()
+
+# class PaperForm(forms.ModelForm):
+#     class Meta:
+#         model = models.Papers
+#         exclude = ('date_collected', 'user', 'status', 'comments')
+#     labels = {'pmid':'Pubmed ID', 'gseid':'GEO Series ID',
+#               'pub_date':'Publication Date',
+#               #'last_auth':'Last Author',
+#               #'last_auth_email': 'Last Author Email'
+#               }
+#     def __init__(self, post=None):
+#         super(PaperForm, self).__init__(post)
+#         for k in self.labels.keys():
+#             self.fields[k].label = self.labels[k]
+
+
 def FormFactory(name, model):
     return classobj(name, (forms.ModelForm,),
                     {'Meta': classobj('Meta',(),{'model':model})})
@@ -16,13 +40,11 @@ form_dict = {'Paper': models.Papers, 'Dataset': models.Datasets,
              'Platform': models.Platforms,
              'Factor': models.Factors, 'Celltype':models.CellTypes,
              'Cellline': models.CellLines, 'Cellpop':models.CellPops,
-             'Tissuetype':models.TissueTypes,
-             'Strain': models.Strains, 
+             'Strain': models.Strains, 'Condition':models.Conditions,
              'Journal': models.Journals, 'Species':models.Species,
              'Filetype': models.FileTypes,
              'Assembly': models.Assemblies, 'Sample':models.Samples,
-             'Diseasestate': models.DiseaseStates, 
-             'Control': models.Controls}
+             'Diseasestate': models.DiseaseStates}
 
 
 for k in form_dict:
@@ -38,27 +60,24 @@ class PaperForm(forms.ModelForm):
         model = models.Papers
         exclude = ('date_collected', 'user', 'status', 'comments')
 
-#class DatasetForm(forms.ModelForm):
-class SampleForm(forms.ModelForm):
+class DatasetForm(forms.ModelForm):
      class Meta:
-         model = models.Samples
+         model = models.Datasets
          exclude = ('date_collected', 'user', 'paper',
                     'raw_file', 'raw_file_type', 'raw_file_url',
                     'treatment_file', 'peak_file', 'wig_file', 'bw_file',
                     'assembly', 'description', 'comments', 'status',
                     'uploader', 'upload_date', 'curator')
 
-#class SampleForm(forms.ModelForm):
-class DatasetForm(forms.ModelForm):
-    class Meta:
-        model = models.Datasets
-        #exclude = ('user', 'paper', 'treatments', 'controls')
-
-#Used by the data team to upload dataset files
-#class UploadDatasetForm(forms.ModelForm):
-class UploadSampleForm(forms.ModelForm):
+class SampleForm(forms.ModelForm):
     class Meta:
         model = models.Samples
+        exclude = ('user', 'paper', 'treatments', 'controls')
+
+#Used by the data team to upload dataset files
+class UploadDatasetForm(forms.ModelForm):
+    class Meta:
+        model = models.Datasets
         #NOTE: for some reason fields isn't working, try exclude instead
         fields = ('raw_file', 'treatment_file', 'peak_file', 'wig_file',
                   'bw_file',
@@ -77,12 +96,11 @@ class UpdatePaperForm(forms.ModelForm):
     class Meta:
         model = models.Papers
 
-#class UpdateDatasetForm(forms.ModelForm):
-class UpdateSampleForm(forms.ModelForm):
+class UpdateDatasetForm(forms.ModelForm):
     class Meta:
-        model = models.Samples
+        model = models.Datasets
         #Don't include the files--use the Upload form for that
-        exclude = UploadSampleForm.Meta.fields
+        exclude = UploadDatasetForm.Meta.fields
         exclude = exclude + ("raw_file_url", "raw_file_type", )
     
     #NOTE: if you get validating errs, you can override the validators like
@@ -94,64 +112,33 @@ class UpdateSampleForm(forms.ModelForm):
     #      #raise forms.ValidationError("FOOBAR!")
     #      return cleaned_data
 
-#class BatchUpdateSamplesForm(forms.ModelForm):
+class UpdateSampleForm(forms.ModelForm):
+    class Meta:
+        model = models.Samples
+        fields = ('user', 'paper', 'treatments', 'controls', 
+                  'uploader', 'upload_date',
+                  'status', 'comments')
+        exclude = tuple([f.name for f in model._meta.fields \
+                         if f.name not in fields])
+
 class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
         fields = ('factor', 'platform', 'species', 'assembly', 
                   'cell_type', 'cell_line',
-                  'cell_pop', 'tissue_type',
-                  'strain', 
-                  #condition is a reserved word, so we use cond
-                  'cond', 
-                  'disease_state',
+                  'cell_pop', 'strain', 'condition', 'disease_state',
                   'status', 'comments',
-                  'user', 'uploader', #'curator', 
-                  'description', 'chip_page', 'control_page',
-                  'read_qc', 'model_qc', 'fold_qc', 'fdr_qc', 'replicate_qc',
-                  'dnase_qc', 'velcro_qc', 'conserve_qc', 'ceas_qc', 
-                  'motif_qc', 'overall_qc',
-                  )
-        exclude = tuple([f.name for f in model._meta.fields \
-                         if f.name not in fields])
-        #map fields to models
-        form_dict = {'factor': models.Factors, 'platform': models.Platforms,
-                     'species':models.Species, 'assembly': models.Assemblies,
-                     'cell_type':models.CellTypes,                     
-                     'cell_line': models.CellLines, 'cell_pop':models.CellPops,
-                     'tissue_type':models.TissueTypes,
-                     'strain': models.Strains, 
-                     'disease_state': models.DiseaseStates}
-
-    #ORDER the select options by the field name--i.e. alphabetical order
-    def __init__(self, *args, **kwargs):
-        super(BatchUpdateDatasetsForm, self).__init__(*args, **kwargs)   
-        for k in BatchUpdateDatasetsForm.Meta.form_dict:
-            self.fields[k].queryset = BatchUpdateDatasetsForm.Meta.form_dict[k].objects.order_by('name')
-
-#class UpdateSampleForm(forms.ModelForm):
-class UpdateDatasetForm(forms.ModelForm):
-    class Meta:
-        model = models.Datasets
-        fields = ('paper', 'treatments', 'controls', 'upload_date') + \
-            BatchUpdateDatasetsForm.Meta.fields
-        exclude = tuple([f.name for f in model._meta.fields \
-                         if f.name not in fields])
-    #ORDER the select options by the field name--i.e. alphabetical order
-    def __init__(self, *args, **kwargs):
-        super(UpdateDatasetForm, self).__init__(*args, **kwargs)   
-        #NOTE: form_dict is not in this class!
-        for k in BatchUpdateDatasetsForm.Meta.form_dict:
-            self.fields[k].queryset = BatchUpdateDatasetsForm.Meta.form_dict[k].objects.order_by('name')
-
-#class BatchUpdateDatasetsForm(forms.ModelForm):
-class BatchUpdateSamplesForm(forms.ModelForm):
-    class Meta:
-        model = models.Samples
-        fields = ('status', 'comments',
-                  'user', 'uploader', 'curator', 
-                  )
+                  'user', 'uploader', 'curator', 'description',)
         exclude = tuple([f.name for f in model._meta.fields \
                          if f.name not in fields])
 
-
+#realized that this doesn't have much usefulness
+# class BatchUpdatePapersForm(forms.ModelForm):
+#     class Meta:
+#         model = models.Papers
+#         fields = ('user',
+#                   'title', 'abstract', 'pub_date',
+#                   'date_collected', 'authors', 'last_auth_email',
+#                   'journal', 'status', 'comments')
+#         exclude = tuple([f.name for f in model._meta.fields \
+#                          if f.name not in fields])

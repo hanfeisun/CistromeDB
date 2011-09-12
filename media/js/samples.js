@@ -23,9 +23,9 @@ function model() {
 
 function clickHandler(checkbox, sampleId) {
     if (checkbox.checked) {
-	dsetModel.add(sampleId);
+	sampleModel.add(sampleId);
     } else {
-	dsetModel.remove(sampleId);
+	sampleModel.remove(sampleId);
     }
 }
 
@@ -37,10 +37,10 @@ function masterHandler(masterChkBox) {
 }
 
 var rowSelects;
-var dsetModel;
+var sampleModel;
 
 function init() {
-    dsetModel = new model();
+    sampleModel = new model();
     rowSelects = $$('input.rowSelect');
     for (var i = 0; i < rowSelects.length; i++) {
 	//rowSelects[i].checked=false; --maybe i don't want this
@@ -56,28 +56,34 @@ function init() {
 	masterHandler(tmp);
     }
 
+    /*
     var btn = $('batchEdit');
     btn.onclick = function(event) {
 	//redirect
-	if (dsetModel.samples.length > 0) { //check for empty list
-	    window.location = SUB_SITE + "batch_update_samples/?samples="+ dsetModel.samples+"&next="+window.location;
+	if (paperModel.papers.length > 0) { //check for empty list
+	    window.location = SUB_SITE + "batch_update_papers/?papers="+ paperModel.papers;
 	}
 	//NOTE: TODO--acutally the best way to do it is to just run down the 
 	//list of selected rows--i.e. generate dsetModel IN/AFTER onclick
 	//and not rely on dsetModel, b/c if you hit the back btn, the 
 	//item will still be checked but dsetModel is not populated.
     }
+    */
 
     var deleteBtn = $('deleteBtn');
     deleteBtn.onclick = function(event) {
 	//confirm
-	var resp = confirm("Are you sure you want to DELETE these samples?");
-	if (resp && dsetModel.samples.length > 0) {
-	    window.location = SUB_SITE+"delete_samples/?samples="+dsetModel.samples;
+	var resp = confirm("Are you sure you want to DELETE these papers?");
+	if (resp && sampleModel.samples.length > 0) {
+	    window.location = SUB_SITE+"delete_samples/?samples="+sampleModel.samples;
 	}
     }
 }
 
-function downloadFile(sampleId, pg) {
-    window.location = SUB_SITE+"download_file/"+sampleId+"/?page="+pg;
+function checkRawFiles(sampleId, pg) {
+    window.location = SUB_SITE+"check_raw_files/"+sampleId+"/?page="+pg;
+}
+
+function runAnalysis(sampleId, pg) {
+    window.location = SUB_SITE+"run_analysis/"+sampleId+"/?page="+pg;
 }

@@ -5,11 +5,10 @@ var Model = ModelFactory(["papersList", "currPaper", "currResultsCol"],
 var pgModel = new Model({"papersList":null, "currPaper":null, 
 			 "currResultsCol":null});
 
+//MENG asked me to remove this for now...but i like this so i'm just going to 
+//disable it
 var msg = "Search Cistrome DC";
-
-var tearDownResultsEvent = new ModelEvent(null);
-var resultsCBEvent = new ModelEvent(null);
-var minOverlayH = 30;
+//var msg = "                   ";
 
 //NOTE: an empty search might mean "all" and not none.
 function init() {
@@ -36,8 +35,7 @@ function init() {
 	if (searchFld.value != msg) {
 	    var srch = new Ajax.Request(SUB_SITE+"search/", 
     {method:"get", parameters: {"q":searchFld.value}, onComplete: searchCb});
-	    //this.disabled = true;
-	    tearDownResultsEvent.notify();
+	    this.disabled = true;
 	}
     }
 
@@ -48,26 +46,18 @@ function init() {
 	}
     }
 
-    tearDownResultsEvent.register(function() { searchBtn.disabled = true; searchFld.disabled = true;});
-    resultsCBEvent.register(function() { searchBtn.disabled = false; searchFld.disabled = false;});
 
     var resultsView = new ResultsView($('results'), pgModel);
     var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
     var datasetsView = new DatasetsView($('datasets'), pgModel);
     var samplesView = new SamplesView($('samples'), pgModel);
 
-    //overlays
-    tearDownResultsEvent.register(function() { resultsView.drawOverlay(); });
-    resultsCBEvent.register(function() { resultsView.clearOverlay(); });
-
     pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
     //when a new paperList is set, clear the current paper
     pgModel.papersListEvent.register(function() {pgModel.setCurrPaper(null);});
-
     pgModel.currPaperEvent.register(function() { paperInfoView.makeHTML();});
     pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
-
     
     //overrider the setter fn to account for ascending fld- optional field asc
     pgModel.setCurrResultsCol = function(field, asc) {
@@ -149,14 +139,12 @@ function getPapers(type, model) {
 	model.origPapersList = resp;
 	//default ordering: pub_date, descending
 	model.setCurrResultsCol("pub_date", false);
-	resultsCBEvent.notify();
+
     }
 
     var call = new Ajax.Request(SUB_SITE+"front/"+type+"/", 
 				{method:"get", parameters: {}, 
 				 onComplete: cb});
-    //Notify that we are getting new papers
-    tearDownResultsEvent.notify();
     
 }
 
@@ -182,7 +170,6 @@ function ResultsView(container, model) {
     this.minPapers = 10;
     this.model = model;
     this.container = container;
-
     var outer = this;
     this.makeHTML = function() {
 	//clear
@@ -338,36 +325,6 @@ function ResultsView(container, model) {
 	outer.makePaperRows(currTbl);
 	    
     }
-
-    //OVERLAY stuff!
-    this.initOverlay = function() {
-	var div = $D('div');
-	div.style.backgroundImage = "url("+SUB_SITE+"static/img/black_75.png)";
-	div.style.position = "relative";
-	var loadingImg = $D('img', {'src':SUB_SITE+"static/img/loading.gif", 'className':"loadingImg"});
-	div.appendChild(loadingImg);
-	return div;
-    }
-
-    this.overlay = this.initOverlay();
-
-    this.drawOverlay = function() {
-	var w = outer.container.getWidth();
-	var h = outer.container.getHeight();
-	if (h < minOverlayH) {
-	    h = minOverlayH;
-	}
-	outer.overlay.style.top = "-"+h+"px";
-	outer.overlay.style.width = w+"px";
-	outer.overlay.style.height = h+"px";
-
-	outer.container.appendChild(outer.overlay);
-    }
-
-    this.clearOverlay = function() {
-	outer.container.removeChild(outer.overlay);
-    }
-    //END OVERLAY
 }
 
 function searchCb(req) {
@@ -378,9 +335,8 @@ function searchCb(req) {
     //default ordering: pub_date, descending
     pgModel.setCurrResultsCol("pub_date", false);
 
-    resultsCBEvent.notify();
-    //reset the search btn--DROP: now an event lstnr
-    //$('searchBtn').disabled = false;
+    //reset the search btn
+    $('searchBtn').disabled = false;
 }
 
 function PaperInfoView(container, model) {
@@ -436,11 +392,10 @@ function PaperInfoView(container, model) {
     }
 }
 
-//function DatasetsView(container, model) {
-function SamplesView(container, model) {
+function DatasetsView(container, model) {
     this.container = container;
     this.model = model;
-    this.samples = null;
+    this.datasets = null;
     var outer = this;
     
     this.makeHTML = function() {
@@ -452,8 +407,7 @@ function SamplesView(container, model) {
 	tbl.appendChild(tr);
 
 	//build the table.th
-	//var titles = ["GSMID", "Info", " ", "Files", "Rating"];
-	var titles = ["GSMID", "Files", "Rating"];
+	var titles = ["GSMID", "Info", " ", "Files", "Rating"];
 	for (var i = 0; i < titles.length; i++) {
 	    tr.appendChild($D('th', {'innerHTML':titles[i]}));
 	}
@@ -462,6 +416,27 @@ function SamplesView(container, model) {
 	var files = [["raw_file", "Raw"], ["treatment_file", "Treatment"], 
 		     ["peak_file", "Peak"], ["wig_file", "Wig"], 
 		     ["bw_file", "Big Wig"]];
+	var info1 = [
+		     ["species.name", "Species:"],
+		     ["assembly.name", "Assembly:"],		    
+		     ["factor.name", "Factor:"], 
+		     ["factor.antibody", "Antibody:"], 
+		     ["factor.type", "Factor Type:"],
+		     ["cell_type.name", "Cell Type:"],
+		     ["cell_type.tissue_type", "Cell Tissue Type:"],
+		     ["cell_line.name", "Cell Line:"],
+		     ["cell_pop.name", "Cell Pop.:"]
+		     ];
+	var info2 = [
+		     ["strain.name", "Strain:"],
+		     ["condition.name", "Condition:"],
+		     ["disease_state.name", "Disease State:"],
+		     ["platform.gplid", "GPLID:"],
+		     ["platform.name", "Platform Name:"],
+		     ["platform.technology", "Technology:"],
+		     ["platform.experiment_type", "Experiment Type:"]
+
+		     ];
 
 	//LIKE this:
 	//	  <tr class="row">
@@ -469,18 +444,37 @@ function SamplesView(container, model) {
 	//	    <td><span class="value"><a href="">view</a></span>
 	//	        <span class="value"><a href="">download</a></span>
 	//	    </td>
-	for (var i = 0; i < outer.samples.length; i++) {
-	    var s = outer.samples[i];
+	//alert(outer.datasets.length);
+	for (var i = 0; i < outer.datasets.length; i++) {
+	    var d = outer.datasets[i];
 	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
-	    var gsmid = getattr(s, "gsmid");
+	    var gsmid = getattr(d, "gsmid");
 	    var newA = $D('a', {innerHTML:gsmid, target:'_blank',
 				href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmid});
 	    tr.appendChild($D('td').appendChild(newA));
 
+	    //build the info tds
+	    var info = [info1, info2];
+	    for (var z = 0; z < info.length; z++) {
+		var newTd = $D('td');
+		for (var j = 0; j < info[z].length; j++) {
+		    var val = getattr(d, info[z][j][0], true);
+		    //NOTE: null evals to false
+		    if (val && val != "") {
+			newTd.appendChild($D('span', {'className':'label',
+					'innerHTML':info[z][j][1]}));
+			newTd.appendChild($D('span', {'className':'value2',
+					'innerHTML':val}));
+			newTd.appendChild($D('br'));
+		    }
+		}
+		tr.appendChild(newTd);
+	    }
+
 	    //Build the files
 	    var td = $D('td');
 	    for (var j = 0; j < files.length; j++) {
-		var url = getattr(s, files[j][0]);
+		var url = getattr(d, files[j][0]);
 		if (url && url != "") {
 		    var tmp = $D('span', {'className':'label',
 					  'innerHTML':files[j][1]+":"});
@@ -508,20 +502,18 @@ function SamplesView(container, model) {
     
     this.cb = function(req) {
 	var resp = eval("("+req.responseText+")");
-	outer.samples = resp;
+	outer.datasets = resp;
 	outer.makeHTML();
-	outer.clearOverlay();
     }
 
     this.currPaperLstnr = function() {
 	var currPaper = outer.model.getCurrPaper();
 	if (currPaper != null) {
-	    var samples = 
-		new Ajax.Request(SUB_SITE+"jsrecord/Samples/find/",
+	    var dsets = 
+		new Ajax.Request(SUB_SITE+"jsrecord/Datasets/find/",
 				 {method:"get",
 				  parameters:{"paper":currPaper.id}, 
 				  onComplete: outer.cb});
-	    outer.drawOverlay();
 	} else {
 	    //clear
 	    outer.container.innerHTML = "";
@@ -529,43 +521,12 @@ function SamplesView(container, model) {
 
     }
 
-    //OVERLAY stuff!
-    this.initOverlay = function() {
-	var div = $D('div');
-	div.style.backgroundImage = "url("+SUB_SITE+"static/img/black_75.png)";
-	div.style.position = "relative";
-	var loadingImg = $D('img', {'src':SUB_SITE+"static/img/loading.gif", 'className':"loadingImg"});
-	div.appendChild(loadingImg);
-	return div;
-    }
-
-    this.overlay = this.initOverlay();
-
-    this.drawOverlay = function() {
-	var w = outer.container.getWidth();
-	var h = outer.container.getHeight();
-	if (h < minOverlayH) {
-	    h = minOverlayH;
-	}
-	outer.overlay.style.top = "-"+h+"px";
-	outer.overlay.style.width = w+"px";
-	outer.overlay.style.height = h+"px";
-
-	outer.container.appendChild(outer.overlay);
-    }
-
-    this.clearOverlay = function() {
-	outer.container.removeChild(outer.overlay);
-    }
-    //END OVERLAY
-
 }
 
-//function SamplesView(container, model) {
-function DatasetsView(container, model) {
+function SamplesView(container, model) {
     this.container = container;
     this.model = model;
-    this.datasets = null;
+    this.samples = null;
     var outer = this;
     
     this.makeHTML = function() {
@@ -577,103 +538,57 @@ function DatasetsView(container, model) {
 	tbl.appendChild(tr);
 
 	//build the table.th
-	var titles = ["Treaments", "Controls", 
-		      "Info", " ", 
-		      "QC Grades", " ",
-		      "Files", " ", 
-		      "Rating"];
+	var titles = ["Treaments", "Controls", "Files", " ", " ", " ", " ",
+		      " ", " ", "Rating"];
 	for (var i = 0; i < titles.length; i++) {
 	    tr.appendChild($D('th', {'innerHTML':titles[i]}));
 	}
 
-	var info1 = [
-		     ["species.name", "Species:"],
-		     ["assembly.name", "Assembly:"],		    
-		     ["factor.name", "Factor:"], 
-		     ["factor.antibody", "Antibody:"], 
-		     ["factor.type", "Factor Type:"],
-		     ["cell_type.name", "Cell Type:"],
-		     ["cell_type.tissue_type", "Cell Tissue Type:"],
-		     ["cell_line.name", "Cell Line:"],
-		     ["cell_pop.name", "Cell Pop.:"]
-		     ];
-	var info2 = [
-		     ["strain.name", "Strain:"],
-		     ["condition.name", "Condition:"],
-		     ["disease_state.name", "Disease State:"],
-		     ["platform.gplid", "GPLID:"],
-		     ["platform.name", "Platform Name:"],
-		     ["platform.technology", "Technology:"],
-		     ["platform.experiment_type", "Experiment Type:"]
-		     ];
-	var info3 = [
-		     ["read_qc", "Read:"],
-		     ["model_qc", "Model:"],
-		     ["fold_qc", "Fold:"],
-		     ["fdr_qc", "FDR:"],
-		     ["replicate_qc", "Replicate:"]
-		     ];
-	var info4 = [
-		     ["dnase_qc", "DNase:"],
-		     ["velcro_qc", "Velcro:"],
-		     ["conserve_qc", "Conserve:"],
-		     ["ceas_qc", "CEAS:"],
-		     ["motif_qc", "Motif:"],
-		     ["overall_qc", "Overall:"]
-		     ];
-
 	var files1 = [
 		      ["treatment_file", "Treatment"],
 		      ["peak_file", "Peak"],
-		      ["peak_xls_file", "Peak XLS"],
+		      ["peak_xls_file", "Peak XLS"]
+		      ];
+
+	var files2 = [
 		      ["summit_file", "Summit"],
 		      ["wig_file", "Wig"],
-		      ["bw_file", "Big Wig"],
+		      ["bw_file", "Big Wig"]
+		      ];
+	var files3 = [
 		      ["bed_graph_file", "Bed Graph"],
-		      ["control_bed_graph_file", "Control Bed Graph"],
+		      ["control_bed_graph_file", "Control Bed Graph"]
+		      ];
+	var files4 = [
 		      ["conservation_file", "Conservation"],
-		      ["conservation_r_file", "Conservation_R"],
+		      ["conservation_r_file", "Conservation R"]
+		      ];
+	var files5 = [
 		      ["qc_file", "QC"],
-		      ["qc_r_file", "QC R"],
+		      ["qc_r_file", "QC R"]
+		      ];
+	var files6 = [
 		      ["ceas_file", "CEAS"],
-		      ["ceas_r_file", "CEAS R"],
+		      ["ceas_r_file", "CEAS R"]
+		      ];
+	var files7 = [
 		      ["venn_file", "Venn Diagram"],
 		      ["seqpos_file", "Motif"]
-
 		      ];
-	var files2 = [];
-	for (var i = 0; i < outer.datasets.length; i++) {
-	    var d = outer.datasets[i];
+	for (var i = 0; i < outer.samples.length; i++) {
+	    var s = outer.samples[i];
 	    tr = $D('tr', {"className":(i % 2 == 0)? "row":"altrow"});
 	    //Treatments & Controles
-	    tr.appendChild($D('td', {'innerHTML':d.treatments}));
-	    tr.appendChild($D('td', {'innerHTML':d.controls}));
-
-	    //build the info tds
-	    var info = [info1, info2, info3, info4];
-	    for (var z = 0; z < info.length; z++) {
-		var newTd = $D('td');
-		for (var j = 0; j < info[z].length; j++) {
-		    var val = getattr(d, info[z][j][0], true);
-		    //NOTE: null evals to false
-		    if (val && val != "") {
-			newTd.appendChild($D('span', {'className':'label',
-					'innerHTML':info[z][j][1]}));
-			newTd.appendChild($D('span', {'className':'value2',
-					'innerHTML':val}));
-			newTd.appendChild($D('br'));
-		    }
-		}
-		tr.appendChild(newTd);
-	    }
+	    tr.appendChild($D('td', {'innerHTML':s.treatments}));
+	    tr.appendChild($D('td', {'innerHTML':s.controls}));
 
 	    //Build the files
-	    var ls = [files1, files2];
+	    var ls = [files1, files2, files3, files4, files5, files6, files7];
 	    for (var z = 0; z < ls.length; z++) {
 		var files = ls[z];
 		var td = $D('td');
 		for (var j = 0; j < files.length; j++) {
-		    var url = getattr(d, files[j][0]);
+		    var url = getattr(s, files[j][0]);
 		    if (url && url != "") {
 			var tmp = $D('span', {'className':'label',
 					      'innerHTML':files[j][1]+":"});
@@ -704,56 +619,24 @@ function DatasetsView(container, model) {
 
     this.cb = function(req) {
 	var resp = eval("("+req.responseText+")");
-	outer.datasets = resp;
+	outer.samples = resp;
 	outer.makeHTML();
-	outer.clearOverlay();
     }
 
     this.currPaperLstnr = function() {
 	var currPaper = outer.model.getCurrPaper();
 	if (currPaper != null) {
-	    var dsets = 
-		new Ajax.Request(SUB_SITE+"jsrecord/Datasets/find/",
+	    var samples = 
+		new Ajax.Request(SUB_SITE+"jsrecord/Samples/find/",
 				 {method:"get", 
 				  parameters:{"paper":currPaper.id}, 
 				  onComplete: outer.cb});
-	    outer.drawOverlay();
 	} else {
 	    //clear
 	    outer.container.innerHTML = "";
 	}
 	
     }
-
-    //OVERLAY stuff!
-    this.initOverlay = function() {
-	var div = $D('div');
-	div.style.backgroundImage = "url("+SUB_SITE+"static/img/black_75.png)";
-	div.style.position = "relative";
-	var loadingImg = $D('img', {'src':SUB_SITE+"static/img/loading.gif", 'className':"loadingImg"});
-	div.appendChild(loadingImg);
-	return div;
-    }
-
-    this.overlay = this.initOverlay();
-
-    this.drawOverlay = function() {
-	var w = outer.container.getWidth();
-	var h = outer.container.getHeight();
-	if (h < minOverlayH) {
-	    h = minOverlayH;
-	}
-	outer.overlay.style.top = "-"+h+"px";
-	outer.overlay.style.width = w+"px";
-	outer.overlay.style.height = h+"px";
-
-	outer.container.appendChild(outer.overlay);
-    }
-
-    this.clearOverlay = function() {
-	outer.container.removeChild(outer.overlay);
-    }
-    //END OVERLAY
 }
 
 
