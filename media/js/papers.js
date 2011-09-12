@@ -80,10 +80,10 @@ function init() {
     }
 }
 
-function importSamples(paperId, pg) {
-    window.location = SUB_SITE+"import_samples/"+paperId+"/?page="+pg;
+function importDatasets(paperId, pg) {
+    window.location = SUB_SITE+"import_datasets/"+paperId+"/?page="+pg;
 }
 
-function downloadPaperSamples(paperId, pg) {
-    window.location = SUB_SITE+"download_paper_samples/"+paperId+"/?page="+pg;
+function downloadPaperDatasets(paperId, pg) {
+    window.location = SUB_SITE+"download_paper_datasets/"+paperId+"/?page="+pg;
 }

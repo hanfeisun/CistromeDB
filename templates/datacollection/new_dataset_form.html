@@ -5,8 +5,7 @@
 <link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
-<script src="{% url static_url %}js/Models.js" type="text/javascript"></script>
-<script src="{% url static_url %}js/Utils.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/Forms.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/new_dataset_form.js" type="text/javascript"></script>
 {% endblock %}
 
@@ -18,21 +17,17 @@ onload="init({{paper}});"
       {% if form.errors %}
          <p>Please correct the error{{ form.errors|pluralize }} below.</p>
       {% endif %}
+      <!--<div id="content_div">-->
          <h2 class="section_hdr">Dataset Form:</h2>
-	 <form enctype="multipart/form-data" action="" method="post" id="rep_form" name="rep_form">
-	    <p id="paper_p">
+	 <form enctype="multipart/form-data" action="" method="post">
+	    {{ form.as_p }}
 	    {% if paper %}
 	    <input type="hidden" value="{{paper}}" id="id_paper" name="paper"/>
 	    {% endif %}
-	    </p>
-	    <p>
-	    <!--this is where the hidden datasets inputs are going -->
-	    <input type="hidden" value="" id="id_treatments" name="treatments"/>
-	    <input type="hidden" value="" id="id_controls" name="controls"/>
-	    </p>
-	    <p id="treatments_p"> </p>
-	    <p id="controls_p"> </p>
-	    <button type="button" onclick="mySubmit();">Submit</button>
-            <input type="hidden" name="next" value="{{ next|escape }}" /> 
+	    {% if next %}
+	    <input type="hidden" name="next" value="{{ next|escape }}" />
+	    {% endif %}
+	    <input type="submit" value="Submit" id="submitBtn"/>
 	 </form>
+      <!--</div>-->
 {% endblock %}

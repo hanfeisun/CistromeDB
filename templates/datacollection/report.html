@@ -19,14 +19,12 @@
             <th>Student</th>
 	    <th>Papers</th>
 	    <th>Total Papers</th>
-	    <th>Samples</th>
-	    <th>Total Samples</th>
-	    {% comment %}<!--taking this out for now until view gets updated-->
+	    <th>Datasets</th>
+	    <th>Total Datasets</th>
 	    <th>Human TF</th>
 	    <th>Mouse TF</th>
 	    <th>Human HM</th>
 	    <th>Mouse HM</th>
-	    {% endcomment %}
 	</tr>
 	{% for u in paperTeam %}
         <tr>
@@ -38,17 +36,15 @@
 	    {% endif %}
             <td><a href="{% url papers %}{{u.user.id}}/">{{ u.allPapers|length }}</a></td>
 	    {% if date %}
-            <td><a href="{% url weekly_samples %}{{u.user.id}}/?date={{date}}">{{ u.weekSamples|length }}</a></td>
+            <td><a href="{% url weekly_datasets %}{{u.user.id}}/?date={{date}}">{{ u.weekDatasets|length }}</a></td>
 	    {% else %}
-            <td><a href="{% url weekly_samples %}{{u.user.id}}/">{{ u.weekSamples|length }}</a></td>
+            <td><a href="{% url weekly_datasets %}{{u.user.id}}/">{{ u.weekDatasets|length }}</a></td>
 	    {% endif %}
-            <td><a href="{% url samples %}{{u.user.id}}/">{{ u.allSamples|length }}</a></td>
-	    {% comment %}<!--taking this out for now until view gets updated-->
-	    <td><a href="{% url samples %}{{u.user.id}}/?species=hs&ftype=tf">{{u.humanTF|length}}</a></td>
-             <td><a href="{% url samples %}{{u.user.id}}/?species=mm&ftype=tf">{{u.mouseTF|length}}</a></td>
-	     <td><a href="{% url samples %}{{u.user.id}}/?species=hs&ftype=hm">{{u.humanHM|length}}</a></td>
-             <td><a href="{% url samples %}{{u.user.id}}/?species=mm&ftype=hm">{{u.mouseHM|length}}</a></td>
-	     {% endcomment %}
+            <td><a href="{% url datasets %}{{u.user.id}}/">{{ u.allDatasets|length }}</a></td>
+	    <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf">{{u.humanTF|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=tf">{{u.mouseTF|length}}</a></td>
+	     <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=hm">{{u.humanHM|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=hm">{{u.mouseHM|length}}</a></td>
         </tr>
         {% endfor %}    
     </table>
@@ -58,30 +54,26 @@
     <table>
         <tr>
             <th>Student</th>
-	    <th>Samples</th>
-	    <th>Total Samples</th>
-	    {% comment %}<!--taking this out for now until view gets updated-->
+	    <th>Datasets</th>
+	    <th>Total Datasets</th>
 	    <th>Human TF</th>
 	    <th>Mouse TF</th>
 	    <th>Human HM</th>
 	    <th>Mouse HM</th>
-	    {% endcomment %}
         </tr>
 	{% for u in dataTeam %}
         <tr>
             <td><a href="#{{u.user.username}}">{{ u.user.username }}</a></td>
 	    {% if date %}
-	    <td><a href="{% url weekly_samples %}{{u.user.id}}/?uploader=true&date={{date}}">{{ u.weekSamples|length }}</a></td>
+	    <td><a href="{% url weekly_datasets %}{{u.user.id}}/?uploader=true&date={{date}}">{{ u.weekDatasets|length }}</a></td>
 	    {% else %}
-            <td><a href="{% url weekly_samples %}{{u.user.id}}/?uploader=true">{{ u.weekSamples|length }}</a></td>
+            <td><a href="{% url weekly_datasets %}{{u.user.id}}/?uploader=true">{{ u.weekDatasets|length }}</a></td>
 	    {% endif %}
-            <td><a href="{% url samples %}{{u.user.id}}/?uploader=true">{{ u.allSamples|length }}</a></td>
-	    {% comment %}<!--taking this out for now until view gets updated-->
-	    <td><a href="{% url samples %}{{u.user.id}}/?species=hs&ftype=tf&uploader=true">{{u.humanTF|length}}</a></td>
-             <td><a href="{% url samples %}{{u.user.id}}/?species=mm&ftype=tf&uploader=true">{{u.mouseTF|length}}</a></td>
-	     <td><a href="{% url samples %}{{u.user.id}}/?species=hs&ftype=hm&uploader=true">{{u.humanHM|length}}</a></td>
-             <td><a href="{% url samples %}{{u.user.id}}/?species=mm&ftype=hm&uploader=true">{{u.mouseHM|length}}</a></td>
-	     {% endcomment %}
+            <td><a href="{% url datasets %}{{u.user.id}}/?uploader=true">{{ u.allDatasets|length }}</a></td>
+	    <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=tf&uploader=true">{{u.humanTF|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=tf&uploader=true">{{u.mouseTF|length}}</a></td>
+	     <td><a href="{% url datasets %}{{u.user.id}}/?species=hs&ftype=hm&uploader=true">{{u.humanHM|length}}</a></td>
+             <td><a href="{% url datasets %}{{u.user.id}}/?species=mm&ftype=hm&uploader=true">{{u.mouseHM|length}}</a></td>
         </tr>
         {% endfor %}    
     </table>
@@ -89,15 +81,17 @@
 <section>
     <header>Paper Collection Details:</header>
     {% for u in paperTeam %}
-    {% if u.weekPapers|length or u.weekSamples|length %}
+    {% if u.weekPapers|length or u.weekDatasets|length %}
     <a name="{{u.user.username}}">{{u.user.username}}</a>
     {% if u.weekPapers|length %}
     <table>
-        <tr><th>Papers (# Samples)</th>
+        <tr><th>Papers (# Datasets)</th>
+	    <!--<th>Assoc. Datasets</th>-->
 	</tr>	
 	{% for p in u.weekPapers %}
 	<tr>
-	    <td><a href="{% url paper_profile p.id %}">{{p.pmid}}</a> (<a href="{% url samples %}{{u.user.id}}/?paper={{p.id}}">{{p.samples|length}}</a>)</td>
+	    <td><a href="{% url paper_profile p.id %}">{{p.pmid}}</a> (<a href="{% url datasets %}{{u.user.id}}/?paper={{p.id}}">{{p.datasets|length}}</a>)</td>
+	    <!--<td><a href="{% url datasets %}{{u.user.id}}/?paper={{p.id}}">{{p.datasets|length}}</a></td>-->
 	</tr>
 	{% endfor %}
     </table>
@@ -108,13 +102,13 @@
 <section>
     <header>Data Collection Details:</header>
     {% for u in dataTeam %}
-    {% if u.weekSamples|length %}
+    {% if u.weekDatasets|length %}
     <a name="{{u.user.username}}">{{u.user.username}}</a>
     <table>
-        <tr><th>Samples</th></tr>
-	{% for s in u.weekSamples %}
+        <tr><th>Datasets</th></tr>
+	{% for d in u.weekDatasets %}
 	{% cycle '<tr>' '' '' %}
-	   <td><a href="{% url sample_profile s.id %}">{{s.gsmid}}</a></td>
+	   <td><a href="{% url dataset_profile d.id %}">{{d.gsmid}}</a></td>
 	{% cycle '' '' '</tr>' %}
 	{% endfor %}
     </table>

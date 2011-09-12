@@ -165,10 +165,10 @@ function barHelper(container, title, type, model, field, cutoff) {
 function init() {
     var graphs = document.getElementById('graphs');
 
-    //top labs by samples
-    var div = $D('div', {'id':'sample_lab_div'});
+    //top labs by datasets
+    var div = $D('div', {'id':'dataset_lab_div'});
     graphs.appendChild(div);
-    barHelper('sample_lab_div', 'Top Labs by Samples', 'ssum', 'Samples', 'paper__lab', true);
+    barHelper('dataset_lab_div', 'Top Labs by Datasets', 'ssum', 'Datasets', 'paper__lab', true);
 
     var fields = ['factor', 'platform', 'species', 'cell_type',
 	      'cell_line', 'cell_pop', 'strain','condition',
@@ -180,7 +180,7 @@ function init() {
 	helper(id, 'Datasets by '+fields[i], 'sum', 'Datasets', fields[i]);
     }
 
-    //top datasets by antibody
+    //top labs by datasets
     var div = $D('div', {'id':'dataset_antibody_div'});
     graphs.appendChild(div);
     helper('dataset_antibody_div', 'Datasets by Antibody', 'ssum', 'Datasets', 'factor__antibody');
@@ -201,9 +201,9 @@ function init() {
     graphs.appendChild(div);
     helper('paper_lab_div', 'Papers by Labs', 'ssum', 'Papers', 'lab');
     
-    //top journals by samples
-    var div = $D('div', {'id':'sample_journal_div'});
+    //top journals by datasets
+    var div = $D('div', {'id':'dataset_journal_div'});
     graphs.appendChild(div);
-    barHelper('sample_journal_div', 'Top Journals by Samples', 'ssum', 'Samples', 'paper__journal', true);
+    barHelper('dataset_journal_div', 'Top Journals by Datasets', 'ssum', 'Datasets', 'paper__journal', true);
 	
 }

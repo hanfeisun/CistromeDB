@@ -15,36 +15,3 @@
       </form>
       {% endif %}
 {% endblock %}
-
-{% block nav_bar %}
-      {% if user.is_staff %}
-      <nav id="nav_bar">
-	<span>Admin Links:</span>
-	<ul>
-	  <li><a href="{% url home %}">Home</a></li>
-	  <li><a href="{% url papers %}">Papers</a></li>
-	  <li><a href="{% url datasets %}">Datasets</a></li>
-	  <li><a href="{% url samples %}">Samples</a></li>
-	  <li><a href="{% url controls %}">Controls</a></li>
-	  <li><span class="fakeLink" id="others" onmouseover="open_menu('other_menu');" onmouseout="close_menu('other_menu');">Others</span>
-	      <div id="other_menu" onmouseover="cancel_close('other_menu');" onmouseout="close_menu('other_menu');">
-		<a href="{% url factors %}">Factors</a>
-		<a href="{% url platforms %}">Platforms</a>
-		<a href="{% url celltypes %}">Cell Types</a>
-		<a href="{% url celllines %}">Cell Lines</a>
-		<a href="{% url cellpops %}">Cell Populations</a>
-		<a href="{% url strains %}">Strains</a>
-		<a href="{% url diseasestates %}">Disease States</a>
-		<a href="{% url assemblies %}">Assemblies</a>
-		<a href="{% url species %}">Species</a>
-		<a href="{% url journals %}">Journals</a>
-	      </div>
-	  </li> 
-	  <li><a href="{% url submissions_admin %}">Paper Submissions</a></li>
-	  <li><a href="{% url auto_paper_import %}">Import Paper</a></li>
-	  <li><a href="{% url dcstats %}">DC Stats</a></li>
-	  <li><a href="{% url admin_help %}">Help</a></li>
-	</ul>
-      </nav>
-      {% endif %}
-{% endblock %}

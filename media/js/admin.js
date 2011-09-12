@@ -34,7 +34,6 @@ function PapersView(plist, container) {
 	outer.container.innerHTML = "";
 	var tbl = $D('table', {'className':'datatable', 'id':'papers_table'});
 	var tr = $D('tr');
-	tr.appendChild($D('th', {'innerHTML':'ID'}));
 	tr.appendChild($D('th', {'innerHTML':'Pubmed ID'}));
 	tr.appendChild($D('th', {'innerHTML':'GSEID'}));
 	tr.appendChild($D('th', {'innerHTML':'Status'}));
@@ -48,20 +47,15 @@ function PapersView(plist, container) {
 	for (var i = 0; i < outer.plist.list.length; i++) {
 	    var p = outer.plist.list[i];
 	    tr = $D('tr');
-	    //id
+	    //pmid
 	    var td = $D('td');
 	    td.appendChild($D('a', {'href':SUB_SITE+'paper_profile/'+p.id+'/',
-			    'innerHTML':p.id}));
-	    tr.appendChild(td);
-	    //pmid
-	    td = $D('td');
-	    td.appendChild($D('a', {'href':"http://www.ncbi.nlm.nih.gov/pubmed?term="+p.pmid, 
-			    'target':'_blank', 'innerHTML':p.pmid}));
+				      'innerHTML':p.pmid}));
 	    tr.appendChild(td);
 	    //gseid
 	    td = $D('td');
-	    td.appendChild($D('a', {'href':"http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="+p.gseid, 
-			    'target':'_blank', 'innerHTML':p.gseid}));
+	    td.appendChild($D('a', {'href':SUB_SITE+'paper_profile/'+p.id+'/',
+				      'innerHTML':p.gseid}));
 	    tr.appendChild(td);
 	    //status -- NOTE: should we print out the long ver. of status?
 	    statusTd = $D('td', {'className':p.status+'_row',
@@ -78,7 +72,7 @@ function PapersView(plist, container) {
 	    //create an actionBtn
 	    if (p.status == "imported") {
 		actionTd.appendChild(makeImportBtn(p, statusTd));
-	    } else if (p.status == "primed") {
+	    } else if (p.status == "datasets") {
 		actionTd.appendChild(makeDownloadBtn(p, statusTd));
 	    }
 	    tr.appendChild(actionTd);
@@ -178,7 +172,7 @@ function getUser(id) {
 }
 
 function makeDownloadBtn(p, statusTd) {
-    var dnldBtn = $D('input', {'type':'button', 'value':'download samples'});
+    var dnldBtn = $D('input', {'type':'button', 'value':'download datasets'});
     dnldBtn.onclick = function(p, statusTd, downloadBtn) {
 	return function(event) {
 	    var cb = function(req) {
@@ -198,7 +192,7 @@ function makeDownloadBtn(p, statusTd) {
 	    }
 	    downloadBtn.disabled=true;
 	    var dnldDsets = 
-	    new Ajax.Request(SUB_SITE+"download_samples/"+p.id+"/",
+	    new Ajax.Request(SUB_SITE+"download_datasets/"+p.id+"/",
 	    		     {method:"get", onComplete: cb});
 	}
     } (p, statusTd, dnldBtn);
@@ -206,7 +200,7 @@ function makeDownloadBtn(p, statusTd) {
 }
 
 function makeImportBtn(p, statusTd) {
-    var importBtn = $D('input', {'type':'button', 'value':'import samples'});
+    var importBtn = $D('input', {'type':'button', 'value':'import datasets'});
     importBtn.onclick = function(p, sTd, importB) {
 	return function(event) {
 	    //disable the btn, make the ajax call,
@@ -216,7 +210,7 @@ function makeImportBtn(p, statusTd) {
 		resp = eval("("+req.responseText+")");
 		if (resp.success) {
 		    //update the status, and make a new dnlddsets btn.
-		    p.status = "primed";
+		    p.status = "datasets";
 		    sTd.innerHTML = p.status;
 		    sTd.className = p.status+"_row";
 		    
@@ -233,7 +227,7 @@ function makeImportBtn(p, statusTd) {
 	    }
 	    importB.disabled=true;
 	    var getDsets = 
-	    new Ajax.Request(SUB_SITE+"import_samples/"+p.id+"/",
+	    new Ajax.Request(SUB_SITE+"import_datasets/"+p.id+"/",
 	    		     {method:"get", onComplete: cb});
 	}
     } (p, statusTd, importBtn);

@@ -35,52 +35,13 @@ header#page_header h1{
     display:inline;
 }
 
-
-/* header nav bar */
-nav#nav_bar {
-    background-color:#0e162a;
-    color:#828aa0;
-}
-
-nav#nav_bar a, nav#nav_bar .fakeLink{
-    color:#fff;
-    font-size:9pt;
-    text-decoration:none;
-}
-
-nav#nav_bar a:hover,nav#nav_bar .fakeLink:hover {
-    background-color:#828aa0;
-}
-
-nav#nav_bar ul {
-    display:inline;
-}
-
-nav#nav_bar span{
-    padding-left:10px;
-    padding-right:10px;
-}
-
-#other_menu {
-    visibility:hidden;
-    position:absolute;
-    background: #0e162a;
-    left:475px;
-}
-
-#other_menu a {
+/*login form*/
+/*
+header#page_header span{
     display:block;
-    padding-left:5px;
-    padding-right:5px;
+    padding-left:10%;
 }
-/* END header nav bar */
-
-.fakeLink {    
-    color:#093955;
-    text-decoration:underline;
-    cursor:pointer;
-}
-
+*/
 
 header#page_header nav ul, #page_footer nav ul {
     list-style:none;
@@ -111,12 +72,12 @@ footer#page_footer{
     display:block;
     text-align: center;
     background-color:#0e162a;
-    color:#828aa0;
+    color:#fff;
     font-size:8pt;
 }
 
 footer#page_footer a{
-    color:#fff;
+    color:#828aa0;
 } 
 
 a {
@@ -124,6 +85,28 @@ a {
 }
 
 
+/*
+body {
+   background:#2b3141;
+}
+
+a:link, a:visited {
+   color:#fff;
+}
+
+#header {
+   position: relative;
+   top:-15px;
+   border-bottom: 1px solid #b2bbbe;
+}
+*/
+/*logo*/
+/*
+#header img {
+   position: relative;
+   top:15px;
+}
+*/
 /* login unit */
 
 #login {

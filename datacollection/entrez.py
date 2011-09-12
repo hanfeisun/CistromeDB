@@ -26,14 +26,14 @@ class PaperAdapter:
 
         #store the sample accession numbers
         samples = geo.getElementsByTagName('Sample')
-        self.samples = ["%s" % s['_children'][0]['_value'] for s in samples]
+        self.datasets = ["%s" % s['_children'][0]['_value'] for s in samples]
         
     def __str__(self):
         attrs = ["pmid", "gseid", "title", "abstract", "pub_date", "authors",
                  "design", "type", "datasets", "journal"]
         return "\n".join(["%s:%s" % (a, getattr(self, a)) for a in attrs])
 
-class SampleAdapter:
+class DatasetAdapter:
     """Given a GSMID, this class adapter holds all of the information
     needed to create a Dataset instance.
     NOTE: things like factor, cell line, cell pop, strain, etc. must be
