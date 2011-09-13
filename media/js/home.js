@@ -368,7 +368,12 @@ function PaperInfoView(container, model) {
 	//[[field, label], ...]
 	var fields2 = [//["pmid", "Pubmed ID:"], ["gseid", "GEO Series ID:"],
 		       ['journal.name', "Journal:"], 
-		       ['pub_date', 'Published:'], ['factors', 'Factors:']];
+		       ['pub_date', 'Published:'], ['factors', 'Factors:'],
+		       ['species', 'Species:'], ['cell_types', 'Cell Types:'],
+		       ['cell_lines', 'Cell Lines:'], 
+		       ['cell_pops', 'Cell Pops:'], 
+		       ['strains', 'Strains:'], ['conditions', 'Conditions:'],
+		       ['disease_states', 'Disease States:']];
 	var tmp = $D('p', {'className':'info'});
 	//deal with the pmid and gseid separately--they need links like this:
 	//<a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{p.pmid}}" target="_ blank">{{ p.pmid }}</a>
@@ -384,11 +389,27 @@ function PaperInfoView(container, model) {
 
 
 	for (var i = 0; i < fields2.length; i++) {
-	    tmp.appendChild($D('span', {'className':'label',
-			    'innerHTML':fields2[i][1]}));
-	    tmp.appendChild($D('span', {'className':'value2',
-			    'innerHTML':getattr(currPaper, fields2[i][0])}));
-	    tmp.appendChild($D('br'));
+	    var fieldVals = getattr(currPaper, fields2[i][0]);
+	    if (fieldVals) {
+		tmp.appendChild($D('span', {'className':'label',
+				'innerHTML':fields2[i][1]}));
+		if (typeof(fieldVals) == 'string') {
+		    tmp.appendChild($D('span', {'className':'value2',
+				    'innerHTML':fieldVals}));
+		} else {
+		    //assume it's an array
+		    if (fieldVals.length > 1) {
+			for (var j = 0; j < fieldVals.length; j++) {
+			    tmp.appendChild($D('span', {'className':'value',
+					    'innerHTML':fieldVals[j]}));
+			}
+		    } else {
+			tmp.appendChild($D('span', {'className':'value2',
+					'innerHTML':fieldVals}));
+		    }
+		}
+		tmp.appendChild($D('br'));
+	    }
 	}
 	outer.container.appendChild(tmp);
     }

@@ -124,32 +124,48 @@ class Papers(DCModel):
     #a place for curators to add comments
     comments = models.TextField(blank=True)
 
-    def _get_species(self):
-        """Returns a list of the species objs associated with the papers, i.e.
-        the set of species that are found in the paper's datasets"""
-        tmp = []
-        dsets = Datasets.objects.filter(paper=self.id)
-        for d in dsets:
-            if d.species and d.species.name not in tmp:
-                tmp.append(smart_str(d.species.name))
-        return tmp
+    def _datasetAggregator(dset_field):
+        """Given a dataset field, tries to aggregate all of the associated 
+        datasets"""
+        #pluralizing the dset_field
+        #exceptions first
+        if dset_field == 'species':
+            plural = 'species'
+        elif dset_field == 'assembly':
+            plural = 'assemblies'
+        else:
+            plural = dset_field+'s'
 
-    def _get_factors(self):
-        """Returns a list of the factors associated w/ the paper, i.e.
-        returns the set of factors that are found in the paper's datasets"""
-        tmp = []
-        dsets = Datasets.objects.filter(paper=self.id)
-        for d in dsets:
-            if d.factor and d.factor.name not in tmp:
-                tmp.append(smart_str(d.factor.name))
-        return tmp
+        def nameless(self):
+            "Returns a list of %s associates with the papers" % plural
+            ids = []
+            vals = []
+            dsets = Datasets.objects.filter(paper=self.id)
+            for d in dsets:
+                val = getattr(d, dset_field)
+                if val and val.id not in ids:
+                    ids.append(val.id)
+                    vals.append(smart_str(val))
+            return vals
+        return nameless
+
+    
+    factors = property(_datasetAggregator('factor'))
+    platforms = property(_datasetAggregator('platform'))
+    species = property(_datasetAggregator('species'))
+    assemblies = property(_datasetAggregator('assembly'))
+    cell_types = property(_datasetAggregator('cell_type'))
+    cell_lines = property(_datasetAggregator('cell_line'))
+    cell_pops = property(_datasetAggregator('cell_pop'))
+    strains = property(_datasetAggregator('strain'))
+    conditions = property(_datasetAggregator('condition'))
+    disease_states = property(_datasetAggregator('disease_state'))
+        
 
     def _get_lab(self):
         """Returns the last author in the authors list"""
         return smart_str(self.authors.split(",")[-1:][0])
 
-    species = property(_get_species)
-    factors = property(_get_factors)
     lab = property(_get_lab)
     
     def __str__(self):
@@ -157,7 +173,13 @@ class Papers(DCModel):
 
 #NOTE: _donotSerialize fields are not enumerated as records, just as keys
 Papers._meta._donotSerialize = ['user']
-Papers._meta._virtualfields = ['lab','species','factors']
+
+#Dataset fields which we will aggregate and make into virtual paper fields
+Papers._meta._virtualfields = ['lab', 'factors', 'platforms', 'species', 
+                               'assemblies', 'cell_types', 'cell_lines', 
+                               'cell_pops', 'strains', 'conditions', 
+                               'disease_states']
+
 
 class Datasets(DCModel):
     """Datasets are the data associated with the papers.  They are usually
