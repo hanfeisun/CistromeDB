@@ -107,22 +107,24 @@ class Papers(DCModel):
     #    super(Papers, self).__init__(*args)
     #    self._meta._donotSerialize = ['user']
 
-    pmid = models.IntegerField(unique=True)
-    gseid = models.CharField(max_length=8,unique=True)
-    user = models.ForeignKey(User)
-    title = models.CharField(max_length=255)
-    abstract = models.TextField()
-    pub_date = models.DateField()
-    date_collected = models.DateTimeField()
-    authors = models.CharField(max_length=255)
-    last_auth_email = models.EmailField(null=True, blank=True)
+    pmid = models.IntegerField(null=True, blank=True, default=None)
+    gseid = models.CharField(max_length=255, null=True, blank=True, default="")
+    generic_id = models.CharField(max_length=255, null=True, blank=True,
+                                  default="")
+    user = models.ForeignKey(User, null=True, blank=True, default=None)
+    title = models.CharField(max_length=255, null=True, blank=True, default="")
+    abstract = models.TextField(null=True, blank=True, default="")
+    pub_date = models.DateField(null=True, blank=True, default=None)
+    date_collected = models.DateTimeField(null=True, blank=True, default=None)
+    authors = models.CharField(max_length=255, null=True,blank=True,default="")
+    last_auth_email = models.EmailField(null=True, blank=True, default=None)
         
     journal = models.ForeignKey('Journals',
                                 null=True, blank=True, default=None)
     status = models.CharField(max_length=255, choices=PAPER_STATUS,
-                              default="imported")
+                              null=True, blank=True, default="imported")
     #a place for curators to add comments
-    comments = models.TextField(blank=True)
+    comments = models.TextField(null=True, blank=True, default="")
 
     def _datasetAggregator(dset_field):
         """Given a dataset field, tries to aggregate all of the associated 
@@ -225,13 +227,12 @@ class Datasets(DCModel):
     #    super(Datasets, self).__init__(*args)
     #    self._meta._donotSerialize = ['user']
     
-    gsmid = models.CharField(max_length=9)
+    gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
+    generic_id = models.CharField(max_length=255, null=True, blank=True,
+                                  default="")
     #Name comes from "title" in the geo sample information
-    name = models.CharField(max_length=255, blank=True)
-    chip_page = models.URLField(blank=True)
-    control_gsmid = models.CharField(max_length=9, blank=True)
-    control_page = models.URLField(blank=True)
-    date_collected = models.DateTimeField()
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
+    date_collected = models.DateTimeField(null=True, blank=True, default=None)
     #FILES--maybe these should be in a different table, but for now here they r
     raw_file = models.FileField(upload_to=upload_factory("raw"),
                                 null=True, blank=True)
@@ -249,8 +250,9 @@ class Datasets(DCModel):
                                 null=True, blank=True)
     
     #IF everything is done by auto import we might not need this
-    user = models.ForeignKey(User)
-    paper = models.ForeignKey('Papers')
+    user = models.ForeignKey(User, null=True, blank=True, default=None)
+    paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
+
     factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
 
     platform = models.ForeignKey('Platforms',
@@ -260,7 +262,7 @@ class Datasets(DCModel):
     assembly = models.ForeignKey('Assemblies',
                                  null=True, blank=True, default=None)
     #in description, we can add additional info e.g. protocols etc
-    description = models.TextField(blank=True)
+    description = models.TextField(null=True, blank=True, default="")
     cell_type = models.ForeignKey('CellTypes',
                                   null=True, blank=True, default=None)
     cell_line = models.ForeignKey('CellLines',
@@ -273,8 +275,8 @@ class Datasets(DCModel):
                                   null=True, blank=True, default=None)
     
     status = models.CharField(max_length=255, choices=DATASET_STATUS,
-                              default="imported")
-    comments = models.TextField(blank=True)
+                              null=True, blank=True, default="imported")
+    comments = models.TextField(null=True, blank=True, default="")
     
     #user = the person who created this dataset (paper team)
     #uploader = the person who uploaded the files (data team)
