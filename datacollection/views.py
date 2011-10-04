@@ -573,7 +573,7 @@ def submissions_admin(request):
                               locals(),
                               context_instance=RequestContext(request))
 
-def _import_paper(pmid, user):
+def _import_paper(pmid, user, save=True):
     """Given a gseid, tries to import all of the information associated
     with that geo entry and create a Paper model object
     this is a helper fn to the auto_paper_import;
@@ -599,7 +599,9 @@ def _import_paper(pmid, user):
     tmp.user = user
     tmp.date_collected = datetime.datetime.now()
     
-    tmp.save()
+    if save:
+        tmp.save()
+
     return tmp
     
 
