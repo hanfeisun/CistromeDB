@@ -1,0 +1,187 @@
+/* BEGIN: itunes styling */
+table {
+    width:100%;
+    border: 1px solid #a6a6a6;
+    border-collapse: collapse;
+    margin-bottom:20px;
+    font-size:10pt;
+}
+
+th {
+    color:#000;
+    background-color:#f3f3f3;
+}
+
+/*turn off selection color for liquid columns*/
+th::selection {
+    background-color:Transparent;
+}
+
+th span::selection {
+    background-color:Transparent;
+}
+
+.row {
+    color:#000;
+    background-color:#f3f6fa;
+}
+
+.altrow {
+    color:#000;
+    background-color:#fff;
+}
+
+.searchWait {
+    color:#807f80;
+}
+.searchIn {
+    color:#000;
+}
+
+.highlight {
+    color:#fff;
+    background-color:#4790eb;
+}
+
+.selected {
+    color:#fff;
+    background-color:#175099;
+}
+
+#searchSpan {
+    margin-left:50%;
+}
+#search {
+    width:30%;
+}
+
+.icon {
+    height:8px;
+    width:8px;
+}
+
+/* END: itunes styling */
+
+/* BEGIN: sidebar- override base.css */
+section#sidebar{
+    float:left;
+    width:10%;
+}
+
+#sidebar nav ul {
+    list-style:none;
+    margin:0;
+    padding:0px;
+    font-size:8pt;
+}
+
+#sidebar nav h3 {
+    font-size:11pt;
+    margin:0;
+    padding:0;
+    padding-top:8px;
+    padding-bottom:2px;
+
+}
+
+.fakeLink {    
+    color:#093955;
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+/* END: sidebar */
+
+/* override the base.css */ 
+section#main{
+    float:right;
+    width:85%;
+    padding-left:0%;
+}
+
+
+/* BEGIN: collapsable boxes 
+   from: http://www.factorbook.org/_css/css.css?lastcache=1295038164&amp;viewtype=default
+   with modifications
+*/
+.collapsable_box {
+    margin: 0 0 20px 0;
+    height:auto;
+
+}
+/* IE6 fix */
+* html .collapsable_box  {
+    height:10px;
+}
+.collapsable_box_header {
+    color: #000;
+    font-size:12pt;
+    font-weight:bold;
+
+    padding: 5px 5px 5px 5px;
+    margin:0;
+    border: 1px solid #a6a6a6;
+    /* NOTE: the above might not work w/ some browsers
+    border-left: 1px solid #a6a6a6;
+    border-right: 1px solid #a6a6a6;
+    border-bottom: 1px solid #a6a6a6;
+    */
+    -moz-border-radius-topleft:8px;
+    -moz-border-radius-topright:8px;
+    -webkit-border-top-right-radius:8px;
+    -webkit-border-top-left-radius:8px;
+    background:#f3f3f3;
+}
+
+.collapsable_box_content {
+    margin:0;
+    height:auto;
+    background:#fff;
+    -moz-border-radius-bottomleft:8px;
+    -moz-border-radius-bottomright:8px;
+    -webkit-border-bottom-right-radius:8px;
+    -webkit-border-bottom-left-radius:8px;
+    border-left: 1px solid #cccccc;
+    border-right: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+}
+
+.toggle {
+    color: #4690d6;
+    cursor:pointer;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:20px;
+    font-weight: bold;
+    text-decoration:none;
+    float:right;
+    margin: 0;
+    margin-top: -7px;
+}
+/* END: collapsable boxes */
+
+/* BEGIN: info styling */
+p.info {
+    color:gray;
+    width:100%;
+    margin: 5, 0, 0, 0;
+    font-size:10pt;
+}
+span.label {
+    color:gray;
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:0px;
+    margin:0;
+}
+span.value {
+    margin-left:25px;
+    display:block;
+    color:#000;
+}
+
+span.value2 {
+    color:#000;
+}
+/* END: info styling */
+

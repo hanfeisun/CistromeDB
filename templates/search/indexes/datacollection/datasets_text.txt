@@ -1,0 +1,18 @@
+{{ object.gsmid }}
+{{ object.name }}
+{{ object.factor.name }}
+{{ object.factor.antibody }}
+{{ object.factor.type }}
+{{ object.platform.gplid }}
+{{ object.platform.name }}
+{{ object.platform.experiment_type }}
+{{ object.platform.technology }}
+{{ object.species.name }}
+{{ object.assemblies.name }}
+{{ object.cell_type.name }}
+{{ object.cell_type.tissue_type }}
+{{ object.cell_line.name }}
+{{ object.cell_pop.name }}
+{{ object.strain.name }}
+{{ object.condition.name }}
+{{ object.disease_state.name}}

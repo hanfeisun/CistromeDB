@@ -1,0 +1,44 @@
+{% extends "datacollection/base.html" %}
+{% block title %}Administration Help - How To - Delete Entries{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/teams.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<section>
+    <header>
+        <h2>How to delete paper entries</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url papers %}" target="_blank">papers page</a>; check the boxes of the papers you want to delete (check the first box to select all of the papers on that page); click the "delete" btn</li>
+	   <li>confirm or cancel</li>
+       </ol>
+    </p>
+</section>
+
+<section>
+    <header>
+        <h2>How to delete dataset entries</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url datasets %}" target="_blank">datasets page</a>; check the boxes of the datasets you want to delete (check the first box to select all of the datasets on that page); click the "delete" btn</li>
+	   <li>confirm or cancel</li>
+       </ol>
+    </p>
+</section>
+
+<section>
+    <header>
+        <h2>How to delete sample entries</h2>
+    </header>
+    <p>
+       <ol>
+           <li>go to the <a href="{% url samples %}" target="_blank">samples page</a>; check the boxes of the samples you want to delete (check the first box to select all of the samples on that page); click the "delete" btn</li>
+	   <li>confirm or cancel</li>
+       </ol>
+    </p>
+</section>
+
+{% endblock %}
