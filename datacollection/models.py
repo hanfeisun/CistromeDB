@@ -289,6 +289,12 @@ class Datasets(DCModel):
     #curator = the person who double checks the info
     curator = models.ForeignKey(User, null=True, blank=True, default=None,
                                 related_name="curator")
+
+    tissue_type = models.ForeignKey('TissueTypes', null=True, blank=True, 
+                                    default=None)
+    antibody = models.ForeignKey('Antibodies', null=True, blank=True, 
+                                 default=None)
+
     
 Datasets._meta._donotSerialize = ['user', 'uploader', 'curator']
 
@@ -315,25 +321,19 @@ class Platforms(DCModel):
 class Factors(DCModel):
     """The factors applied to the sample, e.g. PolII, H3K36me3, etc."""
     name = models.CharField(max_length=255)
-    antibody = models.CharField(max_length=255, blank=True)
+    #antibody = models.CharField(max_length=255, blank=True)
     type = models.CharField(max_length=255, choices=FACTOR_TYPES,
                             default="other")
     def __str__(self):
-        if self.antibody:
-            return "%s:%s" % (self.name, self.antibody)
-        else:
-            return self.name
+        return self.name
 
 class CellTypes(DCModel):
     """Sample's tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
     """
     name = models.CharField(max_length=255)
-    tissue_type = models.CharField(max_length=255, blank=True)
+    #tissue_type = models.CharField(max_length=255, blank=True)
     def __str__(self):
-        if self.tissue_type:
-            return "%s:%s" % (self.name, self.tissue_type)
-        else:
-            return self.name
+        return self.name
 
 class CellLines(DCModel):
     """Sample's cell lines.  I really don't know what distinguishes
@@ -567,3 +567,16 @@ class SampleDhsStats(DCModel):
     sample = models.ForeignKey('Samples', unique=True)
     total_peaks = models.IntegerField(default=0)
     peaks_in_dhs = models.IntegerField(default=0)
+
+class Antibodies(DCModel):
+    """Antibodies"""
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+
+class TissueTypes(DCModel):
+    """Tissue Types"""
+    name = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+
