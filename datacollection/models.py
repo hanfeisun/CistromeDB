@@ -307,11 +307,12 @@ class Platforms(DCModel):
     gplid - GEO Platform ID
     experiment type- Choice: ChIP-Chip/ChIP-Seq
     """
-    gplid = models.CharField(max_length=7)
-    name = models.CharField(max_length=255, blank=True)
-    technology = models.CharField(max_length=255, blank=True)
-    company = models.CharField(max_length=255, blank=True)
-    experiment_type = models.CharField(max_length=10, blank=True,
+    gplid = models.CharField(max_length=255, null=True, blank=True, default="")
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
+    technology = models.CharField(max_length=255, null=True, blank=True, default="")
+    company = models.CharField(max_length=255, null=True, blank=True, default="")
+    experiment_type = models.CharField(max_length=10, null=True, blank=True,
+                                       default="",
                                        choices=EXPERIMENT_TYPE_CHOICES)
                                        
     def __str__(self):
