@@ -228,7 +228,19 @@ function ResultsView(container, model) {
 	outer.makePaperRows(newTbl);
 
 	//make the liquid cols for the tabl
-	outer.container.appendChild(newTbl);
+	var iframe = $D('iframe');
+	iframe.src="about:blank";
+	iframe.width="99%";
+	//NOTE: the iframe MUST be appended to the body of the doc, otherwise
+	//iframe.contentDocument = undefined!
+	outer.container.appendChild(iframe);
+	//alert(iframe.contentDocument);
+	//load the css
+	iframe.contentDocument.head.appendChild($D('link', {'href':SUB_SITE+"static/css/home.css", 'rel':'stylesheet', 'type':'text/css'}));
+	iframe.contentDocument.body.appendChild(newTbl);
+	//the next line used in redraw!
+	outer.iframe = iframe;
+
 	//NOTE: this call to liquid cols MUST be AFTER we append the newTbl,
 	//otherwise the widths of the elms will be 0
 	var liquidCols = new LiquidCols(newTbl);
@@ -311,8 +323,9 @@ function ResultsView(container, model) {
     this.redraw = function() {
 	//this is a fn we use to redraw the paper rows of the table w/o
 	//creating a new table--used in the sorting cols
-	var rows = $$("#resultsTable tr");
-	
+	//var rows = $$("#resultsTable tr");
+	var rows = outer.iframe.contentDocument.getElementsByTagName("tr");
+       
 	//always skip the first
 	var currTbl;
 	if (rows.length > 0) {
