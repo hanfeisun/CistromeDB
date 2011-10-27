@@ -16,6 +16,14 @@ onload="init();"
 {% endblock %}
 
 {% block content %}
+   <nav id="tabNav">
+     <header class="tabHeader" id="factorsTab">Factors View</header>
+     <header class="tabHeader" id="papersTab">Papers View</header>
+   </nav>
+   <section id="factorsView">
+     <h1>Factors View Here!</h1>
+   </section>
+   <section id="papersView">
       <!--inspired by www.factorbook.org -->
       <section class="collapsable_box"> 
 	<header class="collapsable_box_header">Papers:<span id="searchSpan"><input type="text" id="search" value=""></input><input type="button" value="Search" id="searchBtn"/></span><span id="results_toggler" class="toggle">-</span></header> 
@@ -30,7 +38,7 @@ onload="init();"
 	      <section id="paper_info"> </section> 
 	</section>
       </section>
-      
+
       <section class="collapsable_box" style="visibility:hidden"> 
 	<header class="collapsable_box_header">Datasets:<span id="datasets_toggler" class="toggle">-</span></header> 
 	<section class="collapsable_box_content" id="datasets_wrapper"> 
@@ -44,6 +52,8 @@ onload="init();"
 	      <section id="samples"> </section> 
 	</section>
       </section>
+   </section>
+   
 {% endblock %}
 
 {% block sidebar %}

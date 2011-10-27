@@ -127,6 +127,31 @@ function init() {
     getPapers("all", pgModel);
     //wait 1.5 secs and then show the results pane
     setTimeout(function() { results_tog.open();}, 1500);
+
+    //tab functions
+    var factorsTab = $('factorsTab');
+    var papersTab = $('papersTab');
+    var factorsSect = $('factorsView');
+    var papersSect = $('papersView');
+
+    factorsTab.onclick = function(event) {
+	//tab styling:
+	factorsTab.className = "activeTab";
+	factorsSect.style.display="block";
+	papersTab.className = "tabHeader";
+	papersSect.style.display="none";
+	
+    }
+    factorsTab.onclick()
+    papersTab.onclick = function(event) {
+	//tab styling:
+	papersTab.className = "activeTab";
+	papersSect.style.display="block";
+	factorsTab.className = "tabHeader";
+	factorsSect.style.display="none";
+    }
+
+	
 }
 
 /**

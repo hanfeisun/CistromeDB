@@ -185,3 +185,66 @@ span.value2 {
 }
 /* END: info styling */
 
+#tabNav .tabHeader {
+    color: #000;
+    font-size:12pt;
+    font-weight:bold;
+
+    padding: 5px 5px 5px 5px;
+    margin:0;
+    border: 1px solid #a6a6a6;
+    /* NOTE: the above might not work w/ some browsers
+    border-left: 1px solid #a6a6a6;
+    border-right: 1px solid #a6a6a6;
+    border-bottom: 1px solid #a6a6a6;
+    */
+    -moz-border-radius-topleft:8px;
+    -moz-border-radius-topright:8px;
+    -webkit-border-top-right-radius:8px;
+    -webkit-border-top-left-radius:8px;
+    background:#f3f3f3;
+    display:block;
+    float:left;
+}
+
+#tabNav .activeTab {
+    color: #000;
+    font-size:12pt;
+    font-weight:bold;
+
+    padding: 5px 5px 5px 5px;
+    margin:0;
+    border: 1px solid #a6a6a6;
+    /* NOTE: the above might not work w/ some browsers
+    border-left: 1px solid #a6a6a6;
+    border-right: 1px solid #a6a6a6;
+    border-bottom: 1px solid #a6a6a6;
+    */
+    -moz-border-radius-topleft:8px;
+    -moz-border-radius-topright:8px;
+    -webkit-border-top-right-radius:8px;
+    -webkit-border-top-left-radius:8px;
+    background:#fff;
+    display:block;
+    float:left;
+}
+
+
+#tabNav .tabHeader:hover {
+    background:#fff;
+    cursor:pointer;
+}
+
+#tabNav .activeTab:hover {
+    background:#fff;
+    cursor:pointer;
+}
+
+/*SINCE tabs are floating, sections need to clear them*/
+#factorsView {
+    clear:both;
+}
+
+#papersView {
+    clear:both;
+}
