@@ -21,8 +21,45 @@ onload="init();"
      <header class="tabHeader" id="papersTab">Papers View</header>
    </nav>
    <section id="factorsView">
-     <h1>Factors View Here!</h1>
+     <section id="factorsForm" class="factorsSection"> <!--INPUT FORM-->
+       <div id="factorsStep1"> <!--step 1-->
+	 <p>
+	 <strong>1. select the factors of interest:</strong> (multiple selection allowed)
+	 </p>
+	 <select multiple="True" id="factorsSelect">
+	     <!--NOTE: 0 = ALL FACTORS-->
+	     <option value="0" selected="True">All</option>
+	     {% for f in factors %}
+	     <option value="{{f.id}}" class="{% cycle 'row' 'altrow' %}">{{f.name}}</option>
+	     {% endfor %}
+	   </select>
+       </div>
+       <div id="factorsStep2"> <!--step 2-->
+	 <p>
+	   <strong>2. select comparison:</strong>
+	   <select id="comparisonSelect">
+	     <!--note: value is of model name -->
+	     <option value="CellLines">Cell Line</option>
+	     <option value="TissueTypes">Tissue Type</option>
+	     <option value="CellTypes">Cell Type</option>
+	     <option value="CellPops">Cell Population</option>
+	     <option value="Strains">Strains</option>
+	     <option value="DiseaseStates">Disease State</option>
+	   </select>
+	   <input type="button" id="drawBtn" value="Draw Table"/>
+	 </p>
+       </div>
+     </section>
+     <hr/>
+     <section id="factorsTable"  class="factorsSection">
+     </section>
+     <hr/>
+     <section id="factorInfo" class="factorsSection">
+       <h3>put info here</h3>
+     </section>
+
    </section>
+
    <section id="papersView">
       <!--inspired by www.factorbook.org -->
       <section class="collapsable_box"> 

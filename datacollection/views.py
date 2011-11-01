@@ -90,6 +90,7 @@ def no_view(request):
 def home(request):
     #show the 10 newest papers
     papers = models.Papers.objects.order_by('-date_collected')[:10]
+    factors = models.Factors.objects.all().order_by('name')
     return render_to_response('datacollection/home.html', locals(),
                               context_instance=RequestContext(request))
 
@@ -1247,7 +1248,7 @@ def front(request, rtype):
     papers (determined by rtype).
     returns JSON
     """
-    _timeout = 60*60 #1 hr
+    _timeout = 60*60*24 #1 hr
 
     #1. go to cache
     if cache.get(rtype):
@@ -1276,3 +1277,70 @@ def front(request, rtype):
     cache.set(rtype, ret, _timeout)
 
     return HttpResponse(ret)
+#------------------------------------------------------------------------------
+def factors_view(request):
+    """Takes two query params, factors--a list of factor ids, and a model,
+    e.g. CellLines and returns information to fill out the factors view 
+    tab on the homepage in json
+    """
+
+    #MAPS the values defined in home.html to (Datasets field, model)
+    _MODEL_FIELD_MAP = {'CellLines': ('cell_line', models.CellLines),
+                        'TissueTypes': ('tissue_type', models.TissueTypes),
+                        'CellTypes': ('cell_type', models.CellTypes),
+                        'CellPops': ('cell_pop', models.CellPops),
+                        'Strains': ('strains', models.Strains),
+                        'DiseaseStates':('disease_state',models.DiseaseStates),
+                        }
+    _timeout = 60*60*24 #1 day
+    
+    if 'factors' in request.GET and 'model' in request.GET:
+        (dsetFld, model)  = _MODEL_FIELD_MAP[request.GET['model']]
+        if request.GET['factors'] == '0':
+            factors = models.Factors.objects.all().order_by('name')
+        else:
+            factors = [models.Factors.objects.get(pk=int(f)) \
+                           for f in request.GET['factors'].split(",")]
+            sorted(factors, key=lambda f:f.name)
+
+        #model = getattr(models, request.GET['model'])
+        fnames = [f.name for f in factors]
+        #mnames = [m.name for m in model.objects.all().order_by('name')]
+        mnames = []
+
+        #SANITY CHECK! this works!
+        # sox2 = models.Factors.objects.get(pk=370)
+        # cl = models.CellLines.objects.get(pk=1)
+        # #foo = models.Datasets.objects.filter(factor__id=370, cell_line__id=1)
+        # #foo = models.Datasets.objects.filter(factor=sox2, cell_line=cl)
+        # p = {'factor':sox2, 'cell_line':cl}
+        # foo =  models.Datasets.objects.filter(**p)
+        # print "FOO: %s" % foo
+
+        ret = {}
+        for f in factors:
+            for m in model.objects.all():
+                #NEED to cache these queries!
+                key = "factor:%s, %s:%s" % (f.id, dsetFld, m.id)
+                if cache.get(key):
+                    tmp = cache.get(key)
+                else:
+                    params = {'factor':f, dsetFld:m}
+                    #print params
+                    #NOTE: we have to pass in the param as a **
+                    tmp = models.Datasets.objects.filter(**params)
+                    cache.set(key, tmp, _timeout)
+
+                if tmp:
+                    if m.name not in mnames:
+                        mnames.append(m.name)
+                    #RETURNING DSET ids for now
+                    if f.name not in ret:
+                        ret[f.name] = {}
+                    ret[f.name][m.name] = [d.id for d in tmp]
+
+                    #ret[f.name] = {'model':m.name, 'dsets': [d.id for d in tmp]}
+
+        return HttpResponse("{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames)), json.dumps(ret)))
+
+    return HttpResponse('[]')
