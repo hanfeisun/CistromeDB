@@ -2,7 +2,7 @@
 
 {% block title %}Cistrome Paper Collection{% endblock %}
 {% block include %}
-<link href="{% url static_url %}css/home.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/home.css" rel="stylesheet" type="text/css" title="home"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/scriptaculous/scriptaculous.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
@@ -52,6 +52,7 @@ onload="init();"
      </section>
      <hr/>
      <section id="factorsTable"  class="factorsSection">
+       <h3>Select Factors and Click 'Draw Table'</h3>
      </section>
      <hr/>
      <section id="factorInfo" class="factorsSection">

@@ -1,15 +1,20 @@
 //create the class
 var Model = ModelFactory(["papersList", "currPaper", "currResultsCol"],
 			 ["currResultsAscending", "origPapersList"]);
+var FactorsTabModel = ModelFactory(["factors", "models", "dsets"], []);
 //Instantiate the class
 var pgModel = new Model({"papersList":null, "currPaper":null, 
 			 "currResultsCol":null});
+var factorsModel = new FactorsTabModel({'factors':null, 'models':null, 
+					'dsets':null});
+
 
 //MENG asked me to remove this for now...but i like this so i'm just going to 
 //disable it
 var msg = "Search Cistrome PC";
 //var msg = "                   ";
 
+var homeCSS;
 //NOTE: an empty search might mean "all" and not none.
 function init() {
     var searchFld = $('search');
@@ -52,12 +57,17 @@ function init() {
     var datasetsView = new DatasetsView($('datasets'), pgModel);
     var samplesView = new SamplesView($('samples'), pgModel);
 
+    var factorsTableView = 
+	new FactorsTableView($('factorsTable'), factorsModel, 
+			     $('comparisonSelect'));
+
     pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
     //when a new paperList is set, clear the current paper
     pgModel.papersListEvent.register(function() {pgModel.setCurrPaper(null);});
     pgModel.currPaperEvent.register(function() { paperInfoView.makeHTML();});
     pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
+    factorsModel.dsetsEvent.register(function() { factorsTableView.makeHTML();});
     
     //overrider the setter fn to account for ascending fld- optional field asc
     pgModel.setCurrResultsCol = function(field, asc) {
@@ -173,62 +183,11 @@ function init() {
 	    fStr += ","+factors[i]
 	}
 
-	//var factors = $('factorsSelect').value;
-	var comp = $('comparisonSelect').value;
-	//alert(factors+"\n\n"+comp);
-
-	//NOTE: THIS definitely should be moved and done more in MVC style!
 	var factors_view_cb = function(req) {
 	    var resp = eval("("+req.responseText+")");
-	    //DRAW the factors table:
-	    var ftable = $('factorsTable');
-	    //CLEAR factors table
-	    ftable.innerHTML = "";
-	    var factors = resp.factors;
-	    var mnames = resp.models;
-	    //NEW TABLE
-	    var tbl = $D('table');
-	    var tr = $D('tr');
-	    //tr.style.height="350px";
-	    //BUILD table header
-	    //tr.appendChild($D('th', {'innerHTML':comp}));
-	    tr.appendChild($D('th', {'innerHTML':""}));
-	    //How many columns before we rotate
-	    var max_cols= 15;
-	    var cname = (mnames.length > max_cols) ? "rotate":"";
-	    var cname2 = (mnames.length > max_cols) ? "rotate_td":"norotate_td";
-	    for (var i = 0; i < mnames.length; i++) {
-		//NEED to put it in three spans
-		var sp1 = $D('span');
-		var sp2 = $D('span');
-		var sp3 = $D('span', {'innerHTML':mnames[i]});
-		sp2.appendChild(sp3);
-		sp1.appendChild(sp2);
-		//var sp = $D('span').appendChild($D('span').appendChild($D('span', {'innerHTML':mnames[i]})));
-		var th = $D('th', {'className':cname});
-		th.appendChild(sp1);
-		tr.appendChild(th);
-		//tr.appendChild($D('th', {'innerHTML':mnames[i], 'className':'rotate'}));
-	    }
-	    tbl.appendChild(tr);
-	    //BUILD rest of tables
-	    for (var i = 0; i < factors.length; i++) {
-		tr = $D('tr');
-		//first item is the factor name
-		tr.appendChild($D('th', {'score':'row', 'className':'th_row', 'innerHTML':factors[i]}));
-		for (var j = 0; j < mnames.length; j++) {
-		    var td = $D('td', {'className':cname2});
-
-		    var val = resp.dsets[factors[i]][mnames[j]];
-		    if (val) {
-			td.innerHTML = val.length;
-		    }
-		    tr.appendChild(td);
-		}
-		tbl.appendChild(tr);
-	    }
-
-	    ftable.appendChild(tbl);
+	    factorsModel.setFactors(resp.factors);
+	    factorsModel.setModels(resp.models);
+	    factorsModel.setDsets(resp.dsets);
 	}
 	//MAKE the ajax call-
 	var call = new Ajax.Request(SUB_SITE+"factors_view/", 
@@ -236,7 +195,8 @@ function init() {
      onComplete: factors_view_cb});
 
     }
-	
+    //base.css is the first [0], home.css is [1]
+    homeCSS = document.styleSheets[1];
 }
 
 /**
@@ -785,7 +745,6 @@ function SamplesView(container, model) {
     }
 }
 
-
 function Toggler(toggleSpan, container, isOpen) {
     this.toggleSpan = toggleSpan;
     this.isOpen = (isOpen == null) ? true : isOpen;
@@ -893,4 +852,111 @@ function LiquidCols(table) {
 	this.ths[i].appendChild(tmp);
 	this.widths.push(this.ths[i].getWidth());
     }
+}
+
+//Factors Tab Views
+function FactorsTableView(container, model, compSelect) {
+    this.container = container;
+    this.model = model;
+    this.compSelect = compSelect;
+    var outer = this;
+    //How many columns before we rotate
+    var maxCols = 15;
+    
+    //Function to draw the factors table
+    this.makeHTML = function() {
+	//clear the factors table
+	outer.container.innerHTML = "";
+	var factors = outer.model.getFactors();
+	var mnames = outer.model.getModels();
+	var dsets = outer.model.getDsets();
+	//BUILD the table!
+	var tbl = $D('table');
+	var tr = $D('tr');
+	//TABLE HEADER
+	tr.appendChild($D('th', {'innerHTML':outer.compSelect.value, 
+			'id':'modelTh'}));
+	var cname = (mnames.length > maxCols) ? "r2":"";
+	var cname2 = (mnames.length > maxCols) ? "r2_td":"";
+	var longestMname = "";
+
+	for (var i = 0; i < mnames.length; i++) {
+	    //SAVE the longest mname--used later to adjust rotated cols
+	    if (mnames[i].length > longestMname.length) {
+		longestMname = mnames[i];
+	    }
+	    //NEED to put it in two spans
+	    var sp1 = $D('span');
+	    var sp2 = $D('span', {'innerHTML':mnames[i]});
+	    sp1.appendChild(sp2);
+	    var th = $D('th', {'className':cname});
+	    th.appendChild(sp1);
+	    tr.appendChild(th);
+	}
+	tbl.appendChild(tr);
+
+	//BUILD rest of table
+	var td;
+	for (var i = 0; i < factors.length; i++) {
+	    tr = $D('tr');
+	    //first item is the factor name
+	    tr.appendChild($D('td', {'innerHTML':factors[i]}));
+	    for (var j = 0; j < mnames.length; j++) {
+		td = $D('td', {'className':cname2});
+		
+		var val = dsets[factors[i]][mnames[j]];
+		if (val) {
+		    td.innerHTML = val.length;
+		}
+		tr.appendChild(td);		
+	    }
+	    tbl.appendChild(tr);
+	}
+
+	outer.container.appendChild(tbl);
+
+	//CSS adjustments HERE!
+	if (mnames.length > maxCols) {
+	    //NEED to set .r2 > span > span.height property to td width
+	    var rule = getStyleRule(homeCSS, ".r2 > span > span");
+	    rule.style.height = getStyle(td, "width");
+	    //NEED to set it's width to accomodate the longest col name
+	    rule.style.width = (longestMname.length * 10) + "px";
+	    
+	    //NEED to set factorsTable to clear at least the height we set:
+	    var r2 = getStyleRule(homeCSS, "#factorsTable");
+	    r2.style.marginTop = (longestMname.length * 10) + "px";
+	}
+	
+    }
+}
+
+/* getStyle- fn to get the COMPUTED css value of an element 
+ * ref: http://robertnyman.com/2006/04/24/get-the-rendered-style-of-an-element/
+ * NOTE: the elm must be part of the DOM (e.g. appended somewhere on the tree!)
+ */
+function getStyle(oElm, strCssRule){
+    var strValue = "";
+    if(document.defaultView && document.defaultView.getComputedStyle){
+	strValue = document.defaultView.getComputedStyle(oElm, "").getPropertyValue(strCssRule);
+    }
+    else if(oElm.currentStyle){
+	strCssRule = strCssRule.replace(/\-(\w)/g, function (strMatch, p1){
+		return p1.toUpperCase();
+	    });
+	strValue = oElm.currentStyle[strCssRule];
+    }
+    return strValue;
+}
+
+/*given a css, returns the css rule using the selector, e.g. selector="a:hover"
+ */
+function getStyleRule(css, selector) {
+    var rules = css.cssRules ? css.cssRules: css.rules;
+    for (var i = 0; i < rules.length; i++){
+	if(rules[i].selectorText == selector) { 
+	    return rules[i];
+	}
+    }
+    return null;
 }
