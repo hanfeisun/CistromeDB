@@ -124,7 +124,8 @@ function init() {
     */
 
     //DEFAULT/only view for paper collection homepage is ALL papers
-    getPapers("all", pgModel);
+    //TURNING THIS OFF FOR NOW! --REMEMBER TO TURN IT BACK ON!
+    //getPapers("all", pgModel);
     //wait 1.5 secs and then show the results pane
     setTimeout(function() { results_tog.open();}, 1500);
 
@@ -151,6 +152,90 @@ function init() {
 	factorsSect.style.display="none";
     }
 
+    var drawBtn = $('drawBtn');
+    drawBtn.onclick = function(event) {
+	//NOTE: i have to walk the list and see which onese are selected
+	//NOTE: factor id = 0 means ALL factors; we check for this
+	var factors = [];
+	var fs = $('factorsSelect');
+	for (var i = 0; i < fs.options.length; i++) {
+	    if (fs.options[i].selected) {
+		factors.push(fs.options[i].value);
+	    }
+	}
+	if ((factors.indexOf("0") != -1) && (factors.length > 1)) {
+	    //remove 0 from the list
+	    factors.splice(factors.indexOf("0"), 1);
+	}
+	
+	var fStr=(factors.length > 0)? factors[0]:"";
+	for (var i = 1; i <factors.length; i++) {
+	    fStr += ","+factors[i]
+	}
+
+	//var factors = $('factorsSelect').value;
+	var comp = $('comparisonSelect').value;
+	//alert(factors+"\n\n"+comp);
+
+	//NOTE: THIS definitely should be moved and done more in MVC style!
+	var factors_view_cb = function(req) {
+	    var resp = eval("("+req.responseText+")");
+	    //DRAW the factors table:
+	    var ftable = $('factorsTable');
+	    //CLEAR factors table
+	    ftable.innerHTML = "";
+	    var factors = resp.factors;
+	    var mnames = resp.models;
+	    //NEW TABLE
+	    var tbl = $D('table');
+	    var tr = $D('tr');
+	    //tr.style.height="350px";
+	    //BUILD table header
+	    //tr.appendChild($D('th', {'innerHTML':comp}));
+	    tr.appendChild($D('th', {'innerHTML':""}));
+	    //How many columns before we rotate
+	    var max_cols= 15;
+	    var cname = (mnames.length > max_cols) ? "rotate":"";
+	    var cname2 = (mnames.length > max_cols) ? "rotate_td":"norotate_td";
+	    for (var i = 0; i < mnames.length; i++) {
+		//NEED to put it in three spans
+		var sp1 = $D('span');
+		var sp2 = $D('span');
+		var sp3 = $D('span', {'innerHTML':mnames[i]});
+		sp2.appendChild(sp3);
+		sp1.appendChild(sp2);
+		//var sp = $D('span').appendChild($D('span').appendChild($D('span', {'innerHTML':mnames[i]})));
+		var th = $D('th', {'className':cname});
+		th.appendChild(sp1);
+		tr.appendChild(th);
+		//tr.appendChild($D('th', {'innerHTML':mnames[i], 'className':'rotate'}));
+	    }
+	    tbl.appendChild(tr);
+	    //BUILD rest of tables
+	    for (var i = 0; i < factors.length; i++) {
+		tr = $D('tr');
+		//first item is the factor name
+		tr.appendChild($D('th', {'score':'row', 'className':'th_row', 'innerHTML':factors[i]}));
+		for (var j = 0; j < mnames.length; j++) {
+		    var td = $D('td', {'className':cname2});
+
+		    var val = resp.dsets[factors[i]][mnames[j]];
+		    if (val) {
+			td.innerHTML = val.length;
+		    }
+		    tr.appendChild(td);
+		}
+		tbl.appendChild(tr);
+	    }
+
+	    ftable.appendChild(tbl);
+	}
+	//MAKE the ajax call-
+	var call = new Ajax.Request(SUB_SITE+"factors_view/", 
+    {method:"get", parameters: {'factors':fStr, 'model':comp}, 
+     onComplete: factors_view_cb});
+
+    }
 	
 }
 
