@@ -191,7 +191,8 @@ function init() {
 	}
 	//MAKE the ajax call-
 	var call = new Ajax.Request(SUB_SITE+"factors_view/", 
-    {method:"get", parameters: {'factors':fStr, 'model':comp}, 
+    {method:"get", parameters: {'factors':fStr, 
+				'model':$('comparisonSelect').value}, 
      onComplete: factors_view_cb});
 
     }
