@@ -288,6 +288,9 @@ span.value2 {
     text-align:center;
 }
 
+#factorInfo tr {
+    border:1px solid #000;
+}
 
 /* ROTATION HERE */
 #modelTh {

@@ -1,12 +1,14 @@
+var Datasets = loadJSRecord('Datasets');
+
 //create the class
 var Model = ModelFactory(["papersList", "currPaper", "currResultsCol"],
 			 ["currResultsAscending", "origPapersList"]);
-var FactorsTabModel = ModelFactory(["factors", "models", "dsets"], []);
+var FactorsTabModel = ModelFactory(["factors", "models", "dsets", "currTd"], []);
 //Instantiate the class
 var pgModel = new Model({"papersList":null, "currPaper":null, 
 			 "currResultsCol":null});
 var factorsModel = new FactorsTabModel({'factors':null, 'models':null, 
-					'dsets':null});
+					'dsets':null, 'currTd':null});
 
 
 //MENG asked me to remove this for now...but i like this so i'm just going to 
@@ -60,6 +62,8 @@ function init() {
     var factorsTableView = 
 	new FactorsTableView($('factorsTable'), factorsModel, 
 			     $('comparisonSelect'));
+    var factorInfoView = 
+	new FactorInfoView($('factorInfo'), factorsModel);
 
     pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
     //when a new paperList is set, clear the current paper
@@ -68,6 +72,7 @@ function init() {
     pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
     factorsModel.dsetsEvent.register(function() { factorsTableView.makeHTML();});
+    factorsModel.currTdEvent.register(function() { factorInfoView.makeHTML();});
     
     //overrider the setter fn to account for ascending fld- optional field asc
     pgModel.setCurrResultsCol = function(field, asc) {
@@ -188,6 +193,8 @@ function init() {
 	    factorsModel.setFactors(resp.factors);
 	    factorsModel.setModels(resp.models);
 	    factorsModel.setDsets(resp.dsets);
+	    //CLEAR the factorInfoView
+	    factorInfoView.clearHTML();
 	}
 	//MAKE the ajax call-
 	var call = new Ajax.Request(SUB_SITE+"factors_view/", 
@@ -857,6 +864,7 @@ function LiquidCols(table) {
 
 //Factors Tab Views
 function FactorsTableView(container, model, compSelect) {
+    this.prevTd = null;
     this.container = container;
     this.model = model;
     this.compSelect = compSelect;
@@ -909,6 +917,41 @@ function FactorsTableView(container, model, compSelect) {
 		
 		if (dsets[factors[i]] && dsets[factors[i]][mnames[j]]) {
 		    td.innerHTML = dsets[factors[i]][mnames[j]].length;
+		    //NICE TRICK!
+		    td["_data"] = {'factor':factors[i],
+				   'model':outer.compSelect.value, 
+				   'mname': mnames[j],
+				   'dsets': dsets[factors[i]][mnames[j]]};
+
+		    td.onclick = function(t) {
+			return function(event) {
+			    outer.model.setCurrTd(t);
+			    //VIOLATION OF MVC HERE!!!
+			    t.style.backgroundColor="#0e162a";//"#cad0fc";
+			    t.style.color="#fff";
+			    if (outer.prevTd) {
+				//clear prev
+				outer.prevTd.style.backgroundColor = "#fff";
+				outer.prevTd.style.color="#000";
+			    }
+			    outer.prevTd = t;
+			}
+		    }(td);
+		    //DOING the mouse over events here rather than in css
+		    //to only highlight the filled-in boxes!
+		    td.onmouseover = function(event) {
+			if (outer.prevTd != this) {
+			    this.style.cursor = "pointer";
+			    this.style.backgroundColor = "#cad0fc";
+			}
+		    }
+		    td.onmouseout = function(event) {
+			if (outer.prevTd != this) {
+			    this.style.cursor = "default";
+			    this.style.backgroundColor = "#fff";
+			}
+		    }
+
 		} else {
 		    td.innerHTML = "";
 		}
@@ -940,6 +983,78 @@ function FactorsTableView(container, model, compSelect) {
 	    r2.style.marginTop = (longestMname.length * 10) + "px";
 	}
 	
+    }
+}
+
+function FactorInfoView(container, model) {
+    this.container = container;
+    this.model = model;
+    var outer = this;
+    
+    this.makeHTML = function() {
+	outer.clearHTML();
+	//NOTE:getCurrTd returns the table CELL!--we stored it under _data
+	var data = outer.model.getCurrTd()['_data'];
+	//make tag line
+	var hdr = $D('header');
+	hdr.appendChild($D('span', {innerHTML:'Factor:', className:'label'}));
+	hdr.appendChild($D('span', {innerHTML:data.factor, className:'value2'}));
+	hdr.appendChild($D('span', {innerHTML:data.model+':', className:'label'}));
+	hdr.appendChild($D('span', {innerHTML:data.mname, className:'value2'}));
+	outer.container.appendChild(hdr);
+
+	//make the table:
+	
+	var tbl = $D('table');
+	for (var i = 0; i < data.dsets.length; i++) {
+	    var dset = Datasets.get(data.dsets[i]);
+	    var tr = $D('tr');
+	    var td1 = $D('td');
+
+	    if (dset.paper.pmid) {
+		var span = $D('span', {innerHTML:'pmid:',className:'label'});
+		td1.appendChild(span);
+		span = $D('span', {className:'value2'});
+		var newA = $D('a',{innerHTML:dset.paper.pmid, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.paper.pmid, target:"_blank"});
+		span.appendChild(newA);
+		td1.appendChild(span);
+		td1.appendChild($D('br'));
+	    }
+
+	    //DATA link: NOTE there might be several places for this!
+	    if (dset.raw_file_url) {
+		var span = $D('span', {innerHTML:'data:',className:'label'});
+		td1.appendChild(span);
+		span = $D('span', {className:'value2'});
+		var newA=$D('a',{innerHTML:'download',href:dset.raw_file_url});
+
+		span.appendChild(newA);
+		td1.appendChild(span);
+	    }
+
+	    tr.appendChild(td1);
+
+	    //other info
+	    var fields = ['species', 'antibody', 'cell_line', 'tissue_type', 
+			  'cell_type', 'cell_pop', 'strain', 'disease_state'];
+	    var td2 = $D('td');
+	    for (var j = 0; j < fields.length; j++) {
+		if (dset[fields[j]] && dset[fields[j]].name) {
+		    //alert(dset[fields[j]].name);
+		    td2.appendChild($D('span', {innerHTML:fields[j]+':',
+				    className:'label'}));
+		    td2.appendChild($D('span', {innerHTML:dset[fields[j]].name, className:'value2'}));
+		    td2.appendChild($D('br'));
+		}
+	    }
+	    tr.appendChild(td2);
+	    tbl.appendChild(tr);
+	}
+	outer.container.appendChild(tbl);
+    }
+    
+    this.clearHTML = function() {
+	outer.container.innerHTML = "";
     }
 }
 
