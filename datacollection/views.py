@@ -1293,11 +1293,33 @@ def factors_view(request):
                         'DiseaseStates':('disease_state',models.DiseaseStates),
                         }
     _timeout = 60*60*24 #1 day
-    
+    ret = {}
+    build_ret = True;
+    mnames = []
     if 'factors' in request.GET and 'model' in request.GET:
         (dsetFld, model)  = _MODEL_FIELD_MAP[request.GET['model']]
         if request.GET['factors'] == '0':
             factors = models.Factors.objects.all().order_by('name')
+            build_ret = False;
+            #Try to get ret from cache
+            key = "factor:%s, %s" % ("__ALL__", dsetFld)
+            if cache.get(key):
+                (ret, mnames) = cache.get(key)
+            else:
+                for f in factors:
+                    for m in model.objects.all():
+                        params = {'factor':f, dsetFld:m}
+                        #NOTE: we have to pass in the param as a **
+                        tmp = models.Datasets.objects.filter(**params)
+
+                        if tmp:
+                            if m.name not in mnames:
+                                mnames.append(m.name)
+                            #RETURNING DSET ids for now
+                            if f.name not in ret:
+                                ret[f.name] = {}
+                            ret[f.name][m.name] = [d.id for d in tmp]
+                cache.set(key, (ret, mnames), _timeout)
         else:
             factors = [models.Factors.objects.get(pk=int(f)) \
                            for f in request.GET['factors'].split(",")]
@@ -1306,7 +1328,7 @@ def factors_view(request):
         #model = getattr(models, request.GET['model'])
         fnames = [f.name for f in factors]
         #mnames = [m.name for m in model.objects.all().order_by('name')]
-        mnames = []
+
 
         #SANITY CHECK! this works!
         # sox2 = models.Factors.objects.get(pk=370)
@@ -1317,29 +1339,27 @@ def factors_view(request):
         # foo =  models.Datasets.objects.filter(**p)
         # print "FOO: %s" % foo
 
-        ret = {}
-        for f in factors:
-            for m in model.objects.all():
-                #NEED to cache these queries!
-                key = "factor:%s, %s:%s" % (f.id, dsetFld, m.id)
-                if cache.get(key):
-                    tmp = cache.get(key)
-                else:
-                    params = {'factor':f, dsetFld:m}
-                    #print params
-                    #NOTE: we have to pass in the param as a **
-                    tmp = models.Datasets.objects.filter(**params)
-                    cache.set(key, tmp, _timeout)
+        if build_ret:
+            for f in factors:
+                for m in model.objects.all():
+                    #NEED to cache these queries!
+                    key = "factor:%s, %s:%s" % (f.id, dsetFld, m.id)
+                    if cache.get(key):
+                        tmp = cache.get(key)
+                    else:
+                        params = {'factor':f, dsetFld:m}
+                        #print params
+                        #NOTE: we have to pass in the param as a **
+                        tmp = models.Datasets.objects.filter(**params)
+                        cache.set(key, tmp, _timeout)
 
-                if tmp:
-                    if m.name not in mnames:
-                        mnames.append(m.name)
-                    #RETURNING DSET ids for now
-                    if f.name not in ret:
-                        ret[f.name] = {}
-                    ret[f.name][m.name] = [d.id for d in tmp]
-
-                    #ret[f.name] = {'model':m.name, 'dsets': [d.id for d in tmp]}
+                    if tmp:
+                        if m.name not in mnames:
+                            mnames.append(m.name)
+                        #RETURNING DSET ids for now
+                        if f.name not in ret:
+                            ret[f.name] = {}
+                        ret[f.name][m.name] = [d.id for d in tmp]
 
         return HttpResponse("{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames)), json.dumps(ret)))
 
