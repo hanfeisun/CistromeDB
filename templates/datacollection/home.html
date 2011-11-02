@@ -28,7 +28,7 @@ onload="init();"
 	 </p>
 	 <select multiple="True" id="factorsSelect">
 	     <!--NOTE: 0 = ALL FACTORS-->
-	     <option value="0" selected="True">All</option>
+	     <option value="0" selected="True">All [BEWARE: a huge table may result!]</option>
 	     {% for f in factors %}
 	     <option value="{{f.id}}" class="{% cycle 'row' 'altrow' %}">{{f.name}}</option>
 	     {% endfor %}
