@@ -901,14 +901,18 @@ function FactorsTableView(container, model, compSelect) {
 	for (var i = 0; i < factors.length; i++) {
 	    tr = $D('tr');
 	    //first item is the factor name
-	    tr.appendChild($D('td', {'innerHTML':factors[i], 'className':cname2}));
+	    tr.appendChild($D('td', {'innerHTML':factors[i], 
+			    'className':cname2}));
+
 	    for (var j = 0; j < mnames.length; j++) {
 		td = $D('td', {'className':cname2});
 		
-		var val = dsets[factors[i]][mnames[j]];
-		if (val) {
-		    td.innerHTML = val.length;
+		if (dsets[factors[i]] && dsets[factors[i]][mnames[j]]) {
+		    td.innerHTML = dsets[factors[i]][mnames[j]].length;
+		} else {
+		    td.innerHTML = "";
 		}
+
 		tr.appendChild(td);		
 	    }
 	    tbl.appendChild(tr);
