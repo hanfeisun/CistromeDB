@@ -878,7 +878,7 @@ function FactorsTableView(container, model, compSelect) {
 	tr.appendChild($D('th', {'innerHTML':outer.compSelect.value, 
 			'id':'modelTh'}));
 	var cname = (mnames.length > maxCols) ? "r2":"";
-	var cname2 = (mnames.length > maxCols) ? "r2_td":"";
+	var cname2 = (mnames.length > maxCols) ? "r2td":"no_r2td";
 	var longestMname = "";
 
 	for (var i = 0; i < mnames.length; i++) {
@@ -901,7 +901,7 @@ function FactorsTableView(container, model, compSelect) {
 	for (var i = 0; i < factors.length; i++) {
 	    tr = $D('tr');
 	    //first item is the factor name
-	    tr.appendChild($D('td', {'innerHTML':factors[i]}));
+	    tr.appendChild($D('td', {'innerHTML':factors[i], 'className':cname2}));
 	    for (var j = 0; j < mnames.length; j++) {
 		td = $D('td', {'className':cname2});
 		
@@ -914,6 +914,13 @@ function FactorsTableView(container, model, compSelect) {
 	    tbl.appendChild(tr);
 	}
 
+	//SET table width--breakout if more than 30cols
+	if (mnames.length > maxCols*2) {
+	    tbl.style.width = Math.round(mnames.length*100.0/(maxCols*2))+"%";
+	} else {
+	    tbl.style.width = "100%";
+	}
+	
 	outer.container.appendChild(tbl);
 
 	//CSS adjustments HERE!

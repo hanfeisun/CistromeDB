@@ -288,10 +288,6 @@ span.value2 {
     text-align:center;
 }
 
-#factorsTable td {
-    border:1px solid #000;
-    text-align:center;
-}
 
 /* ROTATION HERE */
 #modelTh {
@@ -336,9 +332,14 @@ span.value2 {
     text-align: center;
 }
 
+/*tds for non-rotated tables */
+.no_r2td {
+    border:1px solid #000;
+    text-align:center;
+}
+
 .r2td {
     border: 1px solid #000;
-    padding: 3px;
-    /*text-align: right;*/
+    text-align: center;
     width:23px; /*matches  r2>span>span.height*/
 }
