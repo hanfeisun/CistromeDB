@@ -171,6 +171,7 @@ function init() {
     drawBtn.onclick = function(event) {
 	//NOTE: i have to walk the list and see which onese are selected
 	//NOTE: factor id = 0 means ALL factors; we check for this
+	this.disabled = true;
 	var factors = [];
 	var fs = $('factorsSelect');
 	for (var i = 0; i < fs.options.length; i++) {
@@ -189,6 +190,7 @@ function init() {
 	}
 
 	var factors_view_cb = function(req) {
+	    drawBtn.disabled = false;
 	    var resp = eval("("+req.responseText+")");
 	    factorsModel.setFactors(resp.factors);
 	    factorsModel.setModels(resp.models);
