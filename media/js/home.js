@@ -1007,15 +1007,18 @@ function FactorInfoView(container, model) {
 	
 	var tbl = $D('table');
 	for (var i = 0; i < data.dsets.length; i++) {
-	    var dset = Datasets.get(data.dsets[i]);
+	    //NOTE: when we do our trick, by storing the data in the dom el
+	    //IT gets stored as a string....to get the jscript back we have to
+	    //evaluate the string
+	    var dset = eval("("+data.dsets[i]+")");
 	    var tr = $D('tr');
 	    var td1 = $D('td');
 
-	    if (dset.paper.pmid) {
+	    if (dset.pmid) {
 		var span = $D('span', {innerHTML:'pmid:',className:'label'});
 		td1.appendChild(span);
 		span = $D('span', {className:'value2'});
-		var newA = $D('a',{innerHTML:dset.paper.pmid, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.paper.pmid, target:"_blank"});
+		var newA = $D('a',{innerHTML:dset.pmid, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.pmid, target:"_blank"});
 		span.appendChild(newA);
 		td1.appendChild(span);
 		td1.appendChild($D('br'));

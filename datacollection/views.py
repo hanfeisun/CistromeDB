@@ -1318,7 +1318,15 @@ def factors_view(request):
                             #RETURNING DSET ids for now
                             if f.name not in ret:
                                 ret[f.name] = {}
-                            ret[f.name][m.name] = [d.id for d in tmp]
+
+                            #Optimization: not jsonifying the papers
+                            for d in tmp:
+                                d._meta._virtualfields = ['pmid']
+                                d.pmid = d.paper.pmid
+                                d.paper = None
+
+                            ret[f.name][m.name] = \
+                                [jsrecord.views.jsonify(d) for d in tmp]
                 cache.set(key, (ret, mnames), _timeout)
         else:
             factors = [models.Factors.objects.get(pk=int(f)) \
@@ -1359,7 +1367,18 @@ def factors_view(request):
                         #RETURNING DSET ids for now
                         if f.name not in ret:
                             ret[f.name] = {}
-                        ret[f.name][m.name] = [d.id for d in tmp]
+                        #HACK ALERT:
+                        #to speed things up, we turn off paper jsonify, but 
+                        #we need to store the pmid so 1. we store pmid as 
+                        #a dataset field, and 2. we have to list pmid as 
+                        #a virtual field otherwise it won't jsonify
+                        for d in tmp:
+                            d._meta._virtualfields = ['pmid']
+                            d.pmid = d.paper.pmid
+                            d.paper = None
+
+                        ret[f.name][m.name] = \
+                            [jsrecord.views.jsonify(d) for d in tmp]
 
         return HttpResponse("{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames)), json.dumps(ret)))
 
