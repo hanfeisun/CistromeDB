@@ -887,7 +887,7 @@ function FactorsTableView(container, model, compSelect) {
 	//TABLE HEADER
 	tr.appendChild($D('th', {'innerHTML':outer.compSelect.value, 
 			'id':'modelTh'}));
-	var cname = (mnames.length > maxCols) ? "r2":"";
+	var cname = (mnames.length > maxCols) ? "r2":"no_r2th";
 	var cname2 = (mnames.length > maxCols) ? "r2td":"no_r2td";
 	var longestMname = "";
 

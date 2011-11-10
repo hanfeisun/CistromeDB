@@ -335,6 +335,12 @@ span.value2 {
     text-align: center;
 }
 
+.no_r2th {
+    color:#000;
+    background-color:#f3f3f3;
+    border:1px solid #000;
+}
+
 /*tds for non-rotated tables */
 .no_r2td {
     border:1px solid #000;
