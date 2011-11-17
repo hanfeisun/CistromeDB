@@ -1026,6 +1026,16 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('br'));
 	    }
 
+	    if (dset.gsmid) {
+		var span = $D('span', {innerHTML:'gsmid:',className:'label'});
+		td1.appendChild(span);
+		span = $D('span', {className:'value2'});
+		var newA = $D('a',{innerHTML:dset.gsmid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gsmid, target:"_blank"});
+		span.appendChild(newA);
+		td1.appendChild(span);
+		td1.appendChild($D('br'));
+	    }
+
 	    //DATA link: NOTE there might be several places for this!
 	    if (dset.raw_file_url) {
 		var span = $D('span', {innerHTML:'data:',className:'label'});
