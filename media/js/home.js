@@ -1073,8 +1073,10 @@ function FactorInfoView(container, model) {
 	    var td2 = $D('td');
 	    for (var j = 0; j < fields.length; j++) {
 		if (dset[fields[j]] && dset[fields[j]].name) {
-		    //alert(dset[fields[j]].name);
-		    td2.appendChild($D('span', {innerHTML:fields[j]+':',
+		    //replace underscores in the name
+		    var fldName = fields[j].replace("_", " ");
+
+		    td2.appendChild($D('span', {innerHTML:fldName+':',
 				    className:'label'}));
 		    td2.appendChild($D('span', {innerHTML:dset[fields[j]].name, className:'value2'}));
 		    td2.appendChild($D('br'));
