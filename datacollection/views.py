@@ -1292,6 +1292,10 @@ def factors_view(request):
                         'Strains': ('strains', models.Strains),
                         'DiseaseStates':('disease_state',models.DiseaseStates),
                         }
+    #NOTE: we are not jsonifying papers for efficiency sake!
+    #but we need to pull the following fields from it--see how we do this below
+    _paperFldsToPull = ["pmid", "authors", "last_auth_email"]
+
     _timeout = 60*60*24 #1 day
     ret = {}
     build_ret = True;
@@ -1321,8 +1325,9 @@ def factors_view(request):
 
                             #Optimization: not jsonifying the papers
                             for d in tmp:
-                                d._meta._virtualfields = ['pmid']
-                                d.pmid = d.paper.pmid
+                                d._meta._virtualfields = _paperFldsToPull
+                                for fld in d._meta._virtualfields:
+                                    setattr(d, fld, getattr(d.paper, fld))
                                 d.paper = None
 
                             ret[f.name][m.name] = \
@@ -1373,8 +1378,9 @@ def factors_view(request):
                         #a dataset field, and 2. we have to list pmid as 
                         #a virtual field otherwise it won't jsonify
                         for d in tmp:
-                            d._meta._virtualfields = ['pmid']
-                            d.pmid = d.paper.pmid
+                            d._meta._virtualfields = _paperFldsToPull
+                            for fld in d._meta._virtualfields:
+                                setattr(d, fld, getattr(d.paper, fld))
                             d.paper = None
 
                         ret[f.name][m.name] = \
