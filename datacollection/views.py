@@ -1279,113 +1279,72 @@ def front(request, rtype):
     return HttpResponse(ret)
 #------------------------------------------------------------------------------
 def factors_view(request):
-    """Takes two query params, factors--a list of factor ids, and a model,
-    e.g. CellLines and returns information to fill out the factors view 
-    tab on the homepage in json
-    """
+    """Takes a query param, factors--a list of factor ids, and returns 
+    information to fill out the factors view.  First checks factors in 
+    the following order: CellLines, CellPop, and then TissueType
 
-    #MAPS the values defined in home.html to (Datasets field, model)
-    _MODEL_FIELD_MAP = {'CellLines': ('cell_line', models.CellLines),
-                        'TissueTypes': ('tissue_type', models.TissueTypes),
-                        'CellTypes': ('cell_type', models.CellTypes),
-                        'CellPops': ('cell_pop', models.CellPops),
-                        'Strains': ('strains', models.Strains),
-                        'DiseaseStates':('disease_state',models.DiseaseStates),
-                        }
+    NOTE: we only cache one thing--and that is the when it's all factors!
+    THIS may change!
+    """
+    _MODELS = [('cell_line', models.CellLines),
+               ('cell_pop', models.CellPops),
+               ('tissue_type', models.TissueTypes),
+               ]
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
     _paperFldsToPull = ["pmid", "authors", "last_auth_email"]
-
     _timeout = 60*60*24 #1 day
     ret = {}
-    build_ret = True;
+    store_all = False;
     mnames = []
-    if 'factors' in request.GET and 'model' in request.GET:
-        (dsetFld, model)  = _MODEL_FIELD_MAP[request.GET['model']]
+    
+    if 'factors' in request.GET:
         if request.GET['factors'] == '0':
+            #CASE: use all of the factors!
             factors = models.Factors.objects.all().order_by('name')
-            build_ret = False;
-            #Try to get ret from cache
-            key = "factor:%s, %s" % ("__ALL__", dsetFld)
-            if cache.get(key):
-                (ret, mnames) = cache.get(key)
+            cached_val = cache.get("__ALL__")
+            if cached_val:
+                return HttpResponse(cached_val)
             else:
-                for f in factors:
-                    for m in model.objects.all():
-                        params = {'factor':f, dsetFld:m}
-                        #NOTE: we have to pass in the param as a **
-                        tmp = models.Datasets.objects.filter(**params)
-
-                        if tmp:
-                            if m.name not in mnames:
-                                mnames.append(m.name)
-                            #RETURNING DSET ids for now
-                            if f.name not in ret:
-                                ret[f.name] = {}
-
-                            #Optimization: not jsonifying the papers
-                            for d in tmp:
-                                d._meta._virtualfields = _paperFldsToPull
-                                for fld in d._meta._virtualfields:
-                                    setattr(d, fld, getattr(d.paper, fld))
-                                d.paper = None
-
-                            ret[f.name][m.name] = \
-                                [jsrecord.views.jsonify(d) for d in tmp]
-                cache.set(key, (ret, mnames), _timeout)
+                #we have to build all
+                store_all = True
         else:
             factors = [models.Factors.objects.get(pk=int(f)) \
                            for f in request.GET['factors'].split(",")]
             sorted(factors, key=lambda f:f.name)
-
-        #model = getattr(models, request.GET['model'])
         fnames = [f.name for f in factors]
-        #mnames = [m.name for m in model.objects.all().order_by('name')]
+        
+        for f in factors:
+            #track dsets, to ensure no duplicates within factors.
+            allDsets = []
+            if f.name not in ret:
+                ret[f.name] = {}
 
-
-        #SANITY CHECK! this works!
-        # sox2 = models.Factors.objects.get(pk=370)
-        # cl = models.CellLines.objects.get(pk=1)
-        # #foo = models.Datasets.objects.filter(factor__id=370, cell_line__id=1)
-        # #foo = models.Datasets.objects.filter(factor=sox2, cell_line=cl)
-        # p = {'factor':sox2, 'cell_line':cl}
-        # foo =  models.Datasets.objects.filter(**p)
-        # print "FOO: %s" % foo
-
-        if build_ret:
-            for f in factors:
+            for (dsetFld, model) in _MODELS:
                 for m in model.objects.all():
-                    #NEED to cache these queries!
-                    key = "factor:%s, %s:%s" % (f.id, dsetFld, m.id)
-                    if cache.get(key):
-                        tmp = cache.get(key)
-                    else:
-                        params = {'factor':f, dsetFld:m}
-                        #print params
-                        #NOTE: we have to pass in the param as a **
-                        tmp = models.Datasets.objects.filter(**params)
-                        cache.set(key, tmp, _timeout)
-
+                    #build it up
+                    params = {'factor':f, dsetFld:m}
+                    #NOTE: we have to pass in the param as a **
+                    tmp = models.Datasets.objects.filter(**params)
+                    tmp = [d for d in tmp if d.id not in allDsets]
+                    
                     if tmp:
                         if m.name not in mnames:
                             mnames.append(m.name)
-                        #RETURNING DSET ids for now
-                        if f.name not in ret:
-                            ret[f.name] = {}
-                        #HACK ALERT:
-                        #to speed things up, we turn off paper jsonify, but 
-                        #we need to store the pmid so 1. we store pmid as 
-                        #a dataset field, and 2. we have to list pmid as 
-                        #a virtual field otherwise it won't jsonify
                         for d in tmp:
+                            allDsets.append(d.id)
+                            #Optimization: not jsonifying the papers
                             d._meta._virtualfields = _paperFldsToPull
                             for fld in d._meta._virtualfields:
                                 setattr(d, fld, getattr(d.paper, fld))
                             d.paper = None
 
-                        ret[f.name][m.name] = \
-                            [jsrecord.views.jsonify(d) for d in tmp]
+                        dsets = [jsrecord.views.jsonify(d) for d in tmp]
+                        ret[f.name][m.name] = dsets
 
-        return HttpResponse("{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames)), json.dumps(ret)))
+            resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
+            if store_all:
+                cache.set("__ALL__", resp, _timeout)
+        return HttpResponse(resp)
 
     return HttpResponse('[]')
