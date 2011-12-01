@@ -60,8 +60,7 @@ function init() {
     var samplesView = new SamplesView($('samples'), pgModel);
 
     var factorsTableView = 
-	new FactorsTableView($('factorsTable'), factorsModel, 
-			     $('comparisonSelect'));
+	new FactorsTableView($('factorsTable'), factorsModel);
     var factorInfoView = 
 	new FactorInfoView($('factorInfo'), factorsModel);
 
@@ -200,8 +199,7 @@ function init() {
 	}
 	//MAKE the ajax call-
 	var call = new Ajax.Request(SUB_SITE+"factors_view/", 
-    {method:"get", parameters: {'factors':fStr, 
-				'model':$('comparisonSelect').value}, 
+    {method:"get", parameters: {'factors':fStr}, 
      onComplete: factors_view_cb});
 
     }
@@ -865,11 +863,10 @@ function LiquidCols(table) {
 }
 
 //Factors Tab Views
-function FactorsTableView(container, model, compSelect) {
+function FactorsTableView(container, model) {
     this.prevTd = null;
     this.container = container;
     this.model = model;
-    this.compSelect = compSelect;
     var outer = this;
     //How many columns before we rotate
     var maxCols = 15;
@@ -885,7 +882,7 @@ function FactorsTableView(container, model, compSelect) {
 	var tbl = $D('table');
 	var tr = $D('tr');
 	//TABLE HEADER
-	tr.appendChild($D('th', {'innerHTML':outer.compSelect.value, 
+	tr.appendChild($D('th', {'innerHTML':'Cells', 
 			'id':'modelTh'}));
 	var cname = (mnames.length > maxCols) ? "r2":"no_r2th";
 	var cname2 = (mnames.length > maxCols) ? "r2td":"no_r2td";
@@ -921,7 +918,7 @@ function FactorsTableView(container, model, compSelect) {
 		    td.innerHTML = dsets[factors[i]][mnames[j]].length;
 		    //NICE TRICK!
 		    td["_data"] = {'factor':factors[i],
-				   'model':outer.compSelect.value, 
+				   //'model': 'Cells', //obsolete!
 				   'mname': mnames[j],
 				   'dsets': dsets[factors[i]][mnames[j]]};
 
@@ -1001,7 +998,8 @@ function FactorInfoView(container, model) {
 	var hdr = $D('header');
 	hdr.appendChild($D('span', {innerHTML:'Factor:', className:'label'}));
 	hdr.appendChild($D('span', {innerHTML:data.factor, className:'value2'}));
-	hdr.appendChild($D('span', {innerHTML:data.model+':', className:'label'}));
+	//hdr.appendChild($D('span', {innerHTML:data.model+':', className:'label'}));
+	hdr.appendChild($D('span', {innerHTML:'Cells:', className:'label'}));
 	hdr.appendChild($D('span', {innerHTML:data.mname, className:'value2'}));
 	outer.container.appendChild(hdr);
 

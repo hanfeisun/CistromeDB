@@ -267,14 +267,14 @@ span.value2 {
     width:35%; 
 }
 
-#factorsStep2 p {
+#factorsStep2 {
     clear:both; 
     margin-left:5%
 }
 
 #drawBtn {
-    float:right; 
-    margin-right:17%; 
+    /*float:right; */
+    margin-left:70%; 
     font-size:14pt;
 }
 
