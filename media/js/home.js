@@ -17,6 +17,7 @@ var msg = "Search Cistrome PC";
 //var msg = "                   ";
 
 var homeCSS;
+var papersTabLoad = true;
 //NOTE: an empty search might mean "all" and not none.
 function init() {
     var searchFld = $('search');
@@ -137,12 +138,6 @@ function init() {
     }
     */
 
-    //DEFAULT/only view for paper collection homepage is ALL papers
-    //TURNING THIS OFF FOR NOW! --REMEMBER TO TURN IT BACK ON!
-    //getPapers("all", pgModel);
-    //wait 1.5 secs and then show the results pane
-    setTimeout(function() { results_tog.open();}, 1500);
-
     //tab functions
     var factorsTab = $('factorsTab');
     var papersTab = $('papersTab');
@@ -157,13 +152,23 @@ function init() {
 	papersSect.style.display="none";
 	
     }
-    factorsTab.onclick()
+    factorsTab.onclick();
+
     papersTab.onclick = function(event) {
 	//tab styling:
 	papersTab.className = "activeTab";
 	papersSect.style.display="block";
 	factorsTab.className = "tabHeader";
 	factorsSect.style.display="none";
+	//Only do the following when the papersTab is clicked for 1st time
+	if (papersTabLoad) {
+	    //DEFAULT/only view for paper collection homepage is ALL papers
+	    //TURNING THIS OFF FOR NOW! --REMEMBER TO TURN IT BACK ON!
+	    getPapers("all", pgModel);
+	    //wait 1.5 secs and then show the results pane
+	    setTimeout(function() { results_tog.open();}, 1500);
+	    papersTabLoad = false;
+	}
     }
 
     var drawBtn = $('drawBtn');
