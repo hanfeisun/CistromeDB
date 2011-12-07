@@ -183,6 +183,7 @@ function init() {
 		factors.push(fs.options[i].value);
 	    }
 	}
+	//Might be obsolete b/c we removed the all option
 	if ((factors.indexOf("0") != -1) && (factors.length > 1)) {
 	    //remove 0 from the list
 	    factors.splice(factors.indexOf("0"), 1);
