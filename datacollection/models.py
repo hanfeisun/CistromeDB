@@ -113,6 +113,7 @@ class Papers(DCModel):
                                   default="")
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     title = models.CharField(max_length=255, null=True, blank=True, default="")
+    reference = models.CharField(max_length=255, null=True, blank=True, default="")
     abstract = models.TextField(null=True, blank=True, default="")
     pub_date = models.DateField(null=True, blank=True, default=None)
     date_collected = models.DateTimeField(null=True, blank=True, default=None)

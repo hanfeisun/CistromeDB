@@ -1292,7 +1292,8 @@ def factors_view(request):
                ]
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
-    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid"]
+    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid", 
+                        "reference"]
     _timeout = 60*60*24 #1 day
     ret = {}
     store_all = False;
