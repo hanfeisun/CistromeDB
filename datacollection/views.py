@@ -1288,6 +1288,7 @@ def factors_view(request):
     """
     _MODELS = [('cell_line', models.CellLines),
                ('cell_pop', models.CellPops),
+               ('cell_type', models.CellTypes),
                ('tissue_type', models.TissueTypes),
                ]
     #NOTE: we are not jsonifying papers for efficiency sake!
