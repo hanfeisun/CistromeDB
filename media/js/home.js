@@ -420,11 +420,13 @@ function ResultsView(container, model) {
 	    return;
 	}
 
-	for (var i = 1; i < rows.length; i++) {
-	    currTbl.removeChild(rows[i]);
-	}
+	//BUG: before we were trying to use removeChild--skipping over the 
+	//first row--the TH.  BUT that presented errors; NOW we save the th
+	//and reset the innerhtml of the table
+	var th = rows[0];
+	currTbl.innerHTML="";
+	currTbl.appendChild(th);
 	outer.makePaperRows(currTbl);
-	    
     }
 }
 
