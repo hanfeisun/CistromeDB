@@ -1060,14 +1060,6 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('br'));
 	    }
 
-	    if (dset.last_auth_email) {
-		var span = $D('span', {innerHTML:'contact email:',className:'label'});
-		td1.appendChild(span);
-		span = $D('span', {innerHTML:dset.last_auth_email, className:'value2'});
-		td1.appendChild(span);
-		td1.appendChild($D('br'));
-	    }		
-
 	    tr.appendChild(td1);
 
 	    //other info
