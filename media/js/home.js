@@ -20,6 +20,7 @@ var homeCSS;
 var papersTabLoad = true;
 //NOTE: an empty search might mean "all" and not none.
 function init() {
+    /*
     var searchFld = $('search');
     searchFld.value = msg;
     searchFld.className = "searchWait"
@@ -53,7 +54,7 @@ function init() {
 	    searchBtn.onclick()
 	}
     }
-
+    */
 
     var resultsView = new ResultsView($('results'), pgModel);
     var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
