@@ -19,16 +19,19 @@ class PaperAdapter:
         self.issn = pubmed.issn
         
         if self.gseid:
-            geo = entrez.GeoQuery(self.gseid)
+            try:
+                geo = entrez.GeoQuery(self.gseid)
         #self.pub_date = geo._getValue("Release-Date")
         #contributors = geo.getElementsByTagName("Contributor")
 
-            self.design = geo._getValue("Overall-Design")
-            self.type = geo._getValue("Type")
+                self.design = geo._getValue("Overall-Design")
+                self.type = geo._getValue("Type")
 
         #store the sample accession numbers
-            samples = geo.getElementsByTagName('Sample')
-            self.datasets = ["%s" % s['_children'][0]['_value'] for s in samples]
+                samples = geo.getElementsByTagName('Sample')
+                self.datasets = ["%s" % s['_children'][0]['_value'] for s in samples]
+            except:
+                pass #ignored
         
     def __str__(self):
         attrs = ["pmid", "gseid", "title", "abstract", "pub_date", "authors",
