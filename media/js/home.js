@@ -335,8 +335,24 @@ function ResultsView(container, model) {
     //adds the paper rows to the tableElm
     this.makePaperRows = function(tableElm) {
 	var currPaper = outer.model.getCurrPaper();
-	var papers = (outer.model.getPapersList() == null)? []:outer.model.getPapersList();
+	var papers = (outer.model.getPapersList() == null)? []:outer.model.getPapersList();	
 	var fields = ["authors", "title", "journal.name", "pub_date"]
+
+	//remove __AMBIGIOUS PAPER__==paper id = 1
+	var found = false;
+	var idx = -1;
+	for (var i = 0; i < papers.length && !found; i++) {
+	    //alert(papers[i].id);
+	    if (papers[i].id == 1) {
+		found = true;
+		idx = i;
+	    }
+	}
+	if (found) {
+	    papers.splice(idx, 1);
+	}
+	//END: remove __AMBIGUOUS PAPER__
+
 	for (var i = 0; i < papers.length; i++) {
 	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
 	    //try to save this information so we can restore it
