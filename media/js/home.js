@@ -484,6 +484,7 @@ function PaperInfoView(container, model) {
 
 	//[[field, label], ...]
 	var fields2 = [//["pmid", "Pubmed ID:"], ["gseid", "GEO Series ID:"],
+		       ['gsmids', 'Data:'],
 		       ['journal.name', "Journal:"], 
 		       ['pub_date', 'Published:'], ['factors', 'Factors:'],
 		       ['species', 'Species:'], ['cell_types', 'Cell Types:'],

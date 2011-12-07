@@ -163,6 +163,12 @@ class Papers(DCModel):
     strains = property(_datasetAggregator('strain'))
     conditions = property(_datasetAggregator('condition'))
     disease_states = property(_datasetAggregator('disease_state'))
+
+    def _aggGSMIDS(self):
+        dsets = Datasets.objects.filter(paper=self.id)
+        return [d.gsmid for d in dsets]
+
+    gsmids = property(_aggGSMIDS)
         
 
     def _get_lab(self):
@@ -184,7 +190,7 @@ Papers._meta._donotSerialize = ['user']
 Papers._meta._virtualfields = ['lab', 'factors', 'platforms', 'species', 
                                'assemblies', 'cell_types', 'cell_lines', 
                                'cell_pops', 'strains', 'conditions', 
-                               'disease_states']
+                               'disease_states', 'gsmids']
 
 
 class Datasets(DCModel):
