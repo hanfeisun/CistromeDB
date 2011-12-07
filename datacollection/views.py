@@ -1296,23 +1296,12 @@ def factors_view(request):
                         "reference"]
     _timeout = 60*60*24 #1 day
     ret = {}
-    store_all = False;
     mnames = []
     
     if 'factors' in request.GET:
-        if request.GET['factors'] == '0':
-            #CASE: use all of the factors!
-            factors = models.Factors.objects.all().order_by('name')
-            cached_val = cache.get("__ALL__")
-            if cached_val:
-                return HttpResponse(cached_val)
-            else:
-                #we have to build all
-                store_all = True
-        else:
-            factors = [models.Factors.objects.get(pk=int(f)) \
-                           for f in request.GET['factors'].split(",")]
-            sorted(factors, key=lambda f:f.name)
+        factors = [models.Factors.objects.get(pk=int(f)) \
+                       for f in request.GET['factors'].split(",")]
+        sorted(factors, key=lambda f:f.name)
         fnames = [f.name for f in factors]
         
         for f in factors:
@@ -1344,8 +1333,7 @@ def factors_view(request):
                         ret[f.name][m.name] = dsets
 
             resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
-            if store_all:
-                cache.set("__ALL__", resp, _timeout)
+
         return HttpResponse(resp)
 
     return HttpResponse('[]')
