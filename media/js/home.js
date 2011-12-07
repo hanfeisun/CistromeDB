@@ -1020,12 +1020,25 @@ function FactorInfoView(container, model) {
 	    var td1 = $D('td');
 
 	    if (dset.pmid) {
-		var span = $D('span', {innerHTML:'pmid:',className:'label'});
+		var span = $D('span', {innerHTML:'reference:',className:'label'});		      
 		td1.appendChild(span);
-		span = $D('span', {className:'value2'});
-		var newA = $D('a',{innerHTML:dset.pmid, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.pmid, target:"_blank"});
-		span.appendChild(newA);
-		td1.appendChild(span);
+		var p = $D('p', {className:'reference'});
+		
+		//NOTE: the reference str is very long; we'll insert a 
+		//br after ever 5 words
+		var refAr = dset.reference.split(" ");
+		var ref="";
+		for (var j = 0; j < refAr.length; j++) {
+		    ref += refAr[j] + " ";
+		    if (j % 5 == 0 && j != 0) {
+			ref += "<br/>";
+		    }
+		    
+		}
+
+		var newA = $D('a',{innerHTML:ref, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.pmid, target:"_blank"});
+		p.appendChild(newA);
+		td1.appendChild(p);
 		td1.appendChild($D('br'));
 	    }
 
