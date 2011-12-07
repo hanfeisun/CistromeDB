@@ -124,7 +124,7 @@ class UpdateSampleForm(forms.ModelForm):
 class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
-        fields = ('factor', 'platform', 'species', 'assembly', 
+        fields = ('paper', 'factor', 'platform', 'species', 'assembly', 
                   'cell_type', 'cell_line',
                   'cell_pop', 'strain', 'condition', 'disease_state',
                   'status', 'comments',
