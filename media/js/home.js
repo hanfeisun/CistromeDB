@@ -266,10 +266,10 @@ function ResultsView(container, model) {
 	var newTbl = $D('table', {"id":"resultsTable"});
 	var titles = [["status", " "], ["authors", "Authors"], 
 		      ["title", "Title"], ["journal.name", "Journal"], 
-		      ["pub_date", "Date"], ["rating", "Rating"],
-		      ["last_viewed", "Last Viewed"]];
+		      ["pub_date", "Date"]];
+
 	//the following are not click-sortable
-	var exceptions = ["status", "rating", "last_viewed"];
+	var exceptions = ["status"];
 	//var newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
 	var newTr = $D('tr');
 	for (var i = 0; i < titles.length; i++) {
@@ -335,7 +335,7 @@ function ResultsView(container, model) {
     this.makePaperRows = function(tableElm) {
 	var currPaper = outer.model.getCurrPaper();
 	var papers = (outer.model.getPapersList() == null)? []:outer.model.getPapersList();
-	var fields = ["authors", "title", "journal.name", "pub_date", "", ""]
+	var fields = ["authors", "title", "journal.name", "pub_date"]
 	for (var i = 0; i < papers.length; i++) {
 	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
 	    //try to save this information so we can restore it
