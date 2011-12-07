@@ -1026,10 +1026,19 @@ function FactorInfoView(container, model) {
 		td1.appendChild(span);
 		var p = $D('p', {className:'reference'});
 		
+		//CLEAN REFERENCE: double dots
+		var refAr = dset.reference.split(".");
+		var ref = "";
+		for (var jj = 0; jj < refAr.length; jj++) {
+		    //alert("$"+refAr[jj].strip()+"#");
+		    if (refAr[jj].strip().length != 0) {
+			ref += refAr[jj] + ".";
+		    }
+		}
 		//NOTE: the reference str is very long; we'll insert a 
 		//br after ever 5 words
-		var refAr = dset.reference.split(" ");
-		var ref="";
+		refAr = ref.split(" ");//dset.reference.split(" ");
+		ref="";
 		for (var j = 0; j < refAr.length; j++) {
 		    ref += refAr[j] + " ";
 		    if (j % 5 == 0 && j != 0) {
