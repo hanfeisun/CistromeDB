@@ -190,7 +190,8 @@ function init() {
 	}
 	
 	var fStr=(factors.length > 0)? factors[0]:"";
-	for (var i = 1; i <factors.length; i++) {
+	//NOTE: limit to 10 selections
+	for (var i = 1; i <factors.length && i < 10; i++) {
 	    fStr += ","+factors[i]
 	}
 
