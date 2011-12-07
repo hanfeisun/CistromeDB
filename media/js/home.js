@@ -102,6 +102,14 @@ function init() {
 		//REMEMBER: -1 means put before, 0 put equal, 1 put after
 		var val1 = getattr(p1, field);
 		var val2 = getattr(p2, field);
+		if (!val1 || val1.strip().length == 0) {
+		    return 1;
+		}
+		if (!val2 || val2.strip().length == 0) {
+		    return -1;
+		}
+		val1 = val1.toUpperCase();
+		val2 = val2.toUpperCase();
 		if (val1 == val2) {
 		    return 0;
 		} else if (val1 < val2) {
