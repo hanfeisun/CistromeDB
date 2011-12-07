@@ -319,7 +319,7 @@ class Platforms(DCModel):
                                        choices=EXPERIMENT_TYPE_CHOICES)
                                        
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 
 class Factors(DCModel):
@@ -329,7 +329,7 @@ class Factors(DCModel):
     type = models.CharField(max_length=255, choices=FACTOR_TYPES,
                             default="other")
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class CellTypes(DCModel):
     """Sample's tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
@@ -337,7 +337,7 @@ class CellTypes(DCModel):
     name = models.CharField(max_length=255)
     #tissue_type = models.CharField(max_length=255, blank=True)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class CellLines(DCModel):
     """Sample's cell lines.  I really don't know what distinguishes
@@ -346,17 +346,17 @@ class CellLines(DCModel):
     """
     name = models.CharField(max_length=255)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class CellPops(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class Strains(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
     
 class Conditions(DCModel):
     """Experiment/sample conditions, e.g. PTIP-knockout, wild-type"""
@@ -370,7 +370,7 @@ class Journals(DCModel):
     issn = models.CharField(max_length=9)
     impact_factor = models.FloatField(default=0.0)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class PaperSubmissions(DCModel):
     """Public paper submission page
@@ -398,18 +398,18 @@ class FileTypes(DCModel):
     """File types for our geo datasets"""
     name = models.CharField(max_length=20)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class Species(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
     
 class Assemblies(DCModel):
     name = models.CharField(max_length=255)
     pub_date = models.DateField(blank=True)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class Samples(DCModel):
     """a table to store all of the sample information: a sample is a
@@ -513,7 +513,7 @@ class Samples(DCModel):
 
     def __str__(self):
         #return self._printInfo()
-        return str(self.id)
+        return smart_str(str(self.id))
 Samples._meta._donotSerialize = ['user', 'uploader']
 
 class SampleControls(DCModel):
@@ -564,7 +564,7 @@ class DiseaseStates(DCModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return str(self.name)
+        return smart_str(str(self.name))
 
 class SampleDhsStats(DCModel):
     """Stats about the sample"""
@@ -576,11 +576,11 @@ class Antibodies(DCModel):
     """Antibodies"""
     name = models.CharField(max_length=255)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
 class TissueTypes(DCModel):
     """Tissue Types"""
     name = models.CharField(max_length=255)
     def __str__(self):
-        return self.name
+        return smart_str(self.name)
 
