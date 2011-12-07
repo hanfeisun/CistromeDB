@@ -1029,13 +1029,23 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('br'));
 	    }
 
-	    if (dset.gsmid) {
-		var span = $D('span', {innerHTML:'gsmid:',className:'label'});
+	    if (dset.gseid || dset.gsmid) {
+		var span = $D('span', {innerHTML:'data:',className:'label'});
 		td1.appendChild(span);
-		span = $D('span', {className:'value2'});
-		var newA = $D('a',{innerHTML:dset.gsmid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gsmid, target:"_blank"});
-		span.appendChild(newA);
-		td1.appendChild(span);
+		if (dset.gseid) {
+		    span = $D('span', {className:'value2'});
+		    var newA = $D('a',{innerHTML:dset.gseid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gseid, target:"_blank"});
+		    span.appendChild(newA);
+		    td1.appendChild(span);
+		    //space
+		    td1.appendChild($D('span',{innerHTML:' '}));
+		}
+		if (dset.gsmid){
+		    span = $D('span', {className:'value2'});
+		    var newA = $D('a',{innerHTML:dset.gsmid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gsmid, target:"_blank"});
+		    span.appendChild(newA);
+		    td1.appendChild(span);
+		}
 		td1.appendChild($D('br'));
 	    }
 
