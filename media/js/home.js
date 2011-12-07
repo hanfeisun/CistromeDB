@@ -1039,18 +1039,6 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('br'));
 	    }
 
-	    //DATA link: NOTE there might be several places for this!
-	    if (dset.raw_file_url) {
-		var span = $D('span', {innerHTML:'data:',className:'label'});
-		td1.appendChild(span);
-		span = $D('span', {className:'value2'});
-		var newA=$D('a',{innerHTML:'download',href:dset.raw_file_url});
-
-		span.appendChild(newA);
-		td1.appendChild(span);
-		td1.appendChild($D('br'));
-	    }
-	    
 	    if (dset.authors) {
 		var span = $D('span', {innerHTML:'last author:',className:'label'});
 		td1.appendChild(span);
