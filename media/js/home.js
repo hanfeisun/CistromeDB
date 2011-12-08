@@ -495,11 +495,8 @@ function PaperInfoView(container, model) {
 		       ['gsmids', 'Data:'],
 		       ['journal.name', "Journal:"], 
 		       ['pub_date', 'Published:'], ['factors', 'Factors:'],
-		       ['species', 'Species:'], ['cell_types', 'Cell Types:'],
-		       ['cell_lines', 'Cell Lines:'], 
-		       ['cell_pops', 'Cell Pops:'], 
-		       ['strains', 'Strains:'], ['conditions', 'Conditions:'],
-		       ['disease_states', 'Disease States:']];
+		       ['species', 'Species:']];
+
 	var tmp = $D('p', {'className':'info'});
 	//deal with the pmid and gseid separately--they need links like this:
 	//<a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{p.pmid}}" target="_ blank">{{ p.pmid }}</a>
