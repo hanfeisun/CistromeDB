@@ -1098,6 +1098,17 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('br'));
 	    }
 
+	    //hack for ENCODE data
+	    if (dset.reference.match(/ENCODE.*/)) {
+		var span = $D('span', {innerHTML:'reference:',className:'label'});
+		td1.appendChild(span);
+		
+		span = $D('span', {innerHTML:dset.reference, className:'value2'});
+		td1.appendChild(span);
+		td1.appendChild($D('br'));
+	    }
+		
+
 	    if (dset.authors) {
 		var span = $D('span', {innerHTML:'last author:',className:'label'});
 		td1.appendChild(span);
