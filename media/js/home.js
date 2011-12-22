@@ -1170,8 +1170,7 @@ function FactorInfoView(container, model) {
 
 	    //other info
 	    var fields = ['species', 'cell_line', 'tissue_type', 
-			  'cell_type', 'cell_pop', 'strain', 'disease_state',
-			  'condition'];
+			  'cell_type', 'cell_pop', 'strain', 'disease_state'];
 	    var td2 = $D('td');
 	    for (var j = 0; j < fields.length; j++) {
 		if (dset[fields[j]] && dset[fields[j]].name) {
