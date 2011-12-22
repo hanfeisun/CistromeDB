@@ -1096,22 +1096,23 @@ function FactorInfoView(container, model) {
 			ref += refAr[jj] + ".";
 		    }
 		}
-		//NOTE: the reference str is very long; we'll insert a 
-		//br after ever 5 words
-		refAr = ref.split(" ");//dset.reference.split(" ");
-		ref="";
-		for (var j = 0; j < refAr.length; j++) {
-		    ref += refAr[j] + " ";
-		    if (j % 5 == 0 && j != 0) {
-			ref += "<br/>";
-		    }
-		    
-		}
+
 
 		var newA = $D('a',{innerHTML:ref, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.pmid, target:"_blank"});
 		p.appendChild(newA);
 		td1.appendChild(p);
-		td1.appendChild($D('br'));
+		//td1.appendChild($D('br'));
+
+		//MAKING the reference line span the columns
+		td1.colSpan = "2";
+		tr.appendChild(td1);
+		//remove the tr's bottom border
+		tr.style.borderBottom = "0px";
+		td1 = $D('td');
+		tbl.appendChild(tr);
+		tr = $D('tr');
+		//remove the new tr's top border
+		tr.style.borderTop = "0px";
 	    }
 
 	    if (dset.gseid || dset.gsmid) {
@@ -1141,7 +1142,18 @@ function FactorInfoView(container, model) {
 		
 		span = $D('span', {innerHTML:dset.reference, className:'value2'});
 		td1.appendChild(span);
-		td1.appendChild($D('br'));
+		//td1.appendChild($D('br'));
+		//MAKING the reference line span the columns
+		td1.colSpan = "2";
+		tr.appendChild(td1);
+		//remove the tr's bottom border
+		tr.style.borderBottom = "0px";
+		td1 = $D('td');
+		tbl.appendChild(tr);
+		tr = $D('tr');
+		//remove the new tr's top border
+		tr.style.borderTop = "0px";
+
 	    }
 		
 
