@@ -932,6 +932,42 @@ function FactorsTableView(container, model) {
 	    var th = $D('th', {'className':cname});
 	    th.appendChild(sp1);
 	    tr.appendChild(th);
+
+	    //try to add the species info
+	    var found = false;
+	    var spec = null;
+	    for (var j = 0; j < factors.length && !found; j++) {
+		if (dsets[factors[j]] && dsets[factors[j]][mnames[i]] &&
+		    dsets[factors[j]][mnames[i]].length > 0) {
+
+		    found = true;
+		    //FOR some strange reason, dsets[factors[j]][mnames[i]][0]
+		    //are STRING types, and so we have to evaluate them as 
+		    //objects!
+		    //TAKE THE FIRST SPECIES-- this seems to be ok! see below 
+		    var foo = eval("("+dsets[factors[j]][mnames[i]][0]+")");
+		    spec = foo.species.id;
+
+		    /* NOTE: this is a check to ensure that taking the first
+		       species was ok--everything seems to indicate so
+		    var biz = "";
+		    for (var k = 0; k < dsets[factors[j]][mnames[i]].length; 
+			 k++) {
+			var tmpz = eval("("+dsets[factors[j]][mnames[i]][k]+")");
+			biz += " " + tmpz.species.id;
+		    }
+		    alert(biz);
+		    */
+		}
+	    }
+	    //violating MVC here! this should be done w/ css classes, but hey!
+	    if (found) {
+		if (spec == 1) { //Human - Blue
+		    th.style.backgroundColor = "#424da4";
+		} else if (spec == 2) { //Mouse - Red
+		    th.style.backgroundColor = "#a64340";
+		}
+	    }
 	}
 	tbl.appendChild(tr);
 
