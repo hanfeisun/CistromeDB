@@ -1079,7 +1079,7 @@ function FactorInfoView(container, model) {
 	    }
 
 	    //hack for ENCODE data
-	    if (dset.reference.match(/ENCODE.*/)) {
+	    if (dset.reference && dset.reference.match(/ENCODE.*/)) {
 		var span = $D('span', {innerHTML:'reference:',className:'label'});
 		td1.appendChild(span);
 		
