@@ -912,84 +912,41 @@ function FactorsTableView(container, model) {
 	var dsets = outer.model.getDsets();
 	//BUILD the table!
 	var tbl = $D('table');
-	var tr = $D('tr');
+	var tr = $D('tr');	
 	//TABLE HEADER
-	tr.appendChild($D('th', {'innerHTML':'Cells', 
-			'id':'modelTh'}));
-	var cname = (mnames.length > maxCols) ? "r2":"no_r2th";
-	var cname2 = (mnames.length > maxCols) ? "r2td":"no_r2td";
-	var longestMname = "";
-
-	for (var i = 0; i < mnames.length; i++) {
-	    //SAVE the longest mname--used later to adjust rotated cols
-	    if (mnames[i].length > longestMname.length) {
-		longestMname = mnames[i];
-	    }
-	    //NEED to put it in two spans
-	    var sp1 = $D('span');
-	    var sp2 = $D('span', {'innerHTML':mnames[i]});
-	    sp1.appendChild(sp2);
-	    var th = $D('th', {'className':cname});
-	    th.appendChild(sp1);
+	tr.appendChild($D('th', {'innerHTML':'Cells'}));
+	for (var i = 0; i < factors.length; i++) {
+	    var th = $D('th', {'innerHTML':factors[i]});
+	    th.className = "no_r2th";
 	    tr.appendChild(th);
-
-	    //try to add the species info
-	    var found = false;
-	    var spec = null;
-	    for (var j = 0; j < factors.length && !found; j++) {
-		if (dsets[factors[j]] && dsets[factors[j]][mnames[i]] &&
-		    dsets[factors[j]][mnames[i]].length > 0) {
-
-		    found = true;
-		    //FOR some strange reason, dsets[factors[j]][mnames[i]][0]
-		    //are STRING types, and so we have to evaluate them as 
-		    //objects!
-		    //TAKE THE FIRST SPECIES-- this seems to be ok! see below 
-		    var foo = eval("("+dsets[factors[j]][mnames[i]][0]+")");
-		    spec = foo.species.id;
-
-		    /* NOTE: this is a check to ensure that taking the first
-		       species was ok--everything seems to indicate so
-		    var biz = "";
-		    for (var k = 0; k < dsets[factors[j]][mnames[i]].length; 
-			 k++) {
-			var tmpz = eval("("+dsets[factors[j]][mnames[i]][k]+")");
-			biz += " " + tmpz.species.id;
-		    }
-		    alert(biz);
-		    */
-		}
-	    }
-	    //violating MVC here! this should be done w/ css classes, but hey!
-	    if (found) {
-		if (spec == 1) { //Human - Blue
-		    th.style.backgroundColor = "#424da4";
-		} else if (spec == 2) { //Mouse - Red
-		    th.style.backgroundColor = "#a64340";
-		}
-	    }
 	}
 	tbl.appendChild(tr);
 
 	//BUILD rest of table
 	var td;
-	for (var i = 0; i < factors.length; i++) {
+	for (var i = 0; i < mnames.length; i++) {
 	    tr = $D('tr');
-	    //first item is the factor name
-	    tr.appendChild($D('td', {'innerHTML':factors[i], 
-			    'className':cname2}));
+	    //first item is the model name
+	    var cellTd =$D('td',{'innerHTML':mnames[i],'className':'no_r2td'});
+	    tr.appendChild(cellTd);
 
-	    for (var j = 0; j < mnames.length; j++) {
-		td = $D('td', {'className':cname2});
-		
-		if (dsets[factors[i]] && dsets[factors[i]][mnames[j]]) {
-		    td.innerHTML = dsets[factors[i]][mnames[j]].length;
+	    var spec = null;
+	    for (var j = 0; j < factors.length; j++) {
+		td = $D('td', {'className':'no_r2td'});
+		if (dsets[factors[j]] && dsets[factors[j]][mnames[i]]) {
+		    //add to species list
+		    if (dsets[factors[j]][mnames[i]].length > 0) {
+			//TAKE THE FIRST SPECIES-- this seems to be ok!
+			var foo =eval("("+dsets[factors[j]][mnames[i]][0]+")");
+			spec = foo.species.id;
+		    }
+
+		    td.innerHTML = dsets[factors[j]][mnames[i]].length;
 		    //NICE TRICK!
-		    td["_data"] = {'factor':factors[i],
-				   //'model': 'Cells', //obsolete!
-				   'mname': mnames[j],
-				   'dsets': dsets[factors[i]][mnames[j]]};
-
+		    td["_data"] = {'factor':factors[j],
+				   'mname': mnames[i],
+				   'dsets': dsets[factors[j]][mnames[i]]};
+		    
 		    td.onclick = function(t) {
 			return function(event) {
 			    outer.model.setCurrTd(t);
@@ -1018,38 +975,24 @@ function FactorsTableView(container, model) {
 			    this.style.backgroundColor = "#fff";
 			}
 		    }
-
+		    
 		} else {
 		    td.innerHTML = "";
 		}
 
-		tr.appendChild(td);		
+		if (spec && spec == 1) { //Human - Blue
+		    cellTd.style.backgroundColor = "#424da4";
+		} else if (spec && spec == 2) { //Mouse - Red
+		    cellTd.style.backgroundColor = "#a64340";
+		}
+		    
+		tr.appendChild(td);
 	    }
+
 	    tbl.appendChild(tr);
 	}
-
-	//SET table width--breakout if more than 30cols
-	if (mnames.length > maxCols*2) {
-	    tbl.style.width = Math.round(mnames.length*100.0/(maxCols*2))+"%";
-	} else {
-	    tbl.style.width = "100%";
-	}
-	
+	 
 	outer.container.appendChild(tbl);
-
-	//CSS adjustments HERE!
-	if (mnames.length > maxCols) {
-	    //NEED to set .r2 > span > span.height property to td width
-	    var rule = getStyleRule(homeCSS, ".r2 > span > span");
-	    rule.style.height = getStyle(td, "width");
-	    //NEED to set it's width to accomodate the longest col name
-	    rule.style.width = (longestMname.length * 10) + "px";
-	    
-	    //NEED to set factorsTable to clear at least the height we set:
-	    var r2 = getStyleRule(homeCSS, "#factorsTable");
-	    r2.style.marginTop = (longestMname.length * 10) + "px";
-	}
-	
     }
 }
 
