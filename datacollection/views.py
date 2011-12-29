@@ -91,6 +91,10 @@ def home(request):
     #show the 10 newest papers
     papers = models.Papers.objects.order_by('-date_collected')[:10]
     factors = models.Factors.objects.all().order_by('name')
+    #remove control factors
+    _removeList = ['Control', 'gfp', 'IgG', 'RevXlinkChromatin', 'Input']
+    factors = [f for f in factors if f.name not in _removeList]
+
     return render_to_response('datacollection/home.html', locals(),
                               context_instance=RequestContext(request))
 
