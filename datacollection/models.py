@@ -167,7 +167,7 @@ class Papers(DCModel):
     def _aggGSMIDS(self):
         dsets = Datasets.objects.filter(paper=self.id)
         #NOTE: we are wrapping up the gsmid and the associated factor!
-        return [[smart_str(d.gsmid), smart_str(d.factor)] for d in dsets]
+        return [[smart_str(d.gsmid), smart_str(d.factor), smart_str(d.generic_id)] for d in dsets]
 
     gsmids = property(_aggGSMIDS)
 
