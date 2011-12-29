@@ -329,11 +329,16 @@ function ResultsView(container, model) {
 	//iframe.contentDocument = undefined!
 	outer.container.appendChild(iframe);
 	//alert(iframe.contentDocument);
+	//MOZILLA needs a delay--HACK ALERT!--IT needs an alert for some reason
+	if (navigator.userAgent.match(/Firefox.*/)) {
+	    alert("Apologies for this annoying message but this is the only way that Firefox will correctly render this page!");
+	}
 	//load the css
 	iframe.contentDocument.head.appendChild($D('link', {'href':SUB_SITE+"static/css/home.css", 'rel':'stylesheet', 'type':'text/css'}));
 	iframe.contentDocument.body.appendChild(newTbl);
 	//the next line used in redraw!
 	outer.iframe = iframe;
+	
 
 	//NOTE: this call to liquid cols MUST be AFTER we append the newTbl,
 	//otherwise the widths of the elms will be 0
