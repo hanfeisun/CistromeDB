@@ -492,7 +492,7 @@ function PaperInfoView(container, model) {
 
 	//[[field, label], ...]
 	var fields2 = [//["pmid", "Pubmed ID:"], ["gseid", "GEO Series ID:"],
-		       ['gsmids', 'Data:'],
+		       //['gsmids', 'Data:'],
 		       ['journal.name', "Journal:"], 
 		       ['pub_date', 'Published:'], ['factors', 'Factors:'],
 		       ['species', 'Species:']];
@@ -508,9 +508,20 @@ function PaperInfoView(container, model) {
 	tmp.appendChild($D('span', {'className':'label', 'innerHTML':"GEO Series ID:"}));
 	tmp.appendChild($D('a', {innerHTML:currPaper.gseid, target:'_blank',
 			href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+currPaper.gseid}));
-	tmp.appendChild($D('br'))
-
-
+	tmp.appendChild($D('br'));
+	//BUILD the GSMIDS
+	tmp.appendChild($D('span', {'className':'label', 'innerHTML':"Data:"}));
+	//NOTE: GSMIDS is an array of tuples (or the jscript equiv--arrays), 
+	//where the first field is the gsmid, and the second is the factor
+	var gsmids = getattr(currPaper, "gsmids");
+	for (var i = 0; i < gsmids.length; i++) {
+	    var sp = $D('span', {className:'value'});
+	    sp.appendChild($D('a', {innerHTML:gsmids[i][0], target:'_blank',
+			    href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmids[i][0]}));
+	    sp.appendChild($D('span', {innerHTML:"  ("+gsmids[i][1]+")"}));
+	    tmp.appendChild(sp);
+	}
+	
 	for (var i = 0; i < fields2.length; i++) {
 	    var fieldVals = getattr(currPaper, fields2[i][0]);
 	    if (fieldVals) {

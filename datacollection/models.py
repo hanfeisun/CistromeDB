@@ -166,10 +166,10 @@ class Papers(DCModel):
 
     def _aggGSMIDS(self):
         dsets = Datasets.objects.filter(paper=self.id)
-        return [d.gsmid for d in dsets]
+        #NOTE: we are wrapping up the gsmid and the associated factor!
+        return [[smart_str(d.gsmid), smart_str(d.factor)] for d in dsets]
 
     gsmids = property(_aggGSMIDS)
-        
 
     def _get_lab(self):
         """Returns the last author in the authors list"""
