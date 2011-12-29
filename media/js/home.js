@@ -521,8 +521,12 @@ function PaperInfoView(container, model) {
 	var gsmids = getattr(currPaper, "gsmids");
 	for (var i = 0; i < gsmids.length; i++) {
 	    var sp = $D('span', {className:'value'});
-	    sp.appendChild($D('a', {innerHTML:gsmids[i][0], target:'_blank',
+	    if (gsmids[i][0]) {
+		sp.appendChild($D('a', {innerHTML:gsmids[i][0], target:'_blank',
 			    href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmids[i][0]}));
+	    } else { //try the generic_id
+		sp.appendChild($D('span', {innerHTML:gsmids[i][2]}));
+	    }
 	    sp.appendChild($D('span', {innerHTML:"  ("+gsmids[i][1]+")"}));
 	    tmp.appendChild(sp);
 	}
