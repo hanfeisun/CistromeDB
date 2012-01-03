@@ -3,7 +3,7 @@
 
 {% block title %}Cistrome Paper Collection{% endblock %}
 {% block include %}
-<link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/home.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 <script type="text/javascript" src="{% url static_url %}js/highcharts.js"></script>
 <!--<script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>-->
@@ -20,4 +20,31 @@ onload="init();"
 <section id="graphs">
 </section>
 
+{% endblock %}
+
+{% block sidebar %}
+      <nav>
+	 <!--<h3>Help:</h3>-->
+	 <ul>
+	    <!--<li><span>About Cistrome DC</span></li>-->
+	    <!--<li><span>FAQ</span></li>-->
+	    <li><a href="{% url home %}">Home</a></li>
+	    <li><a href="{% url paper_submission %}">Submit a Paper</a></li>
+	    <li>Collection Stats</li>
+	 </ul>
+      </nav>
+      {% if user.is_staff %}
+      <nav>
+         <h3>Admin:</h3>
+         <ul>
+	    <li><a href="{% url report %}">Weekly Report</a></li>
+	    <li><a href="{% url weekly_papers %}">Weekly Papers</a></li>
+	    <li><a href="{% url weekly_datasets %}">Weekly Datasets</a></li>
+	    <li><a href="{% url admin %}">Admin</a></li>
+	    <li><a href="{% url teams %}">Teams</a></li>
+	    <li><a href="{% url submissions_admin %}">Paper Submissions</a></li>
+	    <li><a href="{% url admin_help %}">Help</a></li>
+	 </ul>
+      </nav>
+      {% endif %}
 {% endblock %}
