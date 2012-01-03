@@ -164,10 +164,9 @@ function barHelper(container, title, type, model, field, cutoff) {
 
 function init() {
     var graphs = document.getElementById('graphs');
-
+    
+    //NOTE: all of the divs are already in dcstats.html
     //top labs by datasets
-    var div = $D('div', {'id':'dataset_lab_div'});
-    graphs.appendChild(div);
     barHelper('dataset_lab_div', 'Top Labs by Datasets', 'ssum', 'Datasets', 'paper__lab', true);
 
     var fields = ['factor', 'platform', 'species', 'cell_type',
@@ -175,35 +174,24 @@ function init() {
 	      'disease_state'];
     for (var i = 0; i < fields.length; i++) {
 	var id = fields[i]+"_div";
-	var div = $D('div', {'id':id});
-	graphs.appendChild(div);
 	helper(id, 'Datasets by '+fields[i], 'sum', 'Datasets', fields[i]);
     }
 
+
     //top labs by datasets
-    var div = $D('div', {'id':'dataset_antibody_div'});
-    graphs.appendChild(div);
     helper('dataset_antibody_div', 'Datasets by Antibody', 'ssum', 'Datasets', 'factor__antibody');
 
     //tissue types
-    var div = $D('div', {'id':'dataset_tissue_type_div'});
-    graphs.appendChild(div);
     helper('dataset_tissue_type_div', 'Datasets by Tissue Type', 'ssum', 'Datasets', 'cell_type__tissue_type');
-
+    
     //papers by journals
-    var div = $D('div', {'id':'paper_journals_div'});
-    graphs.appendChild(div);
     helper('paper_journals_div', 'Papers by Journals', 'sum', 'Papers', 
 	   'journal');
 
     //a little more difficult b/c lab is a virtual field
-    var div = $D('div', {'id':'paper_lab_div'});
-    graphs.appendChild(div);
     helper('paper_lab_div', 'Papers by Labs', 'ssum', 'Papers', 'lab');
     
     //top journals by datasets
-    var div = $D('div', {'id':'dataset_journal_div'});
-    graphs.appendChild(div);
     barHelper('dataset_journal_div', 'Top Journals by Datasets', 'ssum', 'Datasets', 'paper__journal', true);
 	
 }
