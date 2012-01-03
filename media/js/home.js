@@ -979,6 +979,8 @@ function FactorsTableView(container, model) {
 				outer.prevTd.style.color="#000";
 			    }
 			    outer.prevTd = t;
+			    //Jump to the factorInfoTable
+			    window.location.href = "#factorInfo";
 			}
 		    }(td);
 		    //DOING the mouse over events here rather than in css
