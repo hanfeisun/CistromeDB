@@ -3,6 +3,7 @@
 {% block title %}{{ title }}{% endblock %}
 {% block include %}
 <link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/home.css" rel="stylesheet" type="text/css"/>
 {% endblock %}
 
 {% block content %}
@@ -20,4 +21,31 @@
 	     <p class="info"><input type="submit" id="submitBtn" value="Submit"/><p>
 	 </form>
       <!--</div>-->
+{% endblock %}
+
+{% block sidebar %}
+      <nav>
+	 <!--<h3>Help:</h3>-->
+	 <ul>
+	    <!--<li><span>About Cistrome DC</span></li>-->
+	    <!--<li><span>FAQ</span></li>-->
+	    <li><a href="{% url home %}">Home</a></li>
+	    <li>Submit a Paper</li>
+	    <li><a href="{% url dcstats %}">Collection Stats</a></li>
+	 </ul>
+      </nav>
+      {% if user.is_staff %}
+      <nav>
+         <h3>Admin:</h3>
+         <ul>
+	    <li><a href="{% url report %}">Weekly Report</a></li>
+	    <li><a href="{% url weekly_papers %}">Weekly Papers</a></li>
+	    <li><a href="{% url weekly_datasets %}">Weekly Datasets</a></li>
+	    <li><a href="{% url admin %}">Admin</a></li>
+	    <li><a href="{% url teams %}">Teams</a></li>
+	    <li><a href="{% url submissions_admin %}">Paper Submissions</a></li>
+	    <li><a href="{% url admin_help %}">Help</a></li>
+	 </ul>
+      </nav>
+      {% endif %}
 {% endblock %}
