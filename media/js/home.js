@@ -1051,15 +1051,16 @@ function FactorInfoView(container, model) {
 		var p = $D('p', {className:'reference'});
 		
 		//CLEAN REFERENCE: double dots
-		var refAr = dset.reference.split(".");
 		var ref = "";
-		for (var jj = 0; jj < refAr.length; jj++) {
-		    //alert("$"+refAr[jj].strip()+"#");
-		    if (refAr[jj].strip().length != 0) {
-			ref += refAr[jj] + ".";
+		if (dset.reference) {
+		    var refAr = dset.reference.split(".");
+		    for (var jj = 0; jj < refAr.length; jj++) {
+			//alert("$"+refAr[jj].strip()+"#");
+			if (refAr[jj].strip().length != 0) {
+			    ref += refAr[jj] + ".";
+			}
 		    }
 		}
-
 
 		var newA = $D('a',{innerHTML:ref, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.pmid, target:"_blank"});
 		p.appendChild(newA);
