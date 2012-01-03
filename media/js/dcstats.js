@@ -88,7 +88,7 @@ function barChartFactory(container, title, data) {
 		    rotation: -45,
 			align: 'right',
 			style: {
-			font: 'normal 13px Verdana, sans-serif'
+			font: 'normal 9px Verdana, sans-serif'
 			    }
 		}
 	    },
