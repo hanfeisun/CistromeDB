@@ -934,7 +934,8 @@ function FactorsTableView(container, model) {
 	var tbl = $D('table');
 	var tr = $D('tr');	
 	//TABLE HEADER
-	tr.appendChild($D('th', {'innerHTML':'Cells'}));
+	var tmpTh = $D('th', {'innerHTML':'Cells<br/>(blue = human; red = mouse)<br/><span style=\'color:gray\'>click table cells for details</span>'});
+	tr.appendChild(tmpTh);
 	for (var i = 0; i < factors.length; i++) {
 	    var th = $D('th', {'innerHTML':factors[i]});
 	    th.className = "no_r2th";
