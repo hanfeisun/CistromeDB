@@ -575,6 +575,14 @@ function PaperInfoView(container, model) {
 	tmp.appendChild($D('br'));
 	//BUILD the GSMIDS
 	tmp.appendChild($D('span', {'className':'label', 'innerHTML':"Data:"}));
+	//FOR ENCODE papers, have a link to the data
+	if (currPaper['title'].match(/ENCODE.*/)) {
+	    var sp =$D('span', {className:'value2'});
+	    var href = (currPaper['species'] == 'Homo sapiens') ? "http://genome.ucsc.edu/ENCODE/downloads.html" : "http://genome.ucsc.edu/ENCODE/downloadsMouse.html";
+	    sp.appendChild($D('a', {innerHTML:'ENCODE Link', href: href, target:'_blank'}));
+	    tmp.appendChild(sp);
+	}
+
 	//NOTE: GSMIDS is an array of tuples (or the jscript equiv--arrays), 
 	//where the first field is the gsmid, and the second is the factor
 	var gsmids = getattr(currPaper, "gsmids");
@@ -1203,6 +1211,17 @@ function FactorInfoView(container, model) {
 		//remove the new tr's top border
 		tr.style.borderTop = "0px";
 
+		//Build the data section
+		td1 = $D('td');
+		span = $D('span', {innerHTML:'data:', className:'label'});
+		td1.appendChild(span);
+		span = $D('span', {className:'value2'});
+		//NOTE: 1 = human, 2 = mouse
+		var href = (dset.species.id == 1) ? "http://genome.ucsc.edu/ENCODE/downloads.html" : "http://genome.ucsc.edu/ENCODE/downloadsMouse.html";
+		span.appendChild($D('a', {innerHTML:'ENCODE Link', href:href, target:'_blank'}));
+		td1.appendChild(span);
+		td1.appendChild($D('br'));
+		tr.appendChild(td1);
 	    }
 		
 
