@@ -91,6 +91,7 @@ def home(request):
     #show the 10 newest papers
     papers = models.Papers.objects.order_by('-date_collected')[:10]
     factors = models.Factors.objects.all().order_by('name')
+    cells = models.CellLines.objects.all().order_by('name')
     #remove control factors
     _removeList = ['Control', 'gfp', 'IgG', 'RevXlinkChromatin', 'Input']
     factors = [f for f in factors if f.name not in _removeList]
@@ -1342,3 +1343,49 @@ def factors_view(request):
         return HttpResponse(resp)
 
     return HttpResponse('[]')
+
+def cells_view(request):
+    """Takes a query param, cells--a list of cell_line/cellpop/celltype or 
+    tissuetype ids, and returns 
+    information to fill out the factors view.  
+    """
+    #NOTE: we are not jsonifying papers for efficiency sake!
+    #but we need to pull the following fields from it--see how we do this below
+    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid", 
+                        "reference"]
+    ret = {}
+    mnames = []
+
+    if 'cells' in request.GET:
+        cells = [models.CellLines.objects.get(pk=int(c)) \
+                       for c in request.GET['cells'].split(",")]
+        sorted(cells, key=lambda c:c.name)
+        cnames = [c.name for c in cells] #NOTE: this is mnames in factors_view
+
+        fnames = []        
+        for c in cells:
+            dsets = models.Datasets.objects.filter(cell_line=c)
+
+            for d in dsets:
+                #Optimization: not jsonifying the papers
+                d._meta._virtualfields = _paperFldsToPull
+                for fld in d._meta._virtualfields:
+                    setattr(d, fld, getattr(d.paper, fld))
+                d.paper = None
+
+                if d.factor.name not in fnames:
+                    #add it to the list of factor names
+                    fnames.append(d.factor.name)
+                    ret[d.factor.name] = {}
+                
+                if c.name in ret[d.factor.name]:
+                    ret[d.factor.name][c.name].append(jsrecord.views.jsonify(d)) 
+                else:
+                    ret[d.factor.name][c.name] = [jsrecord.views.jsonify(d)]
+
+        #get all of the datasets associated with the cnames
+        resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(cnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
+
+        return HttpResponse(resp)
+
+    return HttpResponse("[]")

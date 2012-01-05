@@ -18,11 +18,12 @@ onload="init();"
 {% block content %}
    <nav id="tabNav">
      <header class="tabHeader" id="factorsTab">Factors View</header>
+     <header class="tabHeader" id="cellsTab">Cells View</header>
      <header class="tabHeader" id="papersTab">Papers View</header>
    </nav>
    <section id="factorsView">
      <section id="factorsForm" class="factorsSection"> <!--INPUT FORM-->
-       <div id="factorsStep1"> <!--step 1-->
+       <div class="step1"> <!--step 1-->
 	 <p>
 	 <strong>Select the factors of interest:</strong> <br/>
 	 <span>(multiple selection allowed, max 10)</span><br/>
@@ -35,18 +36,17 @@ onload="init();"
 	     {% endfor %}
 	   </select>
        </div>
-       <div id="factorsStep2"> <!--step 2-->
-	   <input type="button" id="drawBtn" value="Draw Table"/>
+       <div class="step2"> <!--step 2-->
+	   <input type="button" id="drawBtn" class="drawBtn" value="Draw Table"/>
        </div>
      </section>
      <hr/>
-     <section id="factorsTable"  class="factorsSection">
+     <section id="factorsTable"  class="factorsTable">
        <h3>Select Factors and Click 'Draw Table'</h3>
      </section>
      <hr/>
-     <section id="factorInfo" class="factorsSection">
+     <section id="factorInfo" class="factorInfo">
      </section>
-
    </section>
 
    <section id="papersView">
@@ -82,6 +82,31 @@ onload="init();"
       </section>
    </section>
    
+   <section id="cellsView">
+     <section id="cellsForm" class="factorsSection"> 
+       <div class="step1"> 
+	 <p>
+	 <strong>Select the cells of interest:</strong> <br/>
+	 <span>(multiple selection allowed, max 10)</span><br/>
+	 </p>
+	 <select multiple="True" id="cellsSelect">
+	     {% for c in cells %}
+	     <option value="{{c.id}}" class="{% cycle 'row' 'altrow' %}">{{c.name}}</option>
+	     {% endfor %}
+	 </select>
+       </div>
+       <div class="step2">
+	   <input type="button" id="cellsDrawBtn" class="drawBtn" value="Draw Table" />
+       </div>
+     </section>
+     <hr/>
+     <section id="cellsFactorsTable"  class="factorsTable">
+       <h3>Select Cells and Click 'Draw Table'</h3>
+     </section>
+     <hr/>
+     <section id="cellsFactorInfo" class="factorInfo">
+     </section>
+   </section>
 {% endblock %}
 
 {% block sidebar %}

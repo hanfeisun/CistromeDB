@@ -9,7 +9,8 @@ var pgModel = new Model({"papersList":null, "currPaper":null,
 			 "currResultsCol":null});
 var factorsModel = new FactorsTabModel({'factors':null, 'models':null, 
 					'dsets':null, 'currTd':null});
-
+var cellsModel = new FactorsTabModel({'factors':null, 'models':null, 
+				      'dsets':null, 'currTd':null});
 
 //MENG asked me to remove this for now...but i like this so i'm just going to 
 //disable it
@@ -65,6 +66,10 @@ function init() {
 	new FactorsTableView($('factorsTable'), factorsModel);
     var factorInfoView = 
 	new FactorInfoView($('factorInfo'), factorsModel);
+    var cellsFactorsTableView = 
+	new FactorsTableView($('cellsFactorsTable'), cellsModel);
+    var cellsFactorInfoView = 
+	new FactorInfoView($('cellsFactorInfo'), cellsModel);
 
     pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
     //when a new paperList is set, clear the current paper
@@ -74,6 +79,8 @@ function init() {
     pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
     factorsModel.dsetsEvent.register(function() { factorsTableView.makeHTML();});
     factorsModel.currTdEvent.register(function() { factorInfoView.makeHTML();});
+    cellsModel.dsetsEvent.register(function() { cellsFactorsTableView.makeHTML();});
+    cellsModel.currTdEvent.register(function() { cellsFactorInfoView.makeHTML();});
     
     //overrider the setter fn to account for ascending fld- optional field asc
     pgModel.setCurrResultsCol = function(field, asc) {
@@ -150,8 +157,10 @@ function init() {
     //tab functions
     var factorsTab = $('factorsTab');
     var papersTab = $('papersTab');
+    var cellsTab = $('cellsTab');
     var factorsSect = $('factorsView');
     var papersSect = $('papersView');
+    var cellsSect = $('cellsView');
 
     factorsTab.onclick = function(event) {
 	//tab styling:
@@ -159,7 +168,8 @@ function init() {
 	factorsSect.style.display="block";
 	papersTab.className = "tabHeader";
 	papersSect.style.display="none";
-	
+	cellsTab.className = "tabHeader";
+	cellsSect.style.display="none";	
     }
     factorsTab.onclick();
 
@@ -169,6 +179,8 @@ function init() {
 	papersSect.style.display="block";
 	factorsTab.className = "tabHeader";
 	factorsSect.style.display="none";
+	cellsTab.className = "tabHeader";
+	cellsSect.style.display="none";	
 	//Only do the following when the papersTab is clicked for 1st time
 	if (papersTabLoad) {
 	    //DEFAULT/only view for paper collection homepage is ALL papers
@@ -178,6 +190,16 @@ function init() {
 	    setTimeout(function() { results_tog.open();}, 1500);
 	    papersTabLoad = false;
 	}
+    }
+
+    cellsTab.onclick = function(event) {
+	//tab styling:
+	factorsTab.className = "tabHeader";
+	factorsSect.style.display="none";
+	papersTab.className = "tabHeader";
+	papersSect.style.display="none";
+	cellsTab.className = "activeTab";
+	cellsSect.style.display="block";
     }
 
     var drawBtn = $('drawBtn');
@@ -192,18 +214,19 @@ function init() {
 		factors.push(fs.options[i].value);
 	    }
 	}
+	/* THIS IS OBSOLETE!!!
 	//Might be obsolete b/c we removed the all option
 	if ((factors.indexOf("0") != -1) && (factors.length > 1)) {
 	    //remove 0 from the list
 	    factors.splice(factors.indexOf("0"), 1);
 	}
-	
+	*/
 	var fStr=(factors.length > 0)? factors[0]:"";
 	//NOTE: limit to 10 selections
 	for (var i = 1; i <factors.length && i < 10; i++) {
-	    fStr += ","+factors[i]
+	    fStr += ","+factors[i];
 	}
-
+	
 	var factors_view_cb = function(req) {
 	    drawBtn.disabled = false;
 	    var resp = eval("("+req.responseText+")");
@@ -217,8 +240,41 @@ function init() {
 	var call = new Ajax.Request(SUB_SITE+"factors_view/", 
     {method:"get", parameters: {'factors':fStr}, 
      onComplete: factors_view_cb});
+	
+    }
+    
+    var cellsDrawBtn = $('cellsDrawBtn');
+    cellsDrawBtn.onclick = function(event) {
+	this.disabled = true;
+	var cells = [];
+	var cs = $('cellsSelect');
+	for (var i = 0; i < cs.options.length; i++) {
+	    if (cs.options[i].selected) {
+		cells.push(cs.options[i].value);
+	    }
+	}
+
+	var cStr = (cells.length > 0) ? cells[0]:"";
+	for (var i = 1; i < cells.length && i < 10; i++) {
+	    cStr += ","+cells[i];
+	}
+
+	var cells_view_cb = function(req) {
+	    cellsDrawBtn.disabled = false;
+	    var resp = eval("("+req.responseText+")");
+	    cellsModel.setFactors(resp.factors);
+	    cellsModel.setModels(resp.models);
+	    cellsModel.setDsets(resp.dsets);
+	    //CLEAR the factorInfoView
+	    cellsInfoView.clearHTML();
+	}
+	//MAKE the ajax call-
+	var call = new Ajax.Request(SUB_SITE+"cells_view/", 
+    {method:"get", parameters: {'cells':cStr}, 
+     onComplete: cells_view_cb});
 
     }
+
     //base.css is the first [0], home.css is [1]
     homeCSS = document.styleSheets[1];
 }

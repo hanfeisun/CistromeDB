@@ -257,46 +257,53 @@ span.value2 {
     clear:both;
 }
 
+#cellsView {
+    clear:both;
+}
+
 /* factors view */
 .factorsSection {
     border:1px solid #a6a6a6;
 }
 
 
-#factorsStep1 p {
+.step1 p {
     float:left;
     width:35%; 
     margin-left:5%
 }
 
-#factorsStep1 select {
+.step1 select {
     float:right;
     margin-right:15%; 
     width:35%; 
 }
 
-#factorsStep2 {
+.step2 {
     clear:both; 
     margin-left:5%
 }
 
-#drawBtn {
+.drawBtn {
     /*float:right; */
     margin-left:70%; 
     font-size:14pt;
 }
 
-
-#factorsTable {
-    /*margin-top:150px;*/
+.factorsTable {
+    border:1px solid #a6a6a6;
 }
 
-#factorsTable h3 {
+.factorsTable h3 {
     color:#a3a3a3;
     text-align:center;
 }
 
-#factorInfo tr {
+.factorInfo {
+    border:1px solid #a6a6a6;
+}
+
+.factorInfo tr {
     border:1px solid #000;
 }
 
