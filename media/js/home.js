@@ -269,7 +269,7 @@ function init() {
 	    cellsModel.setModels(resp.models);
 	    cellsModel.setDsets(resp.dsets);
 	    //CLEAR the factorInfoView
-	    cellsInfoView.clearHTML();
+	    cellsFactorInfoView.clearHTML();
 	}
 	//MAKE the ajax call-
 	var call = new Ajax.Request(SUB_SITE+"cells_view/", 
