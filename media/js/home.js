@@ -63,11 +63,11 @@ function init() {
     var samplesView = new SamplesView($('samples'), pgModel);
 
     var factorsTableView = 
-	new FactorsTableView($('factorsTable'), factorsModel);
+	new FactorsTableView($('factorsTable'), factorsModel, false);
     var factorInfoView = 
 	new FactorInfoView($('factorInfo'), factorsModel);
     var cellsFactorsTableView = 
-	new FactorsTableView($('cellsFactorsTable'), cellsModel);
+	new FactorsTableView($('cellsFactorsTable'), cellsModel, true);
     var cellsFactorInfoView = 
 	new FactorInfoView($('cellsFactorInfo'), cellsModel);
 
@@ -974,10 +974,11 @@ function LiquidCols(table) {
 }
 
 //Factors Tab Views
-function FactorsTableView(container, model) {
+function FactorsTableView(container, model, factorsAsRow) {
     this.prevTd = null;
     this.container = container;
     this.model = model;
+    this.factorsAsRow = factorsAsRow;//boolean: print factors as rows: if false, print as cols--default: false--FACTOR view: false, cell view: true
     var outer = this;
     //How many columns before we rotate
     var maxCols = 15;
@@ -989,43 +990,62 @@ function FactorsTableView(container, model) {
 	var factors = outer.model.getFactors();
 	var mnames = outer.model.getModels();
 	var dsets = outer.model.getDsets();
+
+	var fields = (outer.factorsAsRow)? [mnames,factors]:[factors,mnames];
 	//BUILD the table!
 	var tbl = $D('table');
 	var tr = $D('tr');	
 	//TABLE HEADER
 	var tmpTh = $D('th', {'innerHTML':'Cells<br/>(blue = human; red = mouse)<br/><span style=\'color:gray\'>click numbers for details</span>'});
 	tr.appendChild(tmpTh);
-	for (var i = 0; i < factors.length; i++) {
-	    var th = $D('th', {'innerHTML':factors[i]});
+	for (var i = 0; i < fields[0].length; i++) {
+	    var th = $D('th', {'innerHTML':fields[0][i]});
 	    th.className = "no_r2th";
 	    tr.appendChild(th);
+
+	    //HACK: color in the TH for cellsView--
+	    if(outer.factorsAsRow) {
+		if (dsets[factors[0]][mnames[0]].length > 0) {
+		    //TAKE THE FIRST SPECIES-- this seems to be ok!
+		    var foo =eval("("+dsets[factors[0]][mnames[0]][0]+")");
+		    spec = foo.species.id;
+		    if (spec && spec == 1) { //Human - Blue
+			th.style.backgroundColor = "#424da4";
+		    } else if (spec && spec == 2) { //Mouse - Red
+			th.style.backgroundColor = "#a64340";
+		    }
+
+		}
+	    }
 	}
 	tbl.appendChild(tr);
 
 	//BUILD rest of table
 	var td;
-	for (var i = 0; i < mnames.length; i++) {
+	for (var i = 0; i < fields[1].length; i++) {
 	    tr = $D('tr');
 	    //first item is the model name
-	    var cellTd =$D('td',{'innerHTML':mnames[i],'className':'no_r2td'});
+	    var cellTd =$D('td',{'innerHTML':fields[1][i],'className':'no_r2td'});
 	    tr.appendChild(cellTd);
 
 	    var spec = null;
-	    for (var j = 0; j < factors.length; j++) {
+	    for (var j = 0; j < fields[0].length; j++) {
 		td = $D('td', {'className':'no_r2td'});
-		if (dsets[factors[j]] && dsets[factors[j]][mnames[i]]) {
+		var m = (outer.factorsAsRow)? mnames[j]:mnames[i];
+		var fact = (outer.factorsAsRow)? factors[i]:factors[j];
+		if (dsets[fact] && dsets[fact][m]) {
 		    //add to species list
-		    if (dsets[factors[j]][mnames[i]].length > 0) {
+		    if (dsets[fact][m].length > 0) {
 			//TAKE THE FIRST SPECIES-- this seems to be ok!
-			var foo =eval("("+dsets[factors[j]][mnames[i]][0]+")");
+			var foo =eval("("+dsets[fact][m][0]+")");
 			spec = foo.species.id;
 		    }
 
-		    td.innerHTML = dsets[factors[j]][mnames[i]].length;
+		    td.innerHTML = dsets[fact][m].length;
 		    //NICE TRICK!
-		    td["_data"] = {'factor':factors[j],
-				   'mname': mnames[i],
-				   'dsets': dsets[factors[j]][mnames[i]]};
+		    td["_data"] = {'factor':fact,
+				   'mname': m,
+				   'dsets': dsets[fact][m]};
 		    
 		    td.onclick = function(t) {
 			return function(event) {
@@ -1061,11 +1081,14 @@ function FactorsTableView(container, model) {
 		} else {
 		    td.innerHTML = "";
 		}
-
-		if (spec && spec == 1) { //Human - Blue
-		    cellTd.style.backgroundColor = "#424da4";
-		} else if (spec && spec == 2) { //Mouse - Red
-		    cellTd.style.backgroundColor = "#a64340";
+		
+		//HACK: only color if factorsView--i.e. factorsAsRow is false
+		if (!outer.factorsAsRow) {
+		    if (spec && spec == 1) { //Human - Blue
+			cellTd.style.backgroundColor = "#424da4";
+		    } else if (spec && spec == 2) { //Mouse - Red
+			cellTd.style.backgroundColor = "#a64340";
+		    }
 		}
 		    
 		tr.appendChild(td);
