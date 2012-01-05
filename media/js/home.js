@@ -253,11 +253,14 @@ function init() {
 		cells.push(cs.options[i].value);
 	    }
 	}
-
+	
+	//LIMIT 1
 	var cStr = (cells.length > 0) ? cells[0]:"";
+	/*
 	for (var i = 1; i < cells.length && i < 10; i++) {
 	    cStr += ","+cells[i];
 	}
+	*/
 
 	var cells_view_cb = function(req) {
 	    cellsDrawBtn.disabled = false;

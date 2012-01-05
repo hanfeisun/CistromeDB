@@ -91,7 +91,10 @@ def home(request):
     #show the 10 newest papers
     papers = models.Papers.objects.order_by('-date_collected')[:10]
     factors = models.Factors.objects.all().order_by('name')
-    cells = models.CellLines.objects.all().order_by('name')
+    cls = models.CellLines.objects.all().order_by('name')
+    cps = models.CellPops.objects.all().order_by('name')
+    cts = models.CellTypes.objects.all().order_by('name')
+    tts = models.TissueTypes.objects.all().order_by('name')
     #remove control factors
     _removeList = ['Control', 'gfp', 'IgG', 'RevXlinkChromatin', 'Input']
     factors = [f for f in factors if f.name not in _removeList]
@@ -1349,43 +1352,74 @@ def cells_view(request):
     tissuetype ids, and returns 
     information to fill out the factors view.  
     """
+    def partition(ds):
+        """given a set of datasets, returns a 4-tuple, indicating which 
+        cell_lines, cellpops, cell_type, and tissue type are represented in
+        the dset"""
+        
+        (cls, cps, cts, tts) = ([],[],[],[])
+        ls = [(cls, "cell_line"), (cps, "cell_pop"), (cts, "cell_type"),
+              (tts, "tissue_type")]
+        for d in ds:
+            for (lst, fld) in ls:
+                val = getattr(d, fld)
+                if val and val not in lst:
+                    lst.append(val)
+        return (cls, cps, cts, tts)
+
+    _Mapping = {'cl': "cell_line", 'cp': "cell_pop", 
+               'ct': "cell_type", 'tt': "tissue_type"}
+
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
     _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid", 
                         "reference"]
     ret = {}
     mnames = []
+    fnames = []
 
     if 'cells' in request.GET:
-        cells = [models.CellLines.objects.get(pk=int(c)) \
-                       for c in request.GET['cells'].split(",")]
-        sorted(cells, key=lambda c:c.name)
-        cnames = [c.name for c in cells] #NOTE: this is mnames in factors_view
+        #NOTE: the user can only select 1 cell--we use that to our advantage!
+        (m, cid) = request.GET['cells'].split(",")
+        params = {_Mapping[m]:cid}
+        dsets = models.Datasets.objects.filter(**params)
+        (cls, cps, cts, tts) = partition(dsets)
+        
+        #assign the datasets to each partition, starting with cls, until we 
+        #exhaust the list
+        allDsets = [] #this is to track that we're not adding duplicates
+        for (ls, fld) in [(cls, "cell_line"), (cps, "cell_pop"),
+                          (cts, "cell_type"), (tts, "tissue_type")]:
+            for c in ls:
+                params = {fld:c}
+                tmp = dsets.filter(**params)
+                for d in tmp:
+                    if d.id not in allDsets:
+                        #Optimization: not jsonifying the papers
+                        d._meta._virtualfields = _paperFldsToPull
+                        for f in d._meta._virtualfields:
+                            setattr(d, f, getattr(d.paper, f))
+                        d.paper = None
 
-        fnames = []        
-        for c in cells:
-            dsets = models.Datasets.objects.filter(cell_line=c)
-
-            for d in dsets:
-                #Optimization: not jsonifying the papers
-                d._meta._virtualfields = _paperFldsToPull
-                for fld in d._meta._virtualfields:
-                    setattr(d, fld, getattr(d.paper, fld))
-                d.paper = None
-
-                if d.factor.name not in fnames:
-                    #add it to the list of factor names
-                    fnames.append(d.factor.name)
-                    ret[d.factor.name] = {}
-                
-                if c.name in ret[d.factor.name]:
-                    ret[d.factor.name][c.name].append(jsrecord.views.jsonify(d)) 
-                else:
-                    ret[d.factor.name][c.name] = [jsrecord.views.jsonify(d)]
-
-        #get all of the datasets associated with the cnames
-        resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(cnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
-
-        return HttpResponse(resp)
+                        allDsets.append(d.id)
+                        if d.factor.name not in fnames:
+                            fnames.append(d.factor.name)
+                        val = getattr(d, fld)
+                        if val.name not in mnames:
+                            mnames.append(val.name)
+                            
+                        if d.factor.name not in ret:
+                            ret[d.factor.name] = {}
+                        
+                        if val.name not in ret[d.factor.name]:
+                            ret[d.factor.name][val.name] = []
+                        ret[d.factor.name][val.name].append(jsrecord.views.jsonify(d))
+                #once allDsets == dsets, we can return
+                if len(allDsets) == len(dsets):
+                    resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % \
+                        (json.dumps(fnames), \
+                             json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), \
+                             json.dumps(ret))
+                    return HttpResponse(resp)
 
     return HttpResponse("[]")
