@@ -1060,7 +1060,7 @@ function FactorsTableView(container, model, factorsAsRow) {
 			    }
 			    outer.prevTd = t;
 			    //Jump to the factorInfoTable
-			    window.location.href = "#factorInfo";
+			    window.location.href = (outer.factorsAsRow) ? "#cellsFactorInfo" : "#factorInfo";
 			}
 		    }(td);
 		    //DOING the mouse over events here rather than in css
