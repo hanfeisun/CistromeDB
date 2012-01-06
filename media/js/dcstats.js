@@ -169,9 +169,30 @@ function init() {
     //top labs by datasets
     barHelper('dataset_lab_div', 'Top Labs by Datasets', 'ssum', 'Datasets', 'paper__lab', true);
 
-    var fields = ['factor', 'platform', 'species', 'cell_type',
-	      'cell_line', 'cell_pop', 'strain','condition',
-	      'disease_state'];
+    //NEED to manually create Datasets by factor b/c we want to remove controls
+    var controls = ['Control', 'Input', 'gfp', 'IgG', "RevXlinkChromatin"];
+    var factCb = function(req) {
+	var json = eval("("+req+")");
+	for (var i = 0; i < json.length; i++) {
+	    //we want to ignore the following factors
+	    if (controls.indexOf(json[i].factor__name) != -1) {
+		json[i].count = 0;
+	    }
+	}
+	var data = prepareData(json);
+	pieChartFactory("factor_div", "Datasets by factor", data);
+    }
+    var factorCall = $.ajax({
+	    url: SUB_SITE+"stats/?type=sum&model=Datasets&field=factor",
+	    context: document.body,
+	    success: factCb	    
+	});
+    
+
+    var fields = [//'factor', 
+		  'platform', 'species', 'cell_type',
+		  'cell_line', 'cell_pop', 'strain','condition',
+		  'disease_state'];
     for (var i = 0; i < fields.length; i++) {
 	var id = fields[i]+"_div";
 	helper(id, 'Datasets by '+fields[i], 'sum', 'Datasets', fields[i]);
