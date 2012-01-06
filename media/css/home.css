@@ -367,3 +367,8 @@ span.value2 {
     text-align: center;
     width:23px; /*matches  r2>span>span.height*/
 }
+
+.note {
+    color:gray;
+    font-size:9pt;
+}
