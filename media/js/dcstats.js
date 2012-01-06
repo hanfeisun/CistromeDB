@@ -190,8 +190,9 @@ function init() {
     
 
     var fields = [//'factor', 
-		  'platform', 'species', 'cell_type',
-		  'cell_line', 'cell_pop', 'strain','condition',
+		  //'platform', 
+		  'species', 'cell_type',
+		  'cell_line', 'cell_pop', 'strain', //'condition',
 		  'disease_state'];
     for (var i = 0; i < fields.length; i++) {
 	var id = fields[i]+"_div";
