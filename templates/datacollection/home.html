@@ -92,26 +92,9 @@ onload="init();"
 	 <span>(max 1)</span><br/>
 	 </p>
 	 <select multiple="true" id="cellsSelect">
-	     <option value="" disabled="true">----- Cell Lines -----</option>
-	     {% for c in cls %}
-	     <option value="cl,{{c.id}}" class="{% cycle 'row' 'altrow' %}">{{c.name}}</option>
+	     {% for mod, c in cells %}
+	     <option value="{{mod}},{{c.id}}" class="{% cycle 'row' 'altrow' %}">{{c.name}}</option>
 	     {% endfor %}
-
-	     <option value="" disabled="true">----- Cell Populations -----</option>
-	     {% for c in cps %}
-	     <option value="cp,{{c.id}}" class="{% cycle 'row' 'altrow' %}">{{c.name}}</option>
-	     {% endfor %}
-
-	     <option value="" disabled="true">----- Cell Types -----</option>
-	     {% for c in cts %}
-	     <option value="ct,{{c.id}}" class="{% cycle 'row' 'altrow' %}">{{c.name}}</option>
-	     {% endfor %}
-
-	     <option value="" disabled="true">----- Tissue Types -----</option>
-	     {% for t in tts %}
-	     <option value="tt,{{t.id}}" class="{% cycle 'row' 'altrow' %}">{{t.name}}</option>
-	     {% endfor %}
-
 	 </select>
        </div>
        <div class="step2">

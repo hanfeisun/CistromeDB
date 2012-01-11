@@ -91,10 +91,15 @@ def home(request):
     #show the 10 newest papers
     papers = models.Papers.objects.order_by('-date_collected')[:10]
     factors = models.Factors.objects.all().order_by('name')
-    cls = models.CellLines.objects.all().order_by('name')
-    cps = models.CellPops.objects.all().order_by('name')
-    cts = models.CellTypes.objects.all().order_by('name')
-    tts = models.TissueTypes.objects.all().order_by('name')
+
+    #build cells
+    cells = []
+    for (m, ann) in [(models.CellLines, "cl"), (models.CellPops, "cp"), 
+                     (models.CellTypes, "ct"), (models.TissueTypes, "tt")]:
+        tmp = [(ann, c) for c in m.objects.all()]
+        cells.extend(tmp)
+    cells = sorted(cells, key=lambda x: x[1].name)
+
     #remove control factors
     _removeList = ['Control', 'gfp', 'IgG', 'RevXlinkChromatin', 'Input']
     factors = [f for f in factors if f.name not in _removeList]
