@@ -389,8 +389,9 @@ function ResultsView(container, model) {
 	outer.container.appendChild(iframe);
 	//alert(iframe.contentDocument);
 	//MOZILLA needs a delay--HACK ALERT!--IT needs an alert for some reason
-	if (navigator.userAgent.match(/Firefox.*/)) {
-	    alert("Apologies for this annoying message but this is the only way that Firefox will correctly render this page!");
+	if (navigator.userAgent.match(/Firefox.*/) || 
+	    navigator.userAgent.match(/MSIE\ 9.0.*/)) {
+	    alert("Apologies for this annoying message but this is the only way that Firefox and IE9 will correctly render this page!");
 	}
 	//load the css
 	iframe.contentDocument.head.appendChild($D('link', {'href':SUB_SITE+"static/css/home.css", 'rel':'stylesheet', 'type':'text/css'}));
