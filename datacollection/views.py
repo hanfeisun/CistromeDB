@@ -1422,7 +1422,7 @@ def cells_view(request):
                 #once allDsets == dsets, we can return
                 if len(allDsets) == len(dsets):
                     resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % \
-                        (json.dumps(fnames), \
+                        (json.dumps(sorted(fnames)), \
                              json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), \
                              json.dumps(ret))
                     return HttpResponse(resp)

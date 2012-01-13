@@ -1014,16 +1014,22 @@ function FactorsTableView(container, model, factorsAsRow) {
 
 	    //HACK: color in the TH for cellsView--
 	    if(outer.factorsAsRow) {
-		if (dsets[factors[0]][mnames[0]].length > 0) {
-		    //TAKE THE FIRST SPECIES-- this seems to be ok!
-		    var foo =eval("("+dsets[factors[0]][mnames[0]][0]+")");
-		    spec = foo.species.id;
-		    if (spec && spec == 1) { //Human - Blue
-			th.style.backgroundColor = "#424da4";
-		    } else if (spec && spec == 2) { //Mouse - Red
-			th.style.backgroundColor = "#a64340";
-		    }
+		var found = false;
+		//find the first factor that hits
+		for (var f = 0; f < factors.length && !found; f++) {
+		    if (dsets[factors[f]][mnames[i]] && 
+			dsets[factors[f]][mnames[i]].length > 0) {
+			found = true;
+			//TAKE THE FIRST SPECIES-- this seems to be ok!
+			var foo =eval("("+dsets[factors[f]][mnames[i]][0]+")");
+			spec = foo.species.id;
+			if (spec && spec == 1) { //Human - Blue
+			    th.style.backgroundColor = "#424da4";
+			} else if (spec && spec == 2) { //Mouse - Red
+			    th.style.backgroundColor = "#a64340";
+			}
 
+		    }
 		}
 	    }
 	}
