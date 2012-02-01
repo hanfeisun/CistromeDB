@@ -1410,15 +1410,19 @@ def cells_view(request):
                         if d.factor.name not in fnames:
                             fnames.append(d.factor.name)
                         val = getattr(d, fld)
-                        if val.name not in mnames:
-                            mnames.append(val.name)
+                        #key to organize the data: cell*_name + species
+                        #before it was orgKey=val.name
+                        specKey = "h" if d.species.id == 1 else "m"
+                        orgKey = "%s(%s)" % (val.name, specKey)
+                        if orgKey not in mnames:
+                            mnames.append(orgKey)
                             
                         if d.factor.name not in ret:
                             ret[d.factor.name] = {}
                         
-                        if val.name not in ret[d.factor.name]:
-                            ret[d.factor.name][val.name] = []
-                        ret[d.factor.name][val.name].append(jsrecord.views.jsonify(d))
+                        if orgKey not in ret[d.factor.name]:
+                            ret[d.factor.name][orgKey] = []
+                        ret[d.factor.name][orgKey].append(jsrecord.views.jsonify(d))
                 #once allDsets == dsets, we can return
                 if len(allDsets) == len(dsets):
                     resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % \
