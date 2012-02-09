@@ -384,6 +384,7 @@ function ResultsView(container, model) {
 	var iframe = $D('iframe');
 	iframe.src="about:blank";
 	iframe.width="99%";
+	iframe.height="250px";
 	//NOTE: the iframe MUST be appended to the body of the doc, otherwise
 	//iframe.contentDocument = undefined!
 	outer.container.appendChild(iframe);
