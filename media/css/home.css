@@ -266,6 +266,9 @@ span.value2 {
     border:1px solid #a6a6a6;
 }
 
+#factorsSelect, #cellsSelect {
+    height:300px;
+}
 
 .step1 p {
     float:left;
