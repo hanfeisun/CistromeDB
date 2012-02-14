@@ -1248,7 +1248,15 @@ def search(request):
                 tmp.append(p)
 
         #sort tmp by pub_date
-        tmp.sort(key=lambda p: p.pub_date, reverse=True)
+        def sorter(p):
+            #try to sort by pub_date, otherwise use id
+            if p and p.pub_date:
+                p.pub_date
+            else:
+                #return id
+                p.id
+        #tmp.sort(key=lambda p: p.pub_date, reverse=True)
+        tmp.sort(key=sorter, reverse=True)
         tmp2 = [jsrecord.views.jsonify(p) for p in tmp]
         
         ret = "[%s]" % ",".join(tmp2)
