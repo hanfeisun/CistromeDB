@@ -94,7 +94,7 @@ for v in views.generic_update_list:
 #add generic model views
 for v in views.generic_model_list:
     view_name = "%s" % v.lower()
-    urlpatterns += patterns('', url(r'%s'%view_name, getattr(views, view_name),
+    urlpatterns += patterns('',url(r'^%s/$'%view_name,getattr(views,view_name),
                                     name=view_name),)
 urlpatterns += patterns('', url(r'assemblies', views.assemblies, 
                                 name="assemblies"),)
