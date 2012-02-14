@@ -21,7 +21,6 @@ var homeCSS;
 var papersTabLoad = true;
 //NOTE: an empty search might mean "all" and not none.
 function init() {
-    /*
     var searchFld = $('search');
     searchFld.value = msg;
     searchFld.className = "searchWait"
@@ -46,6 +45,8 @@ function init() {
 	    var srch = new Ajax.Request(SUB_SITE+"search/", 
     {method:"get", parameters: {"q":searchFld.value}, onComplete: searchCb});
 	    this.disabled = true;
+	    searchFld.disabled = true;
+	    searchFld.style.color = "#c1c1c1"; //font color to gray
 	}
     }
 
@@ -55,7 +56,7 @@ function init() {
 	    searchBtn.onclick()
 	}
     }
-    */
+
 
     var resultsView = new ResultsView($('results'), pgModel);
     var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
@@ -528,8 +529,11 @@ function searchCb(req) {
     //default ordering: pub_date, descending
     pgModel.setCurrResultsCol("pub_date", false);
 
-    //reset the search btn
+    //reset the search fld and search btn
     $('searchBtn').disabled = false;
+    var search = $('search');
+    search.disabled = false;
+    search.style.color = "#000";
 }
 
 function PaperInfoView(container, model) {

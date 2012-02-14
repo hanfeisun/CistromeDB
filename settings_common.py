@@ -84,7 +84,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     'datacollection', 'jsrecord', 'entrezutils',
-    #'haystack',
+    'haystack',
 )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
@@ -92,6 +92,6 @@ AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
 CACHE_BACKEND = 'db://newdc_cache'
 
 #haystack specific
-#HAYSTACK_SITECONF = 'search_sites'
-#HAYSTACK_SEARCH_ENGINE = 'whoosh'
-#HAYSTACK_WHOOSH_PATH = os.path.join(MEDIA_ROOT, 'whoosh_index')
+HAYSTACK_SITECONF = 'search_sites'
+HAYSTACK_SEARCH_ENGINE = 'whoosh'
+HAYSTACK_WHOOSH_PATH = os.path.join(MEDIA_ROOT, 'whoosh_index')

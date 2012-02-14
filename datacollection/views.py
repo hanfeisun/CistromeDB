@@ -30,7 +30,7 @@ import jsrecord.views
 import pipeline.ConfGenerator as ConfGenerator
 import pipeline.RunSHGenerator as RunSHGenerator
 import importer.DnldSHGenerator as DnldSHGenerator
-#from haystack.query import SearchQuerySet
+from haystack.query import SearchQuerySet
 
 try:
     import json
