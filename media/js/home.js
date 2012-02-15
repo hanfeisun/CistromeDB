@@ -1,26 +1,77 @@
-var Datasets = loadJSRecord('Datasets');
+//Shared functions: must come before LOAD!
+/*
+function Toggler(toggleSpan, container, isOpen) {
+    this.toggleSpan = toggleSpan;
+    this.isOpen = (isOpen == null) ? true : isOpen;
+    this.container = container;
+    var outer = this;
+
+    this.close = function() {
+	Effect.SlideUp(outer.container);
+	outer.toggleSpan.innerHTML = "+";
+	outer.isOpen = false;
+    }
+
+    this.open = function() {
+	Effect.SlideDown(outer.container);
+	outer.toggleSpan.innerHTML = "-";
+	outer.isOpen = true;
+    }
+
+    this.toggleSpan.onclick = function() {
+	if (outer.isOpen) {
+	    //close
+	    outer.close();
+	} else {
+	    //open
+	    outer.open();
+	}
+    }
+
+    //init the display
+    if (this.isOpen) {
+	this.open();
+    } else {
+	this.close();
+    }
+
+}
+*/
+
+//load the sub-scripts
+var head = $$('head')[0];
+if (head){
+    var lst = ["factors", "cells"];
+    for (var i = 0; i < lst.length; i++) {
+	var script = new Element('script', { type: 'text/javascript', 
+					 src: SUB_SITE+'static/js/home_'+lst[i]+'.js' });
+	head.appendChild(script);
+    }
+}
+
+//var Datasets = loadJSRecord('Datasets'); //OBSOLETE?
 
 //create the class
 var Model = ModelFactory(["papersList", "currPaper", "currResultsCol"],
 			 ["currResultsAscending", "origPapersList"]);
-var FactorsTabModel = ModelFactory(["factors", "models", "dsets", "currTd"], []);
+//var FactorsTabModel = ModelFactory(["factors", "models", "dsets", "currTd"], []);
 //Instantiate the class
 var pgModel = new Model({"papersList":null, "currPaper":null, 
 			 "currResultsCol":null});
-var factorsModel = new FactorsTabModel({'factors':null, 'models':null, 
-					'dsets':null, 'currTd':null});
-var cellsModel = new FactorsTabModel({'factors':null, 'models':null, 
-				      'dsets':null, 'currTd':null});
+//var factorsModel = new FactorsTabModel({'factors':null, 'models':null, 
+//					'dsets':null, 'currTd':null});
+//var cellsModel = new FactorsTabModel({'factors':null, 'models':null, 
+//				      'dsets':null, 'currTd':null});
 
-//MENG asked me to remove this for now...but i like this so i'm just going to 
-//disable it
 var msg = "Search Cistrome PC";
-//var msg = "                   ";
 
 var homeCSS;
 var papersTabLoad = true;
 //NOTE: an empty search might mean "all" and not none.
 function init() {
+    init_factors();
+    init_cells();
+    //init_papers();
     var searchFld = $('search');
     searchFld.value = msg;
     searchFld.className = "searchWait"
@@ -57,32 +108,31 @@ function init() {
 	}
     }
 
-
     var resultsView = new ResultsView($('results'), pgModel);
     var paperInfoView = new PaperInfoView($('paper_info'), pgModel);
-    var datasetsView = new DatasetsView($('datasets'), pgModel);
-    var samplesView = new SamplesView($('samples'), pgModel);
+    //var datasetsView = new DatasetsView($('datasets'), pgModel); //OBS?
+    //var samplesView = new SamplesView($('samples'), pgModel); //OBS?
 
-    var factorsTableView = 
-	new FactorsTableView($('factorsTable'), factorsModel, false);
-    var factorInfoView = 
-	new FactorInfoView($('factorInfo'), factorsModel);
-    var cellsFactorsTableView = 
-	new FactorsTableView($('cellsFactorsTable'), cellsModel, true);
-    var cellsFactorInfoView = 
-	new FactorInfoView($('cellsFactorInfo'), cellsModel);
+    //var factorsTableView = 
+    //	new FactorsTableView($('factorsTable'), factorsModel, false);
+    //var factorInfoView = 
+    //	new FactorInfoView($('factorInfo'), factorsModel);
+    //var cellsFactorsTableView = 
+    //	new FactorsTableView($('cellsFactorsTable'), cellsModel, true);
+    //var cellsFactorInfoView = 
+    //	new FactorInfoView($('cellsFactorInfo'), cellsModel);
 
     pgModel.papersListEvent.register(function() { resultsView.makeHTML();});
     //when a new paperList is set, clear the current paper
     pgModel.papersListEvent.register(function() {pgModel.setCurrPaper(null);});
     pgModel.currPaperEvent.register(function() { paperInfoView.makeHTML();});
-    pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
-    pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
-    factorsModel.dsetsEvent.register(function() { factorsTableView.makeHTML();});
-    factorsModel.currTdEvent.register(function() { factorInfoView.makeHTML();});
-    cellsModel.dsetsEvent.register(function() { cellsFactorsTableView.makeHTML();});
-    cellsModel.currTdEvent.register(function() { cellsFactorInfoView.makeHTML();});
-    
+    //pgModel.currPaperEvent.register(function() { datasetsView.currPaperLstnr();});
+    //pgModel.currPaperEvent.register(function() { samplesView.currPaperLstnr();});
+    //factorsModel.dsetsEvent.register(function() { factorsTableView.makeHTML();});
+    //factorsModel.currTdEvent.register(function() { factorInfoView.makeHTML();});
+    //cellsModel.dsetsEvent.register(function() { cellsFactorsTableView.makeHTML();});
+    //cellsModel.currTdEvent.register(function() { cellsFactorInfoView.makeHTML();});
+
     //overrider the setter fn to account for ascending fld- optional field asc
     pgModel.setCurrResultsCol = function(field, asc) {
 	var oldCol = pgModel.getCurrResultsCol();
@@ -140,11 +190,12 @@ function init() {
 				  $('results_wrapper'), false);
     var paper_info_tog = new Toggler($('paper_info_toggler'), 
 				     $('paper_info_wrapper'));
+    /*
     var datasets_tog = new Toggler($('datasets_toggler'), 
 				   $('datasets_wrapper'), false);
     var samples_tog = new Toggler($('samples_toggler'), 
 				  $('samples_wrapper'), false);
-
+    */
     //sidebar links
     /* These no longer exist
     $('all_papers').onclick = function(event) {
@@ -155,6 +206,8 @@ function init() {
     }
     */
 
+    //NOTE: these must be integrated at this level--unless we move to 
+    //listeners! which we should do!
     //tab functions
     var factorsTab = $('factorsTab');
     var papersTab = $('papersTab');
@@ -202,7 +255,7 @@ function init() {
 	cellsTab.className = "activeTab";
 	cellsSect.style.display="block";
     }
-
+    /*
     var drawBtn = $('drawBtn');
     drawBtn.onclick = function(event) {
 	//NOTE: i have to walk the list and see which onese are selected
@@ -215,6 +268,7 @@ function init() {
 		factors.push(fs.options[i].value);
 	    }
 	}
+    */
 	/* THIS IS OBSOLETE!!!
 	//Might be obsolete b/c we removed the all option
 	if ((factors.indexOf("0") != -1) && (factors.length > 1)) {
@@ -222,6 +276,7 @@ function init() {
 	    factors.splice(factors.indexOf("0"), 1);
 	}
 	*/
+    /*
 	var fStr=(factors.length > 0)? factors[0]:"";
 	//NOTE: limit to 10 selections
 	for (var i = 1; i <factors.length && i < 10; i++) {
@@ -243,7 +298,8 @@ function init() {
      onComplete: factors_view_cb});
 	
     }
-    
+    */
+    /*
     var cellsDrawBtn = $('cellsDrawBtn');
     cellsDrawBtn.onclick = function(event) {
 	this.disabled = true;
@@ -257,11 +313,6 @@ function init() {
 	
 	//LIMIT 1
 	var cStr = (cells.length > 0) ? cells[0]:"";
-	/*
-	for (var i = 1; i < cells.length && i < 10; i++) {
-	    cStr += ","+cells[i];
-	}
-	*/
 
 	var cells_view_cb = function(req) {
 	    cellsDrawBtn.disabled = false;
@@ -278,7 +329,7 @@ function init() {
      onComplete: cells_view_cb});
 
     }
-
+    */
     //base.css is the first [0], home.css is [1]
     homeCSS = document.styleSheets[1];
 }
@@ -483,18 +534,6 @@ function ResultsView(container, model) {
 
 	    tableElm.appendChild(newTr);
 	}
-	/*
-	//build until min papers
-	for (; i < outer.minPapers; i++) {
-	    newTr = $D('tr', {'className': (i % 2 == 0)? "row":"altrow"});
-	    //stub for iconTd
-	    newTr.appendChild($D('td', {'innerHTML':"&nbsp;"}));
-	    for (var j = 0; j < fields.length; j++) {	       
-		newTr.appendChild($D('td', {'innerHTML':"&nbsp;"}));
-	    }
-	    newTbl.appendChild(newTr);
-	}
-	*/
     }
 
     this.redraw = function() {
@@ -631,6 +670,7 @@ function PaperInfoView(container, model) {
     }
 }
 
+/*
 function DatasetsView(container, model) {
     this.container = container;
     this.model = model;
@@ -877,7 +917,9 @@ function SamplesView(container, model) {
 	
     }
 }
+*/
 
+// MOVING to top of file! b/c this is needed by all of the tabs!
 function Toggler(toggleSpan, container, isOpen) {
     this.toggleSpan = toggleSpan;
     this.isOpen = (isOpen == null) ? true : isOpen;
@@ -973,7 +1015,8 @@ function LiquidCols(table) {
 			for (var z = 0; z < outer.tds[i].length; z++) {
 			    //we store the full string in the td's _val attrib
 			    if (outer.tds[i][z]['_val']) {
-				var max=Math.round(outer.tds[i][z].getWidth() /
+				//NOTE: this isn't working!
+				var max=Math.round(outer.tds[i][z].getWidth()/
 						   outer.scale);
 				outer.tds[i][z].innerHTML = 
 				    shorten(outer.tds[i][z]['_val'], max);
@@ -987,6 +1030,7 @@ function LiquidCols(table) {
     }
 }
 
+/*
 //Factors Tab Views
 function FactorsTableView(container, model, factorsAsRow) {
     this.prevTd = null;
@@ -1120,7 +1164,8 @@ function FactorsTableView(container, model, factorsAsRow) {
 	outer.container.appendChild(tbl);
     }
 }
-
+*/
+/*
 function FactorInfoView(container, model) {
     this.container = container;
     this.model = model;
@@ -1203,9 +1248,10 @@ function FactorInfoView(container, model) {
 		}
 		td1.appendChild($D('br'));
 	    }
-
+*/
 	    //hack for ENCODE data
-	    if (dset.reference && dset.reference.match(/ENCODE.*/)) {
+	    //if (dset.reference && dset.reference.match(/ENCODE.*/)) {
+/*
 		var span = $D('span', {innerHTML:'reference:',className:'label'});
 		td1.appendChild(span);
 		
@@ -1273,6 +1319,10 @@ function FactorInfoView(container, model) {
 	outer.container.innerHTML = "";
     }
 }
+*/
+
+//NOTE: i'm not sure who uses these functions!!-- I think they're obsolete!
+//BUT i think they're useful!
 
 /* getStyle- fn to get the COMPUTED css value of an element 
  * ref: http://robertnyman.com/2006/04/24/get-the-rendered-style-of-an-element/
