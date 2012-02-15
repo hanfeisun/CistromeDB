@@ -5,8 +5,8 @@ var papersModel = new PapersModel({"papersList":null, "currPaper":null,
 var pgModel = papersModel;
 
 var msg = "Search Cistrome PC";
-var papersTabLoad = true;
-var results_tog;
+
+var result_tog;
 function init_papers() {
     var searchFld = $('search');
     searchFld.value = msg;
@@ -107,7 +107,7 @@ function init_papers() {
 
     //togglers
     results_tog = new Toggler($('results_toggler'), 
-				  $('results_wrapper'), false);
+			      $('results_wrapper'));//, false);
     var paper_info_tog = new Toggler($('paper_info_toggler'), 
 				     $('paper_info_wrapper'));
 
@@ -117,6 +117,8 @@ function init_papers() {
     //var samples_tog = new Toggler($('samples_toggler'), 
     //				  $('samples_wrapper'), false);
 
+    //default is ALL papers
+    getPapers("all", papersModel);
 }
 
 /**
