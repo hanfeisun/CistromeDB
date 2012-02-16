@@ -9,43 +9,6 @@ var papers_msg = msg;
 
 var result_tog;
 function init_papers() {
-    /*
-    var searchFld = $('search');
-    searchFld.value = msg;
-    searchFld.className = "searchWait"
-    searchFld.onclick = function(event) {
-	//IF the user is clicking for the first time
-	if (this.value == msg) {
-	    this.className = "searchIn";
-	    this.value = "";
-	}
-    }
-
-    searchFld.onblur = function(event) {
-	if (this.value == "") {
-	    this.className = "searchWait";
-	    this.value = msg;
-	}
-    }
-    
-    var searchBtn = $('searchBtn');
-    searchBtn.onclick = function(event) {
-	if (searchFld.value != msg) {
-	    var srch = new Ajax.Request(SUB_SITE+"search/", 
-    {method:"get", parameters: {"q":searchFld.value}, onComplete: searchCb});
-	    this.disabled = true;
-	    searchFld.disabled = true;
-	    searchFld.style.color = "#c1c1c1"; //font color to gray
-	}
-    }
-
-    //Enter key invokes search --NOTE: this might not work across browsers
-    searchFld.onkeydown = function(event) {
-	if (event.keyCode == 13) {
-	    searchBtn.onclick()
-	}
-    }
-    */
     var papersSearchCb = function(req) {
 	var resp = eval("("+req.responseText+")");
 	papersModel.setPapersList(resp);

@@ -34,14 +34,8 @@ onload="init();"
 	 <span class="note">NOTE: These are the official gene symbol as found in the <a href="http://www.ncbi.nlm.nih.gov/gene/" target="_blank">EntrezGene</a> database.</span><br/>
 	 </p>
 	 <select multiple="True" id="factorsSelect">
-	     <!--NOTE: 0 = ALL FACTORS-->
-	     <!--<option value="0" selected="True">All [BEWARE: a huge table may result!]</option>-->
-	     {% comment %}
-	     {% for f in factors %}
-	     <option value="{{f.id}}" class="{% cycle 'row' 'altrow' %}">{{f.name}}</option>
-	     {% endfor %}
-	     {% endcomment %}
-	   </select>
+	   <!--Dynamically generated with jscript-->
+	 </select>
        </div>
        <div class="step2"> <!--step 2-->
 	   <input type="button" id="drawBtn" class="drawBtn" value="Draw Table"/>
@@ -59,7 +53,7 @@ onload="init();"
    <section id="papersView">
       <!--inspired by www.factorbook.org -->
       <section class="collapsable_box"> 
-        <header class="collapsable_box_header"><span class="searchSpan"><input type="text" id="search" value="" class="search"></input><input type="button" value="Search" id="searchBtn"/></span><span id="results_toggler" class="toggle">-</span>
+        <header class="collapsable_box_header"><span class="searchSpan"><input type="text" id="papers_search" value="" class="search"></input><input type="button" value="Search" id="papers_searchBtn"/></span><span id="results_toggler" class="toggle">-</span>
 	</header>
 	<section class="collapsable_box_content" id="results_wrapper">
 	      <section id="results"> </section> 
