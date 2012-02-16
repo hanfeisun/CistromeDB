@@ -1221,7 +1221,7 @@ assemblies = modelPagesFactory(models.Assemblies, "assembly")
 # search page
 #------------------------------------------------------------------------------
 #@cache_page(60 * 60 * 1)
-def search(request):
+def search_papers(request):
     """This view takes a query param, q, and returns the jsonified records for
     all of the papers associated with that query string
     """
