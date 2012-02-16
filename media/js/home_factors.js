@@ -40,7 +40,8 @@ function init_factors() {
 	//reset the search fld and search btn
 	$('factors_searchBtn').disabled = false;
 	$('factors_search').disabled = false;
-	$('factors_search').style.color = "#000";
+	//$('factors_search').style.color = "#000";
+	$('factors_search').className = "searchIn";
     }
 
     var factorsSearchURL = SUB_SITE + "search_factors";

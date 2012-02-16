@@ -115,7 +115,8 @@ function SearchView(searchFld, searchBtn, msg, searchURL, searchCb) {
      onComplete: outer.searchCb});
 	    outer.searchBtn.disabled = true;
 	    outer.searchFld.disabled = true;
-	    outer.searchFld.style.color = "#c1c1c1"; //font color to gray
+	    //outer.searchFld.style.color = "#c1c1c1"; //font color to gray
+	    outer.searchFld.className = "searchWait";
 	}
     }
 

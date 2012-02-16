@@ -5,9 +5,11 @@ var papersModel = new PapersModel({"papersList":null, "currPaper":null,
 var pgModel = papersModel;
 
 //var msg = "Search Cistrome PC";
+var papers_msg = msg;
 
 var result_tog;
 function init_papers() {
+    /*
     var searchFld = $('search');
     searchFld.value = msg;
     searchFld.className = "searchWait"
@@ -43,6 +45,28 @@ function init_papers() {
 	    searchBtn.onclick()
 	}
     }
+    */
+    var papersSearchCb = function(req) {
+	var resp = eval("("+req.responseText+")");
+	papersModel.setPapersList(resp);
+	//save the original b/c sorting will be destructive
+	papersModel.origPapersList = resp;
+	//default ordering: pub_date, descending
+	papersModel.setCurrResultsCol("pub_date", false);
+	
+	//reset the search fld and search btn
+	$('papers_searchBtn').disabled = false;
+	$('papers_search').disabled = false;
+	//$('papers_search').style.color = "#000";
+	$('papers_search').className = "searchIn";
+    }
+
+    var papersSearchURL = SUB_SITE + "search_papers";
+    var papersSearch = new SearchView($('papers_search'), 
+				       $('papers_searchBtn'), 
+				       papers_msg, papersSearchURL, 
+				       papersSearchCb);
+
 
     var resultsView = new ResultsView($('results'), papersModel);
     var paperInfoView = new PaperInfoView($('paper_info'), papersModel);
@@ -346,8 +370,8 @@ function ResultsView(container, model) {
     }
 }
 
-
-function searchCb(req) {
+/*
+function papersSearchCb(req) {
     var resp = eval("("+req.responseText+")");
     papersModel.setPapersList(resp);
     //save the original b/c sorting will be destructive
@@ -361,6 +385,7 @@ function searchCb(req) {
     search.disabled = false;
     search.style.color = "#000";
 }
+*/
 
 function PaperInfoView(container, model) {
     this.container = container;
