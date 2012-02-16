@@ -1,8 +1,9 @@
 {{ object.gsmid }}
+{{ object.generic_id }}
 {{ object.name }}
 {{ object.factor.name }}
-{{ object.factor.antibody }}
 {{ object.factor.type }}
+{{ object.antibody.name }}
 {{ object.platform.gplid }}
 {{ object.platform.name }}
 {{ object.platform.experiment_type }}
@@ -10,9 +11,9 @@
 {{ object.species.name }}
 {{ object.assemblies.name }}
 {{ object.cell_type.name }}
-{{ object.cell_type.tissue_type }}
 {{ object.cell_line.name }}
 {{ object.cell_pop.name }}
+{{ object.tissue_type.name }}
 {{ object.strain.name }}
 {{ object.condition.name }}
 {{ object.disease_state.name}}

@@ -1,5 +1,6 @@
 {{ object.pmid }}
 {{ object.gseid }}
+{{ object.generic_id }}
 {{ object.authors }}
 {{ object.title }}
 {{ object.abstract }}
