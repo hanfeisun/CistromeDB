@@ -22,6 +22,9 @@ onload="init();"
      <header class="tabHeader" id="papersTab">Papers View</header>
    </nav>
    <section id="factorsView">
+     <header class="collapsable_box_header"><span class="searchSpan"><input type="text" id="factors_search" value="" class="search"></input><input type="button" value="Search" id="factors_searchBtn"/></span>
+     </header>
+
      <section id="factorsForm" class="factorsSection"> <!--INPUT FORM-->
        <div class="step1"> <!--step 1-->
 	 <p>
@@ -33,9 +36,11 @@ onload="init();"
 	 <select multiple="True" id="factorsSelect">
 	     <!--NOTE: 0 = ALL FACTORS-->
 	     <!--<option value="0" selected="True">All [BEWARE: a huge table may result!]</option>-->
+	     {% comment %}
 	     {% for f in factors %}
 	     <option value="{{f.id}}" class="{% cycle 'row' 'altrow' %}">{{f.name}}</option>
 	     {% endfor %}
+	     {% endcomment %}
 	   </select>
        </div>
        <div class="step2"> <!--step 2-->
@@ -54,7 +59,7 @@ onload="init();"
    <section id="papersView">
       <!--inspired by www.factorbook.org -->
       <section class="collapsable_box"> 
-        <header class="collapsable_box_header">Papers:<span id="searchSpan"><input type="text" id="search" value=""></input><input type="button" value="Search" id="searchBtn"/></span><span id="results_toggler" class="toggle">-</span>
+        <header class="collapsable_box_header"><span class="searchSpan"><input type="text" id="search" value="" class="search"></input><input type="button" value="Search" id="searchBtn"/></span><span id="results_toggler" class="toggle">-</span>
 	</header>
 	<section class="collapsable_box_content" id="results_wrapper">
 	      <section id="results"> </section> 

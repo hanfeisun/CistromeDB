@@ -1229,10 +1229,11 @@ def search(request):
     paper_ids = []
     tmp = []
     _timeout = 60*60*24 #1 day
+    _hashTAG = "####SEARCH_PAPERS####"
     if 'q' in request.GET:
         key = request.GET['q']
-        if cache.get(key):
-            return HttpResponse(cache.get(key))
+        if cache.get(_hashTAG + key):
+            return HttpResponse(cache.get(_hashTAG + key))
 
         res = SearchQuerySet().filter(content=key)
         for r in res:
@@ -1260,9 +1261,42 @@ def search(request):
         tmp2 = [jsrecord.views.jsonify(p) for p in tmp]
         
         ret = "[%s]" % ",".join(tmp2)
-        cache.set(key, ret, _timeout)
+        cache.set(_hashTAG + key, ret, _timeout)
     #print paper_ids
     return HttpResponse(ret)
+
+#need to refactor this!! this is ugly but my brain is dead!
+def search_factors(request):
+    all_factors = [] 
+    factor_names = []
+    ret = []
+    _timeout = 60*60*24 #1 day
+    _hashTAG = "####SEARCH_FACTORS####"
+    if 'q' in request.GET:
+        key = request.GET['q']
+        if cache.get(_hashTAG + key):
+            return HttpResponse(cache.get(_hashTAG + key))
+
+        res = SearchQuerySet().filter(content=key)
+        for r in res:
+            #NOTE: r.model, r.model_name, r.object
+            if r.model is models.Datasets:
+                if r.object.factor.name not in factor_names:
+                    all_factors.append(r.object.factor)
+                    factor_names.append(r.object.factor.name)
+            else: #it's a paper
+                for f in r.object.factors:
+                    if f not in factor_names:
+                        fact = models.Factors.objects.filter(name=f)[0]
+                        all_factors.append(fact)
+                        factor_names.append(f)
+        #sort by id
+        all_factors.sort(key=lambda f: f.name)        
+        tmp2 = [jsrecord.views.jsonify(f) for f in all_factors]
+        
+        ret = "[%s]" % ",".join(tmp2)
+        cache.set(_hashTAG + key, ret, _timeout)
+    return HttpResponse(str(ret))
 
 def front(request, rtype):
     """supports the front page retrieval of, for example, the most recent 

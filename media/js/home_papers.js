@@ -4,7 +4,7 @@ var papersModel = new PapersModel({"papersList":null, "currPaper":null,
 				   "currResultsCol":null});
 var pgModel = papersModel;
 
-var msg = "Search Cistrome PC";
+//var msg = "Search Cistrome PC";
 
 var result_tog;
 function init_papers() {
