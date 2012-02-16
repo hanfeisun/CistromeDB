@@ -1,7 +1,54 @@
-var FactorsTabModel = ModelFactory(["factors", "models", "dsets", "currTd"], []);
-var factorsModel = new FactorsTabModel({'factors':null, 'models':null, 
-					'dsets':null, 'currTd':null});
+var FactorsTabModel = ModelFactory(["factors", "factorsList", "models", 
+				    "dsets", "currTd"], []);
+var Factors = loadJSRecord('Factors');
+var allFactors = Factors.all().sort(function(a,b){ 
+	if (a.name == b.name) {
+	    return 0;
+	} else if (a.name > b.name) {
+	    return 1;
+	} else {
+	    return -1;
+	}});
+var factorsModel = new FactorsTabModel({'factors':null, 'factorsList':null,
+					'models':null, 'dsets':null, 
+					'currTd':null});
+
+//NOTE: this is a global defined in home.js
+var factors_msg = msg;
+
 function init_factors() {
+    var factorsListLstnr = function() {
+	var list = factorsModel.getFactorsList();
+	var factorsSelect = $('factorsSelect');
+	//CLEAR!
+	factorsSelect.innerHTML = "";
+	for (var i = 0; i < list.length; i++) {
+	    var tmp = $D('option', {'value':list[i].id, 
+				'className': ((i % 2) == 0)? 'row':'altrow',
+				'innerHTML':list[i].name});
+	factorsSelect.appendChild(tmp);
+	}
+    }
+    factorsModel.factorsListEvent.register(function() {factorsListLstnr();});
+    //init the select menu
+    factorsModel.setFactorsList(allFactors);
+	
+    var factorsSearchCb = function(req) {
+	var resp = eval("("+req.responseText+")");
+	factorsModel.setFactorsList(resp);
+
+	//reset the search fld and search btn
+	$('factors_searchBtn').disabled = false;
+	$('factors_search').disabled = false;
+	$('factors_search').style.color = "#000";
+    }
+
+    var factorsSearchURL = SUB_SITE + "search_factors";
+    var factorsSearch = new SearchView($('factors_search'), 
+				       $('factors_searchBtn'), 
+				       factors_msg, factorsSearchURL, 
+				       factorsSearchCb);
+
     var factorsTableView = 
 	new FactorsTableView($('factorsTable'), factorsModel, false);
     var factorInfoView = 

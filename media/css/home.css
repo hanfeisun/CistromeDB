@@ -33,9 +33,11 @@ th span::selection {
 
 .searchWait {
     color:#807f80;
+    width:30%;
 }
 .searchIn {
     color:#000;
+    width:30%;
 }
 
 .highlight {
@@ -48,12 +50,15 @@ th span::selection {
     background-color:#175099;
 }
 
-#searchSpan {
+.searchSpan {
     margin-left:50%;
 }
-#search {
+
+/* NOT matching b/c overridden in js--see searchIn and searchWait 
+.search {
     width:30%;
 }
+*/
 
 .icon {
     height:8px;

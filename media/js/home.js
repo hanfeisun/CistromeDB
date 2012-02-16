@@ -1,5 +1,6 @@
 var TabsModel = ModelFactory(["currTab"],[]);
 var tabsModel = new TabsModel({"currTab":null});
+var msg = "Search Cistrome PC";
 
 //load the sub-scripts
 var head = $$('head')[0];
@@ -75,6 +76,57 @@ function TabView(tab, section, tabsModel) {
 	outer.section.style.display = "none";
     }
 }
+
+//These same functions were going to be duplicated for all three tabs,
+//so instead of doing that i'm writing a formal class to handle the 
+//search input and search btn interactions
+//NOTE: searchCB can be initially null and set at a later time
+//msg = default msg to display, can't be empty string!
+function SearchView(searchFld, searchBtn, msg, searchURL, searchCb) {
+    this.searchFld = searchFld;
+    this.searchBtn = searchBtn;
+    this.msg = msg;
+    this.searchURL = searchURL;
+    this.searchCb = searchCb;
+    var outer = this;
+    
+    this.searchFld.value = this.msg;
+    this.searchFld.className = "searchWait"
+    this.searchFld.onclick = function(event) {
+	//IF the user is clicking for the first time
+	if (outer.searchFld.value == outer.msg) {
+	    outer.searchFld.className = "searchIn";
+	    outer.searchFld.value = "";
+	}
+    }
+
+    this.searchFld.onblur = function(event) {
+	if (outer.searchFld.value == "") {
+	    outer.searchFld.className = "searchWait";
+	    outer.searchFld.value = outer.msg;
+	}
+    }
+
+    //handle the searchBtn interactions
+    this.searchBtn.onclick = function(event) {
+	if (outer.searchFld.value != outer.msg) {
+	    var srch = new Ajax.Request(outer.searchURL, 
+    {method:"get", parameters: {"q":outer.searchFld.value}, 
+     onComplete: outer.searchCb});
+	    outer.searchBtn.disabled = true;
+	    outer.searchFld.disabled = true;
+	    outer.searchFld.style.color = "#c1c1c1"; //font color to gray
+	}
+    }
+
+    //Enter key invokes search --NOTE: this might not work across browsers
+    this.searchFld.onkeydown = function(event) {
+	if (event.keyCode == 13) {
+	    outer.searchBtn.onclick()
+	}
+    }
+}
+
 
 //NOTE: i'm not sure who uses these functions!!-- I think they're obsolete!
 //BUT i think they're useful!
