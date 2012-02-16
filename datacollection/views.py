@@ -1265,8 +1265,10 @@ def search_papers(request):
     #print paper_ids
     return HttpResponse(ret)
 
-#need to refactor this!! this is ugly but my brain is dead!
 def search_factors(request):
+    """This view takes a query param and returns a ordered list of factors
+    associated with that search term
+    """
     all_factors = [] 
     factor_names = []
     ret = []
@@ -1297,6 +1299,51 @@ def search_factors(request):
         ret = "[%s]" % ",".join(tmp2)
         cache.set(_hashTAG + key, ret, _timeout)
     return HttpResponse(str(ret))
+
+def search_cells(request):
+    """This view takes a query param and returns a ordered list of cells
+    associated with that search term
+    Cells set = cell lines, cell pops, cell types, and tissue types
+    """
+    _flds = [("cell_line", models.CellLines), ("cell_pop", models.CellPops), 
+             ("cell_type", models.CellTypes), 
+             ("tissue_type", models.TissueTypes)]
+    all_cells = [] 
+    cell_names = []
+    ret = []
+    _timeout = 60*60*24 #1 day
+    _hashTAG = "####SEARCH_CELLS####"
+    if 'q' in request.GET:
+        key = request.GET['q']
+        if cache.get(_hashTAG + key):
+            return HttpResponse(cache.get(_hashTAG + key))
+
+        res = SearchQuerySet().filter(content=key)
+        for r in res:
+            #NOTE: r.model, r.model_name, r.object
+            if r.model is models.Datasets:
+                for (f, m) in _flds:
+                    val = getattr(r.object, f)
+                    if val and val.name not in cell_names:
+                        all_cells.append(val)
+                        cell_names.append(val.name)
+            else: #it's a paper
+                for (f, mod) in _flds:
+                    f = f+"s" #in paper they're plural
+                    val = getattr(r.object, f)
+                    for i in val:
+                        if i not in cell_names:
+                            tmp = mod.objects.filter(name=i)[0]
+                            all_cells.append(tmp)
+                            cell_names.append(i)
+        #sort by id
+        all_cells.sort(key=lambda c: c.name)        
+        tmp2 = [jsrecord.views.jsonify(c) for c in all_cells]
+        
+        ret = "[%s]" % ",".join(tmp2)
+        cache.set(_hashTAG + key, ret, _timeout)
+    return HttpResponse(str(ret))
+
 
 def front(request, rtype):
     """supports the front page retrieval of, for example, the most recent 

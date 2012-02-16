@@ -84,6 +84,9 @@ onload="init();"
    </section>
 
    <section id="cellsView">
+     <header class="collapsable_box_header"><span class="searchSpan"><input type="text" id="cells_search" value="" class="search"></input><input type="button" value="Search" id="cells_searchBtn"/></span>
+     </header>
+
      <section id="cellsForm" class="factorsSection"> 
        <div class="step1"> 
 	 <p>
@@ -91,9 +94,6 @@ onload="init();"
 	 <span>(max 1)</span><br/>
 	 </p>
 	 <select multiple="true" id="cellsSelect">
-	     {% for mod, c in cells %}
-	     <option value="{{mod}},{{c.id}}" class="{% cycle 'row' 'altrow' %}">{{c.name}}</option>
-	     {% endfor %}
 	 </select>
        </div>
        <div class="step2">

@@ -2,12 +2,67 @@
 //home_factors.js.  So you must make sure that you include that file afore this
 
 //NOTE: CellsTabModel is duplicate of FactorsTabModel
-var CellsTabModel = ModelFactory(["factors", "models", "dsets", "currTd"], []);
-var cellsModel = new CellsTabModel({'factors':null, 'models':null, 
-				    'dsets':null, 'currTd':null});
+var CellsTabModel = ModelFactory(["factors", "cellsList", "models", "dsets", 
+				  "currTd"], []);
+var CellLines = loadJSRecord('CellLines');
+var CellPops = loadJSRecord('CellPops');
+var CellTypes = loadJSRecord('CellTypes');
+var TissueTypes = loadJSRecord('TissueTypes');
+var allCells = CellLines.all().concat(CellPops.all()).concat(CellTypes.all()).concat(TissueTypes.all());
+allCells.sort(function(a,b){ 
+	if (a.name == b.name) {
+	    return 0;
+	} else if (a.name > b.name) {
+	    return 1;
+	} else {
+	    return -1;
+	}});
 
+var cellsModel = new CellsTabModel({'factors':null, 'cellsList':null, 
+				    'models':null, 'dsets':null, 
+				    'currTd':null});
+
+var cells_msg = msg;
 
 function init_cells() {
+    var cellsListLstnr = function() {
+	var list = cellsModel.getCellsList();
+	var cellsSelect = $('cellsSelect');
+	//CLEAR!
+	cellsSelect.innerHTML = "";
+	var map = {'CellLines':'cl', 'CellPops':'cp', 'CellTypes':'ct',
+		   'TissueTypes':'tt'}
+	for (var i = 0; i < list.length; i++) {
+	    var type = (list[i].className)? map[list[i].className]:map[list[i]._class];
+
+	    var tmp = $D('option',{'value':type+","+list[i].id, 
+				'className': ((i % 2) == 0)? 'row':'altrow',
+				'innerHTML':list[i].name});
+	    cellsSelect.appendChild(tmp);
+	}
+    }
+    cellsModel.cellsListEvent.register(function() {cellsListLstnr();});
+    //init the select menu
+    cellsModel.setCellsList(allCells);
+
+    var cellsSearchCb = function(req) {
+	var resp = eval("("+req.responseText+")");
+	cellsModel.setCellsList(resp);
+
+	//reset the search fld and search btn
+	$('cells_searchBtn').disabled = false;
+	$('cells_search').disabled = false;
+	//$('factors_search').style.color = "#000";
+	$('cells_search').className = "searchIn";
+    }
+
+    var cellsSearchURL = SUB_SITE + "search_cells";
+    var cellsSearch = new SearchView($('cells_search'), 
+				     $('cells_searchBtn'), 
+				       cells_msg, cellsSearchURL, 
+				       cellsSearchCb);
+
+
     var cellsFactorsTableView = 
 	new FactorsTableView($('cellsFactorsTable'), cellsModel, true);
     var cellsFactorInfoView = 

@@ -160,6 +160,7 @@ class Papers(DCModel):
     cell_types = property(_datasetAggregator('cell_type'))
     cell_lines = property(_datasetAggregator('cell_line'))
     cell_pops = property(_datasetAggregator('cell_pop'))
+    tissue_types = property(_datasetAggregator('tissue_type'))
     strains = property(_datasetAggregator('strain'))
     conditions = property(_datasetAggregator('condition'))
     disease_states = property(_datasetAggregator('disease_state'))
@@ -189,8 +190,8 @@ Papers._meta._donotSerialize = ['user']
 #Dataset fields which we will aggregate and make into virtual paper fields
 Papers._meta._virtualfields = ['lab', 'factors', 'platforms', 'species', 
                                'assemblies', 'cell_types', 'cell_lines', 
-                               'cell_pops', 'strains', 'conditions', 
-                               'disease_states', 'gsmids']
+                               'cell_pops', 'tissue_types', 'strains', 
+                               'conditions', 'disease_states', 'gsmids']
 
 
 class Datasets(DCModel):
