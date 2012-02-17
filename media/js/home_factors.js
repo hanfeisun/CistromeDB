@@ -7,20 +7,27 @@ var allFactors = [];
 //NOTE: this is a global defined in home.js
 var factors_msg = msg;
 
-function init_factors() {
-    var factorsListLstnr = function() {
-	var list = factorsModel.getFactorsList();
-	var factorsSelect = $('factorsSelect');
-	//CLEAR!
-	factorsSelect.innerHTML = "";
-	for (var i = 0; i < list.length; i++) {
-	    var tmp = $D('option', {'value':list[i].id, 
+var drawFactorsSelect = function(list) {
+    var factorsSelect = $('factorsSelect');
+    //CLEAR!
+    factorsSelect.innerHTML = "";
+    for (var i = 0; i < list.length; i++) {
+	var tmp = $D('option', {'value':list[i].id, 
 				'className': ((i % 2) == 0)? 'row':'altrow',
 				'innerHTML':list[i].name});
 	factorsSelect.appendChild(tmp);
-	}
     }
+}
+
+function init_factors() {
+    var factorsListLstnr = function() {
+	var list = factorsModel.getFactorsList();
+	drawFactorsSelect(list);
+    }
+    var jumpView= new JumpView($('factors_jump'), "getFactorsList", 
+			       drawFactorsSelect);
     factorsModel.factorsListEvent.register(function() {factorsListLstnr();});
+    factorsModel.factorsListEvent.register(jumpView.listener);
 
     //init allFactors to the set given by django in the select menu
     var fs = $('factorsSelect');
@@ -29,6 +36,8 @@ function init_factors() {
 	allFactors.push({"id":fs.options[i].value, 
 		    "name":fs.options[i].innerHTML});
     }
+    //trigger the jumpView
+    factorsModel.setFactorsList(allFactors);
 	
     var factorsSearchCb = function(req) {
 	var resp = eval("("+req.responseText+")");
