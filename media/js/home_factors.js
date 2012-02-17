@@ -34,11 +34,7 @@ function init_factors() {
 	var resp = eval("("+req.responseText+")");
 	factorsModel.setFactorsList(resp);
 
-	//reset the search fld and search btn
-	$('factors_searchBtn').disabled = false;
-	$('factors_search').disabled = false;
-	//$('factors_search').style.color = "#000";
-	$('factors_search').className = "searchIn";
+	$('factors_cancelBtn').style.display="inline";
     }
 
     var factorsSearchURL = SUB_SITE + "search_factors";
@@ -88,6 +84,21 @@ function init_factors() {
      onComplete: factors_view_cb});
 	
     }   
+    //set the action for the cancelBtn
+    var cancelBtn = $('factors_cancelBtn');
+    cancelBtn.onclick = function(event) {
+	factorsModel.setFactorsList(allFactors);
+	//reset the search fld and search btn
+	$('factors_searchBtn').disabled = false;
+	$('factors_search').disabled = false;
+	$('factors_search').value = "";
+	$('factors_search').className = "searchIn";
+	cancelBtn.style.display="none";
+	//HACK: to get the msg displayed, set the focus on the search, then 
+	//move it to the select
+	$('factors_search').focus();
+	$('factorsSelect').focus();
+    }
 }
 
 //Factors Tab Views
