@@ -6,6 +6,7 @@ var pgModel = papersModel;
 
 //var msg = "Search Cistrome PC";
 var papers_msg = msg;
+var allPapers = [];
 
 var result_tog;
 function init_papers() {
@@ -17,11 +18,7 @@ function init_papers() {
 	//default ordering: pub_date, descending
 	papersModel.setCurrResultsCol("pub_date", false);
 	
-	//reset the search fld and search btn
-	$('papers_searchBtn').disabled = false;
-	$('papers_search').disabled = false;
-	//$('papers_search').style.color = "#000";
-	$('papers_search').className = "searchIn";
+	$('papers_cancelBtn').style.display="inline";
     }
 
     var papersSearchURL = SUB_SITE + "search_papers";
@@ -104,8 +101,30 @@ function init_papers() {
     //var samples_tog = new Toggler($('samples_toggler'), 
     //				  $('samples_wrapper'), false);
 
+    //set the action for the cancelBtn
+    var cancelBtn = $('papers_cancelBtn');
+    cancelBtn.onclick = function(event) {
+	//arrange the model
+	papersModel.setPapersList(allPapers);
+	papersModel.origPapersList = allPapers;
+	//default ordering: pub_date, descending
+	papersModel.setCurrResultsCol("pub_date", false);
+
+	//reset the search fld and search btn
+	$('papers_searchBtn').disabled = false;
+	$('papers_search').disabled = false;
+	$('papers_search').value = "";
+	$('papers_search').className = "searchIn";
+	cancelBtn.style.display="none";
+	//HACK: to get the msg displayed, set the focus on the search, then 
+	//move it to the select
+	$('papers_search').focus();
+	$('results').focus();
+    }
+
     //default is ALL papers
-    getPapers("all", papersModel);
+    var allPapers = getPapers("all", papersModel);
+
 }
 
 /**
@@ -113,6 +132,7 @@ function init_papers() {
  * recent papers
  */
 function getPapers(type, model) {
+    var returnVal = null;
     var cb = function(req) {
 	var resp = eval("("+req.responseText+")");
 	model.setPapersList(resp);
@@ -120,13 +140,13 @@ function getPapers(type, model) {
 	model.origPapersList = resp;
 	//default ordering: pub_date, descending
 	model.setCurrResultsCol("pub_date", false);
-
+	returnVal = resp;
     }
 
     var call = new Ajax.Request(SUB_SITE+"front/"+type+"/", 
 				{method:"get", parameters: {}, 
-				 onComplete: cb});
-    
+				 onComplete: cb, asynchronous:false});
+    return returnVal
 }
 
 /**
