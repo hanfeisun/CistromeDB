@@ -110,8 +110,11 @@ function SearchView(searchFld, searchBtn, msg, searchURL, searchCb) {
     //handle the searchBtn interactions
     this.searchBtn.onclick = function(event) {
 	if (outer.searchFld.value != outer.msg) {
+	    //REMOVE "-s; submit it in quotes so that boolean operators work
+	    //KEY: need to put it in quotes for query operations to work!
+	    var q = outer.searchFld.value.replace("\"", "");
 	    var srch = new Ajax.Request(outer.searchURL, 
-    {method:"get", parameters: {"q":outer.searchFld.value}, 
+    {method:"get", parameters: {"q":"\""+q+"\""}, 
      onComplete: outer.searchCb});
 	    outer.searchBtn.disabled = true;
 	    outer.searchFld.disabled = true;
