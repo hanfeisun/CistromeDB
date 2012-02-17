@@ -89,18 +89,6 @@ function init_papers() {
     }
     papersModel.currResultsColEvent.register(sortResultsCol);
 
-    //togglers
-    results_tog = new Toggler($('results_toggler'), 
-			      $('results_wrapper'));//, false);
-    var paper_info_tog = new Toggler($('paper_info_toggler'), 
-				     $('paper_info_wrapper'));
-
-    //TURNED off!
-    //var datasets_tog = new Toggler($('datasets_toggler'), 
-    //			   $('datasets_wrapper'), false);
-    //var samples_tog = new Toggler($('samples_toggler'), 
-    //				  $('samples_wrapper'), false);
-
     //set the action for the cancelBtn
     var cancelBtn = $('papers_cancelBtn');
     cancelBtn.onclick = function(event) {
@@ -714,7 +702,7 @@ function SamplesView(container, model) {
     }
 }
 */
-
+/*
 function Toggler(toggleSpan, container, isOpen) {
     //alert(toggleSpan+"\n"+container);
     this.toggleSpan = toggleSpan;
@@ -824,3 +812,4 @@ function LiquidCols(table) {
 	this.widths.push(this.ths[i].getWidth());
     }
 }
+*/
