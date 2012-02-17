@@ -46,11 +46,7 @@ function init_cells() {
 	var resp = eval("("+req.responseText+")");
 	cellsModel.setCellsList(resp);
 
-	//reset the search fld and search btn
-	$('cells_searchBtn').disabled = false;
-	$('cells_search').disabled = false;
-	//$('factors_search').style.color = "#000";
-	$('cells_search').className = "searchIn";
+	$('cells_cancelBtn').style.display="inline";
     }
 
     var cellsSearchURL = SUB_SITE + "search_cells";
@@ -96,5 +92,22 @@ function init_cells() {
      onComplete: cells_view_cb});
 
     }
+
+    //set the action for the cancelBtn
+    var cancelBtn = $('cells_cancelBtn');
+    cancelBtn.onclick = function(event) {
+	cellsModel.setCellsList(allCells);
+	//reset the search fld and search btn
+	$('cells_searchBtn').disabled = false;
+	$('cells_search').disabled = false;
+	$('cells_search').value = "";
+	$('cells_search').className = "searchIn";
+	cancelBtn.style.display="none";
+	//HACK: to get the msg displayed, set the focus on the search, then 
+	//move it to the select
+	$('cells_search').focus();
+	$('cellsSelect').focus();
+    }
+
 }
 
