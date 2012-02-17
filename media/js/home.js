@@ -131,6 +131,56 @@ function SearchView(searchFld, searchBtn, msg, searchURL, searchCb) {
     }
 }
 
+//listens for modelList changes and creates a list of hyperlinks so that
+//only a subset is displayed
+//container- dom element to put the hyperlinks
+//model- the model that we're listening for, e.g. factorsModel, cellsModel
+//getterFn -the function in the model to get the full list
+//draw - fn to redraw the select, see drawFactorsSelect in home_factors.js
+//exposes a listener which you would register with the model
+function JumpView(container, getterfn, drawfn) {
+    this.container = container;
+    this.getterfn = getterfn;
+    this.drawfn = drawfn
+    var outer = this;
+
+    //NOTE: we're registering the model, so when the event happens we get
+    //the model back; we use the getterfn to get the list
+    this.listener = function(model) {
+	//clear the container
+	outer.container.innerHTML = "";
+
+	var list = model[outer.getterfn]();
+	//partition the list
+	var num = /\d/;
+	var partition=$H({ALL:list, "#":[], A:[],B:[],C:[],D:[],E:[],F:[],G:[],
+			  H:[],I:[],J:[],K:[],L:[],M:[],N:[],O:[],P:[],Q:[],
+			  R:[],S:[],T:[],U:[],V:[],W:[],X:[],Y:[],Z:[]});
+	list.each(function(elm) { 
+		//TODO: deal with numbers!
+		var c = elm.name[0].toUpperCase();
+		if (partition.get(c)) {
+		    partition.get(c).push(elm);
+		}
+	    });
+	
+	//Based on the parition generate the hyperlinks
+	partition.each(function(pair) {
+		if (pair.value.length > 0) {
+		    var tmp = $D('span', {innerHTML:pair.key, className:"jump"});
+		    tmp.onclick = function(event) {
+			outer.drawfn(pair.value);
+		    }
+		    outer.container.appendChild(tmp);
+		    //spacer element
+		    var spc = $D('span',{innerHTML:' '});
+		    spc.style.cursor="pointer";
+		    outer.container.appendChild(spc);
+		}
+	    });
+    }
+    
+}
 
 //NOTE: i'm not sure who uses these functions!!-- I think they're obsolete!
 //BUT i think they're useful!

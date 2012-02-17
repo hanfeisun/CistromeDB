@@ -380,3 +380,11 @@ span.value2 {
     color:gray;
     font-size:9pt;
 }
+
+/* VERY much like fake link! */
+.jump {
+    color:#093955;
+    text-decoration:underline;
+    cursor:pointer;
+    font-size:10pt;
+}
