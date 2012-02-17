@@ -4,24 +4,10 @@
 //NOTE: CellsTabModel is duplicate of FactorsTabModel
 var CellsTabModel = ModelFactory(["factors", "cellsList", "models", "dsets", 
 				  "currTd"], []);
-var CellLines = loadJSRecord('CellLines');
-var CellPops = loadJSRecord('CellPops');
-var CellTypes = loadJSRecord('CellTypes');
-var TissueTypes = loadJSRecord('TissueTypes');
-var allCells = CellLines.all().concat(CellPops.all()).concat(CellTypes.all()).concat(TissueTypes.all());
-allCells.sort(function(a,b){ 
-	if (a.name == b.name) {
-	    return 0;
-	} else if (a.name > b.name) {
-	    return 1;
-	} else {
-	    return -1;
-	}});
-
 var cellsModel = new CellsTabModel({'factors':null, 'cellsList':null, 
 				    'models':null, 'dsets':null, 
 				    'currTd':null});
-
+var allCells = [];
 var cells_msg = msg;
 
 function init_cells() {
@@ -33,8 +19,7 @@ function init_cells() {
 	var map = {'CellLines':'cl', 'CellPops':'cp', 'CellTypes':'ct',
 		   'TissueTypes':'tt'}
 	for (var i = 0; i < list.length; i++) {
-	    var type = (list[i].className)? map[list[i].className]:map[list[i]._class];
-
+	    var type = map[list[i]._class];
 	    var tmp = $D('option',{'value':type+","+list[i].id, 
 				'className': ((i % 2) == 0)? 'row':'altrow',
 				'innerHTML':list[i].name});
@@ -43,7 +28,19 @@ function init_cells() {
     }
     cellsModel.cellsListEvent.register(function() {cellsListLstnr();});
     //init the select menu
-    cellsModel.setCellsList(allCells);
+    //take the initial list and save it into allCells
+    var cs = $('cellsSelect');
+    allCells = [];
+    var revMap = {'cl':'CellLines', 'cp':'CellPops', 'ct':'CellTypes',
+		  'tt':'TissueTypes'};
+    for (var i = 0; i < cs.options.length; i++) {
+	var j = cs.options[i].value.indexOf(",");
+	var mod = cs.options[i].value.substr(0, j);
+	var id = cs.options[i].value.substr(j+1, cs.options[i].value.length);
+	var name = cs.options[i].innerHTML;
+	var tmp = {"_class":revMap[mod], "id":id, "name":name}
+	allCells.push(tmp);
+    }    
 
     var cellsSearchCb = function(req) {
 	var resp = eval("("+req.responseText+")");
