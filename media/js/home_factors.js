@@ -1,18 +1,9 @@
 var FactorsTabModel = ModelFactory(["factors", "factorsList", "models", 
 				    "dsets", "currTd"], []);
-var Factors = loadJSRecord('Factors');
-var allFactors = Factors.all().sort(function(a,b){ 
-	if (a.name == b.name) {
-	    return 0;
-	} else if (a.name > b.name) {
-	    return 1;
-	} else {
-	    return -1;
-	}});
 var factorsModel = new FactorsTabModel({'factors':null, 'factorsList':null,
 					'models':null, 'dsets':null, 
 					'currTd':null});
-
+var allFactors = [];
 //NOTE: this is a global defined in home.js
 var factors_msg = msg;
 
@@ -30,8 +21,14 @@ function init_factors() {
 	}
     }
     factorsModel.factorsListEvent.register(function() {factorsListLstnr();});
-    //init the select menu
-    factorsModel.setFactorsList(allFactors);
+
+    //init allFactors to the set given by django in the select menu
+    var fs = $('factorsSelect');
+    allFactors = [];
+    for (var i = 0; i < fs.options.length; i++) {
+	allFactors.push({"id":fs.options[i].value, 
+		    "name":fs.options[i].innerHTML});
+    }
 	
     var factorsSearchCb = function(req) {
 	var resp = eval("("+req.responseText+")");

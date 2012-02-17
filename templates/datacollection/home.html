@@ -35,6 +35,9 @@ onload="init();"
 	 </p>
 	 <select multiple="True" id="factorsSelect">
 	   <!--Dynamically generated with jscript-->
+       	     {% for f in factors %}
+	     <option value="{{f.id}}" class="{% cycle 'row' 'altrow' %}">{{f.name}}</option>
+	     {% endfor %}
 	 </select>
        </div>
        <div class="step2"> <!--step 2-->
