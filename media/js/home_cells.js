@@ -10,23 +10,30 @@ var cellsModel = new CellsTabModel({'factors':null, 'cellsList':null,
 var allCells = [];
 var cells_msg = msg;
 
+var drawCellsSelect = function(list) {
+    var cellsSelect = $('cellsSelect');
+    //CLEAR!
+    cellsSelect.innerHTML = "";
+    var map = {'CellLines':'cl', 'CellPops':'cp', 'CellTypes':'ct',
+	       'TissueTypes':'tt'}
+    for (var i = 0; i < list.length; i++) {
+	var type = map[list[i]._class];
+	var tmp = $D('option',{'value':type+","+list[i].id, 
+			       'className': ((i % 2) == 0)? 'row':'altrow',
+			       'innerHTML':list[i].name});
+	cellsSelect.appendChild(tmp);
+    }
+}
 function init_cells() {
     var cellsListLstnr = function() {
 	var list = cellsModel.getCellsList();
-	var cellsSelect = $('cellsSelect');
-	//CLEAR!
-	cellsSelect.innerHTML = "";
-	var map = {'CellLines':'cl', 'CellPops':'cp', 'CellTypes':'ct',
-		   'TissueTypes':'tt'}
-	for (var i = 0; i < list.length; i++) {
-	    var type = map[list[i]._class];
-	    var tmp = $D('option',{'value':type+","+list[i].id, 
-				'className': ((i % 2) == 0)? 'row':'altrow',
-				'innerHTML':list[i].name});
-	    cellsSelect.appendChild(tmp);
-	}
+	drawCellsSelect(list);
     }
+    var jumpView= new JumpView($('cells_jump'), "getCellsList", 
+			       drawCellsSelect, "cells");
     cellsModel.cellsListEvent.register(function() {cellsListLstnr();});
+    cellsModel.cellsListEvent.register(jumpView.listener);
+
     //init the select menu
     //take the initial list and save it into allCells
     var cs = $('cellsSelect');
@@ -48,6 +55,9 @@ function init_cells() {
 
 	$('cells_cancelBtn').style.display="inline";
     }
+    //trigger the jumpView
+    cellsModel.setCellsList(allCells);
+
 
     var cellsSearchURL = SUB_SITE + "search_cells";
     var cellsSearch = new SearchView($('cells_search'), 
