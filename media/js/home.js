@@ -159,7 +159,9 @@ function JumpView(container, getterfn, drawfn) {
 	list.each(function(elm) { 
 		//TODO: deal with numbers!
 		var c = elm.name[0].toUpperCase();
-		if (partition.get(c)) {
+		if (num.match(c)) {
+		    partition.get("#").push(elm);
+		} else if (partition.get(c)) {
 		    partition.get(c).push(elm);
 		}
 	    });
