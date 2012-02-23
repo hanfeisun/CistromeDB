@@ -740,6 +740,7 @@ function Toggler(toggleSpan, container, isOpen) {
     }
 
 }
+*/
 
 //Liquid Columns class: -- THIS might be reusable...
 function LiquidCols(table) {
@@ -812,4 +813,3 @@ function LiquidCols(table) {
 	this.widths.push(this.ths[i].getWidth());
     }
 }
-*/
