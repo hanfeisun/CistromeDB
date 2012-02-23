@@ -291,6 +291,7 @@ function FactorInfoView(container, model) {
 		    }
 		}
 
+
 		var newA = $D('a',{innerHTML:ref, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.pmid, target:"_blank"});
 		p.appendChild(newA);
 		td1.appendChild(p);
@@ -306,6 +307,46 @@ function FactorInfoView(container, model) {
 		tr = $D('tr');
 		//remove the new tr's top border
 		tr.style.borderTop = "0px";
+	    } else { //PMID is null; may be 1. ENCODE OR 2. unpublished paper
+		//hack for ENCODE data
+		if (dset.reference && dset.reference.match(/ENCODE.*/)) {
+		    var span = $D('span', {innerHTML:'reference:',className:'label'});
+		    td1.appendChild(span);
+		    
+		    span = $D('span', {innerHTML:dset.reference, className:'value2'});
+		    td1.appendChild(span);
+		    //td1.appendChild($D('br'));
+		    //MAKING the reference line span the columns
+		    td1.colSpan = "2";
+		    tr.appendChild(td1);
+		    //remove the tr's bottom border
+		    tr.style.borderBottom = "0px";
+		    td1 = $D('td');
+		    tbl.appendChild(tr);
+		    tr = $D('tr');
+		    //remove the new tr's top border
+		    tr.style.borderTop = "0px";
+		    
+		    //Build the data section
+		    td1 = $D('td');
+		    span = $D('span', {innerHTML:'data:', className:'label'});
+		    td1.appendChild(span);
+		    span = $D('span', {className:'value2'});
+		    //NOTE: 1 = human, 2 = mouse
+		    var href = (dset.species.id == 1) ? "http://genome.ucsc.edu/ENCODE/downloads.html" : "http://genome.ucsc.edu/ENCODE/downloadsMouse.html";
+		    span.appendChild($D('a', {innerHTML:'ENCODE Link', href:href, target:'_blank'}));
+		    td1.appendChild(span);
+		    td1.appendChild($D('br'));
+		    tr.appendChild(td1);
+		} else { // unpublished data		
+		
+		    var span = $D('span', {innerHTML:'reference:',className:'label'});
+		    td1.appendChild(span);
+		    span = $D('span', {innerHTML:"paper awaiting publication", className:'reference'});
+		    td1.appendChild(span);
+		    td1.appendChild($D('br'));
+		    tr.appendChild(td1);
+		}
 	    }
 
 	    if (dset.gseid || dset.gsmid) {
@@ -327,39 +368,6 @@ function FactorInfoView(container, model) {
 		}
 		td1.appendChild($D('br'));
 	    }
-
-	    //hack for ENCODE data
-	    if (dset.reference && dset.reference.match(/ENCODE.*/)) {
-		var span = $D('span', {innerHTML:'reference:',className:'label'});
-		td1.appendChild(span);
-		
-		span = $D('span', {innerHTML:dset.reference, className:'value2'});
-		td1.appendChild(span);
-		//td1.appendChild($D('br'));
-		//MAKING the reference line span the columns
-		td1.colSpan = "2";
-		tr.appendChild(td1);
-		//remove the tr's bottom border
-		tr.style.borderBottom = "0px";
-		td1 = $D('td');
-		tbl.appendChild(tr);
-		tr = $D('tr');
-		//remove the new tr's top border
-		tr.style.borderTop = "0px";
-
-		//Build the data section
-		td1 = $D('td');
-		span = $D('span', {innerHTML:'data:', className:'label'});
-		td1.appendChild(span);
-		span = $D('span', {className:'value2'});
-		//NOTE: 1 = human, 2 = mouse
-		var href = (dset.species.id == 1) ? "http://genome.ucsc.edu/ENCODE/downloads.html" : "http://genome.ucsc.edu/ENCODE/downloadsMouse.html";
-		span.appendChild($D('a', {innerHTML:'ENCODE Link', href:href, target:'_blank'}));
-		td1.appendChild(span);
-		td1.appendChild($D('br'));
-		tr.appendChild(td1);
-	    }
-		
 
 	    if (dset.authors) {
 		var span = $D('span', {innerHTML:'last author:',className:'label'});
