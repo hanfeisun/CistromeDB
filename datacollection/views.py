@@ -1489,35 +1489,39 @@ def cells_view(request):
                 tmp = dsets.filter(**params)
                 for d in tmp:
                     if d.id not in allDsets:
-                        #Optimization: not jsonifying the papers
-                        d._meta._virtualfields = _paperFldsToPull
-                        for f in d._meta._virtualfields:
-                            setattr(d, f, getattr(d.paper, f))
-                        d.paper = None
+                        if d.species:
+                            #Optimization: not jsonifying the papers
+                            d._meta._virtualfields = _paperFldsToPull
+                            for f in d._meta._virtualfields:
+                                setattr(d, f, getattr(d.paper, f))
+                            d.paper = None
 
-                        allDsets.append(d.id)
-                        if d.factor.name not in fnames:
-                            fnames.append(d.factor.name)
-                        val = getattr(d, fld)
-                        #key to organize the data: cell*_name + species
-                        #before it was orgKey=val.name
-                        specKey = "h" if d.species.id == 1 else "m"
-                        orgKey = "%s(%s)" % (val.name, specKey)
-                        if orgKey not in mnames:
-                            mnames.append(orgKey)
+                            allDsets.append(d.id)
+                            if d.factor.name not in fnames:
+                                fnames.append(d.factor.name)
+                            val = getattr(d, fld)
+                            #key to organize the data: cell*_name + species
+                            #before it was orgKey=val.name
+                            specKey = "h" if d.species.id == 1 else "m"
+                            orgKey = "%s(%s)" % (val.name, specKey)
+                            if orgKey not in mnames:
+                                mnames.append(orgKey)
                             
-                        if d.factor.name not in ret:
-                            ret[d.factor.name] = {}
+                            if d.factor.name not in ret:
+                                ret[d.factor.name] = {}
                         
-                        if orgKey not in ret[d.factor.name]:
-                            ret[d.factor.name][orgKey] = []
-                        ret[d.factor.name][orgKey].append(jsrecord.views.jsonify(d))
-                #once allDsets == dsets, we can return
-                if len(allDsets) == len(dsets):
-                    resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % \
-                        (json.dumps(sorted(fnames)), \
-                             json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), \
-                             json.dumps(ret))
-                    return HttpResponse(resp)
-
+                            if orgKey not in ret[d.factor.name]:
+                                ret[d.factor.name][orgKey] = []
+                            ret[d.factor.name][orgKey].append(jsrecord.views.jsonify(d))
+                        else: 
+                            #SKIPPING BAD dsets! add to allDset w/o add to ret
+                            allDsets.append(d.id)
+            #once allDsets == dsets, we can return
+            if len(allDsets) == len(dsets):
+                break;
+        resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % \
+            (json.dumps(sorted(fnames)), \
+                 json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), \
+                 json.dumps(ret))
+        return HttpResponse(resp)
     return HttpResponse("[]")
