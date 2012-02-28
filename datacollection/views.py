@@ -427,9 +427,9 @@ def datasets(request, user_id):
     datasets = datasets.order_by("paper", "gsmid")
 
     #HACK: get singleton
-    #if 'id' in request.GET:
-    #    datasets = [datasets.get(id=request.GET['id'])]
-    #    rest += "&id=%s" % request.GET['id']
+    if 'id' in request.GET:
+        datasets = [datasets.get(id=request.GET['id'])]
+        rest += "&id=%s" % request.GET['id']
 
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
