@@ -426,6 +426,11 @@ def datasets(request, user_id):
     #here is where we order things by paper and then gsmid for the admins
     datasets = datasets.order_by("paper", "gsmid")
 
+    #HACK: get singleton
+    #if 'id' in request.GET:
+    #    datasets = [datasets.get(id=request.GET['id'])]
+    #    rest += "&id=%s" % request.GET['id']
+
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
@@ -1175,7 +1180,7 @@ def modelPagesFactory(model, base_name):
         else:
             title = base_name.title()
 
-        objs = model.objects.all()
+        objs = model.objects.all().order_by("name")
         current_path = request.get_full_path()
         paginator = Paginator(objs, _items_per_page)
         update_form = "update_%s_form" % base_name
