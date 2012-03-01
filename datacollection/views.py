@@ -952,6 +952,13 @@ def dcstats(request):
     return render_to_response('datacollection/dcstats.html',
                               locals(),
                               context_instance=RequestContext(request))
+
+def help(request):
+    """the user's help page"""
+    return render_to_response('datacollection/help.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+    
 @admin_only
 def admin_help(request, page):
     """Help page for administrators, w/ optional page param"""
