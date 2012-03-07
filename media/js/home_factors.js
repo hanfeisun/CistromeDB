@@ -352,7 +352,7 @@ function FactorInfoView(container, model) {
 	    if (dset.gseid || dset.gsmid) {
 		var span = $D('span', {innerHTML:'data:',className:'label'});
 		td1.appendChild(span);
-		if (dset.gseid) {
+		if (dset.gseid && !dset.gseid.match(/SRA.*/)) {
 		    span = $D('span', {className:'value2'});
 		    var newA = $D('a',{innerHTML:dset.gseid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gseid, target:"_blank"});
 		    span.appendChild(newA);
