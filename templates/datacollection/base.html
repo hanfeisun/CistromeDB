@@ -23,10 +23,13 @@
       <p>CistromeMap is part of the <a href="http://liulab.dfci.harvard.edu/">Shirley Liu Lab</a> and is still under active development</p>
       <nav>
          <ul> 
-	   <li><a href="{% url home %}">Home</a></li> 
-	   <li><a href="{% url paper_submission %}">Submit a Paper</a></li>
-	   <li><a href="{% url dcstats %}">Collection Stats</a></li>
-	   <li><a href="{% url help %}">Help</a></li>
+	    {% for pg, url, name in sidebar  %}
+	    {% ifequal currpage pg %}
+	    <li>{{name}}</li>
+	    {% else %}
+	    <li><a href="{{url}}">{{name}}</a></li>
+	    {% endifequal %}
+	    {% endfor %}
 	 </ul> 
       </nav>
    </footer>

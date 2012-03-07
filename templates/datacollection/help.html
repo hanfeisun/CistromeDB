@@ -80,14 +80,14 @@ in this view you would be selecting for the cell line, cell type, cell populatio
 
 {% block sidebar %}
       <nav>
-	 <!--<h3>Help:</h3>-->
 	 <ul>
-	    <!--<li><span>About Cistrome DC</span></li>-->
-	    <!--<li><span>FAQ</span></li>-->
-	    <li><a href="{% url home %}">Home</a></li>
-	    <li><a href="{% url paper_submission %}">Submit a Paper</a></li>
-	    <li><a href="{% url dcstats %}">Collection Stats</a></li>
-	    <li>Help</li>
+	    {% for pg, url, name in sidebar  %}
+	    {% ifequal currpage pg %}
+	    <li>{{name}}</li>
+	    {% else %}
+	    <li><a href="{{url}}">{{name}}</a></li>
+	    {% endifequal %}
+	    {% endfor %}
 	 </ul>
       </nav>
       {% if user.is_staff %}

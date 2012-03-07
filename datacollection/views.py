@@ -47,6 +47,11 @@ _items_per_page = 25
 #when the oldest/newest paper was published
 _dateRange = models.Papers.objects.aggregate(Min('pub_date'),Max('pub_date'))
 
+
+_sidebarPages = ['home', 'paper_submission', 'dcstats', 'help']
+#how they are printed on the page
+_sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help"]
+
 def admin_only(function=None):
     """
     Decorator for views that checks that the user is logged in AND is_staff.
@@ -89,6 +94,11 @@ def no_view(request):
 
 def home(request):
     #show the 10 newest papers
+    #NOTE: sidebarURLs can't be generated at the module level
+    sidebarURLs = [reverse(p) for p in _sidebarPages]
+    sidebar = zip(_sidebarPages, sidebarURLs, _sidebarNames)
+    currpage = "home"
+
     papers = models.Papers.objects.order_by('-date_collected')[:10]
     factors = models.Factors.objects.all().order_by('name')
 
@@ -530,6 +540,10 @@ def register(request):
 
 
 def paper_submission(request):
+    sidebarURLs = [reverse(p) for p in _sidebarPages]
+    sidebar = zip(_sidebarPages, sidebarURLs, _sidebarNames)
+    currpage = "paper_submission"
+
     #val_dict = {'pmid': 0} #, 'title': 0, 'authors': 0}
     title = "Paper Submission Form"
     if request.method == 'POST':
@@ -949,12 +963,18 @@ def stats(request):
 
 def dcstats(request):
     """the stats page"""
+    sidebarURLs = [reverse(p) for p in _sidebarPages]
+    sidebar = zip(_sidebarPages, sidebarURLs, _sidebarNames)
+    currpage = "dcstats"
     return render_to_response('datacollection/dcstats.html',
                               locals(),
                               context_instance=RequestContext(request))
 
 def help(request):
     """the user's help page"""
+    sidebarURLs = [reverse(p) for p in _sidebarPages]
+    sidebar = zip(_sidebarPages, sidebarURLs, _sidebarNames)
+    currpage = "help"
     return render_to_response('datacollection/help.html',
                               locals(),
                               context_instance=RequestContext(request))
