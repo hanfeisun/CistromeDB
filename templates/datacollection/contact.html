@@ -1,0 +1,47 @@
+{% extends "datacollection/login_base.html" %}
+{% load dc_extras %}
+
+{% block title %}CistromeMap - Contact{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/help.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block onload %}
+onload="init();"
+{% endblock %}
+
+{% block content %}
+  <p>
+    <span class="label">Contact us:</span>
+    <span class="value">For any questions or bug-reports that you may have, please email us at <a href="mailto:cistromemap@jimmy.harvard.edu"/>CistromeMap [at] jmmy.harvard.edu</a>
+    </span>
+  </p>
+{% endblock %}
+
+{% block sidebar %}
+      <nav>
+	 <ul>
+	    {% for pg, url, name in sidebar  %}
+	    {% ifequal currpage pg %}
+	    <li>{{name}}</li>
+	    {% else %}
+	    <li><a href="{{url}}">{{name}}</a></li>
+	    {% endifequal %}
+	    {% endfor %}
+	 </ul>
+      </nav>
+      {% if user.is_staff %}
+      <nav>
+         <h3>Admin:</h3>
+         <ul>
+	    <li><a href="{% url report %}">Weekly Report</a></li>
+	    <li><a href="{% url weekly_papers %}">Weekly Papers</a></li>
+	    <li><a href="{% url weekly_datasets %}">Weekly Datasets</a></li>
+	    <li><a href="{% url admin %}">Admin</a></li>
+	    <li><a href="{% url teams %}">Teams</a></li>
+	    <li><a href="{% url submissions_admin %}">Paper Submissions</a></li>
+	    <li><a href="{% url admin_help %}">Help</a></li>
+	 </ul>
+      </nav>
+      {% endif %}
+{% endblock %}

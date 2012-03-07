@@ -48,9 +48,9 @@ _items_per_page = 25
 _dateRange = models.Papers.objects.aggregate(Min('pub_date'),Max('pub_date'))
 
 
-_sidebarPages = ['home', 'paper_submission', 'dcstats', 'help']
+_sidebarPages = ['home', 'paper_submission', 'dcstats', 'help', 'contact']
 #how they are printed on the page
-_sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help"]
+_sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help", 'Contact Us']
 
 def admin_only(function=None):
     """
@@ -978,6 +978,16 @@ def help(request):
     return render_to_response('datacollection/help.html',
                               locals(),
                               context_instance=RequestContext(request))
+
+def contact(request):
+    """the contact page"""
+    sidebarURLs = [reverse(p) for p in _sidebarPages]
+    sidebar = zip(_sidebarPages, sidebarURLs, _sidebarNames)
+    currpage = "contact"
+    return render_to_response('datacollection/contact.html',
+                              locals(),
+                              context_instance=RequestContext(request))
+
     
 @admin_only
 def admin_help(request, page):
