@@ -349,7 +349,7 @@ function FactorInfoView(container, model) {
 		}
 	    }
 
-	    if (dset.gseid || dset.gsmid) {
+	    if (dset.gseid || dset.gsmid || dset.generic_id) {
 		var span = $D('span', {innerHTML:'data:',className:'label'});
 		td1.appendChild(span);
 		if (dset.gseid && !dset.gseid.match(/SRA.*/)) {
@@ -360,12 +360,22 @@ function FactorInfoView(container, model) {
 		    //space
 		    td1.appendChild($D('span',{innerHTML:' '}));
 		}
+
 		if (dset.gsmid){
 		    span = $D('span', {className:'value2'});
 		    var newA = $D('a',{innerHTML:dset.gsmid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gsmid, target:"_blank"});
 		    span.appendChild(newA);
 		    td1.appendChild(span);
 		}
+		
+		//download link for SRX, DRX, ERX data
+		if (dset.generic_id && dset.generic_id.match(/.RX.*/)) {
+		    span = $D('span', {className:'value2'});
+		    var newA = $D('a',{innerHTML:dset.generic_id, href:'http://sra.dnanexus.com/experiments/'+dset.generic_id, target:"_blank"});
+		    span.appendChild(newA);
+		    td1.appendChild(span);		    
+		}
+
 		td1.appendChild($D('br'));
 	    }
 
