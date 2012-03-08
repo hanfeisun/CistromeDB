@@ -3,10 +3,10 @@
 
 //NOTE: CellsTabModel is duplicate of FactorsTabModel
 var CellsTabModel = ModelFactory(["factors", "cellsList", "models", "dsets", 
-				  "currTd"], []);
+				  "currTd", "currSearchTerm"], []);
 var cellsModel = new CellsTabModel({'factors':null, 'cellsList':null, 
 				    'models':null, 'dsets':null, 
-				    'currTd':null});
+				    'currTd':null, 'currSearchTerm':null});
 var allCells = [];
 var cells_msg = msg;
 
@@ -52,6 +52,7 @@ function init_cells() {
     var cellsSearchCb = function(req) {
 	var resp = eval("("+req.responseText+")");
 	cellsModel.setCellsList(resp);
+	cellsModel.setCurrSearchTerm($('cells_search').value);
 
 	$('cells_cancelBtn').style.display="inline";
     }
@@ -97,9 +98,16 @@ function init_cells() {
 	    cellsFactorInfoView.clearHTML();
 	}
 	//MAKE the ajax call-
-	var call = new Ajax.Request(SUB_SITE+"cells_view/", 
+	if (cellsModel.getCurrSearchTerm()) {
+	    search = cellsModel.getCurrSearchTerm();
+	    var call = new Ajax.Request(SUB_SITE+"cells_view/", 
+    {method:"get", parameters: {'cells':cStr, 'search':"\""+search+"\""}, 
+     onComplete: cells_view_cb});
+	} else {
+	    var call = new Ajax.Request(SUB_SITE+"cells_view/", 
     {method:"get", parameters: {'cells':cStr}, 
      onComplete: cells_view_cb});
+	}
 
     }
 
