@@ -1448,7 +1448,6 @@ def factors_view(request):
     mnames = []
 
     #restrict the return with the following
-    restrictSet = []
     restrictSetIds = []
     
     if 'factors' in request.GET:
@@ -1467,13 +1466,11 @@ def factors_view(request):
                 for r in res:
                     if r.model is models.Datasets:
                         restrictSetIds.append(r.object.id)
-                        restrictSet.append(r.object)
                     else: #it's a paper
                         dsets = models.Datasets.objects.filter(paper=r.object)
                         for d in dsets:
                             if d.id not in restrictSetIds:
                                 restrictSetIds.append(d.id)
-                                restrictSet.append(d)
         
         for f in factors:
             #track dsets, to ensure no duplicates within factors.
@@ -1487,7 +1484,7 @@ def factors_view(request):
                     params = {'factor':f, dsetFld:m}
                     #NOTE: we have to pass in the param as a **
                     tmp = models.Datasets.objects.filter(**params)
-                    if restrictSet:
+                    if restrictSetIds:
                         tmp = [d for d in tmp if d.id not in allDsets\
                                    and d.id in restrictSetIds]
                     else:
