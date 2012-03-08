@@ -1,8 +1,8 @@
 var FactorsTabModel = ModelFactory(["factors", "factorsList", "models", 
-				    "dsets", "currTd"], []);
+				    "dsets", "currTd", 'currSearchTerm'], []);
 var factorsModel = new FactorsTabModel({'factors':null, 'factorsList':null,
 					'models':null, 'dsets':null, 
-					'currTd':null});
+					'currTd':null, 'currSearchTerm':null});
 var allFactors = [];
 //NOTE: this is a global defined in home.js
 var factors_msg = msg;
@@ -38,11 +38,11 @@ function init_factors() {
     }
     //trigger the jumpView
     factorsModel.setFactorsList(allFactors);
-	
+    
     var factorsSearchCb = function(req) {
 	var resp = eval("("+req.responseText+")");
 	factorsModel.setFactorsList(resp);
-
+	factorsModel.setCurrSearchTerm($('factors_search').value);
 	$('factors_cancelBtn').style.display="inline";
     }
 
@@ -88,15 +88,23 @@ function init_factors() {
 	    factorInfoView.clearHTML();
 	}
 	//MAKE the ajax call-
-	var call = new Ajax.Request(SUB_SITE+"factors_view/", 
+	if (factorsModel.getCurrSearchTerm()) {
+	    search = factorsModel.getCurrSearchTerm();
+	    var call = new Ajax.Request(SUB_SITE+"factors_view/", 
+    {method:"get", parameters: {'factors':fStr, 'search':"\""+search+"\""}, 
+     onComplete: factors_view_cb});
+	} else {
+	    var call = new Ajax.Request(SUB_SITE+"factors_view/", 
     {method:"get", parameters: {'factors':fStr}, 
      onComplete: factors_view_cb});
+	}
 	
     }   
     //set the action for the cancelBtn
     var cancelBtn = $('factors_cancelBtn');
     cancelBtn.onclick = function(event) {
 	factorsModel.setFactorsList(allFactors);
+	factorsModel.setCurrSearchTerm(null);
 	//reset the search fld and search btn
 	$('factors_searchBtn').disabled = false;
 	$('factors_search').disabled = false;
