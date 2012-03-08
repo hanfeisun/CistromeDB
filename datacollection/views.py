@@ -1319,9 +1319,13 @@ def search_factors(request):
     if 'q' in request.GET:
         key = request.GET['q']
         if cache.get(_hashTAG + key):
-            return HttpResponse(cache.get(_hashTAG + key))
+            #Saving query results b/c this could be used later
+            #return HttpResponse(cache.get(_hashTAG + key))
+            res = cache.get(_hashTAG + key)
+        else:
+            res = SearchQuerySet().filter(content=key)
+            cache.set(_hashTAG + key, res, _timeout)
 
-        res = SearchQuerySet().filter(content=key)
         for r in res:
             #NOTE: r.model, r.model_name, r.object
             if r.model is models.Datasets:
@@ -1339,7 +1343,6 @@ def search_factors(request):
         tmp2 = [jsrecord.views.jsonify(f) for f in all_factors]
         
         ret = "[%s]" % ",".join(tmp2)
-        cache.set(_hashTAG + key, ret, _timeout)
     return HttpResponse(str(ret))
 
 def search_cells(request):
@@ -1435,6 +1438,7 @@ def factors_view(request):
                ('cell_type', models.CellTypes),
                ('tissue_type', models.TissueTypes),
                ]
+    _hashTAG = "####SEARCH_FACTORS####"
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
     _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid", 
@@ -1442,12 +1446,34 @@ def factors_view(request):
     _timeout = 60*60*24 #1 day
     ret = {}
     mnames = []
+
+    #restrict the return with the following
+    restrictSet = []
+    restrictSetIds = []
     
     if 'factors' in request.GET:
         factors = [models.Factors.objects.get(pk=int(f)) \
                        for f in request.GET['factors'].split(",")]
         sorted(factors, key=lambda f:f.name)
         fnames = [f.name for f in factors]
+
+        #was this associated with a search term?
+        if 'search' in request.GET:
+            key = request.GET['search']
+            #relying on the fact that search is done BEFORE draw Table!
+            res = cache.get(_hashTAG + key)
+            if res:
+                #track what's added
+                for r in res:
+                    if r.model is models.Datasets:
+                        restrictSetIds.append(r.object.id)
+                        restrictSet.append(r.object)
+                    else: #it's a paper
+                        dsets = models.Datasets.objects.filter(paper=r.object)
+                        for d in dsets:
+                            if d.id not in restrictSetIds:
+                                restrictSetIds.append(d.id)
+                                restrictSet.append(d)
         
         for f in factors:
             #track dsets, to ensure no duplicates within factors.
@@ -1461,7 +1487,11 @@ def factors_view(request):
                     params = {'factor':f, dsetFld:m}
                     #NOTE: we have to pass in the param as a **
                     tmp = models.Datasets.objects.filter(**params)
-                    tmp = [d for d in tmp if d.id not in allDsets]
+                    if restrictSet:
+                        tmp = [d for d in tmp if d.id not in allDsets\
+                                   and d.id in restrictSetIds]
+                    else:
+                        tmp = [d for d in tmp if d.id not in allDsets]
                     
                     if tmp:
                         if m.name not in mnames:
