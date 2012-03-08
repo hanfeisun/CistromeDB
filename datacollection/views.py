@@ -1320,7 +1320,6 @@ def search_factors(request):
         key = request.GET['q']
         if cache.get(_hashTAG + key):
             #Saving query results b/c this could be used later
-            #return HttpResponse(cache.get(_hashTAG + key))
             res = cache.get(_hashTAG + key)
         else:
             res = SearchQuerySet().filter(content=key)
@@ -1361,7 +1360,11 @@ def search_cells(request):
     if 'q' in request.GET:
         key = request.GET['q']
         if cache.get(_hashTAG + key):
-            return HttpResponse(cache.get(_hashTAG + key))
+            #Saving query results b/c this could be used later
+            res = cache.get(_hashTAG + key)
+        else:
+            res = SearchQuerySet().filter(content=key)
+            cache.set(_hashTAG + key, res, _timeout)
 
         res = SearchQuerySet().filter(content=key)
         for r in res:
@@ -1386,7 +1389,6 @@ def search_cells(request):
         tmp2 = [jsrecord.views.jsonify(c) for c in all_cells]
         
         ret = "[%s]" % ",".join(tmp2)
-        cache.set(_hashTAG + key, ret, _timeout)
     return HttpResponse(str(ret))
 
 
@@ -1537,17 +1539,41 @@ def cells_view(request):
     #but we need to pull the following fields from it--see how we do this below
     _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid", 
                         "reference"]
+    _hashTAG = "####SEARCH_CELLS####"
     ret = {}
     mnames = []
     fnames = []
 
+    #restrict the return with the following
+    restrictSetIds = []
+
     if 'cells' in request.GET:
+        #was this associated with a search term?
+        if 'search' in request.GET:
+            key = request.GET['search']
+            #relying on the fact that search is done BEFORE draw Table!
+            res = cache.get(_hashTAG + key)
+            if res:
+                #track what's added
+                for r in res:
+                    if r.model is models.Datasets:
+                        restrictSetIds.append(r.object.id)
+                    else: #it's a paper
+                        dsets = models.Datasets.objects.filter(paper=r.object)
+                        for d in dsets:
+                            if d.id not in restrictSetIds:
+                                restrictSetIds.append(d.id)
+
         #NOTE: the user can only select 1 cell--we use that to our advantage!
         (m, cid) = request.GET['cells'].split(",")
         params = {_Mapping[m]:cid}
         dsets = models.Datasets.objects.filter(**params)
         (cls, cps, cts, tts) = partition(dsets)
         
+        if not restrictSetIds:
+            #if not using a restriction set, then all of the dset ids is ok!
+            restrictSetIds = [d.id for d in dsets]
+ 
         #assign the datasets to each partition, starting with cls, until we 
         #exhaust the list
         allDsets = [] #this is to track that we're not adding duplicates
@@ -1557,7 +1583,7 @@ def cells_view(request):
                 params = {fld:c}
                 tmp = dsets.filter(**params)
                 for d in tmp:
-                    if d.id not in allDsets:
+                    if d.id not in allDsets and d.id in restrictSetIds:
                         if d.species:
                             #Optimization: not jsonifying the papers
                             d._meta._virtualfields = _paperFldsToPull
