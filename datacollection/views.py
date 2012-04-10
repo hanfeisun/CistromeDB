@@ -140,6 +140,7 @@ def new_paper_form(request):
     return render_to_response('datacollection/new_paper_form.html', locals(),
                               context_instance=RequestContext(request))
 
+#MIG_NOTE: Begin: may need to alter these
 @admin_only
 def new_dataset_form(request):
     if request.method == "POST":
@@ -209,6 +210,7 @@ def new_sample_form(request):
     return render_to_response('datacollection/new_sample_form.html',
                               locals(),
                               context_instance=RequestContext(request))
+#MIG_NOTE: END: may need to alter these
 #------------------------------------------------------------------------------
 #GENERIC FORMS section
 def form_view_factory(title_in, form_class):
@@ -276,6 +278,7 @@ update_dataset_form = update_form_factory('Dataset Update Form',
 update_sample_form = update_form_factory('Sample Update Form',
                                           forms.UpdateSampleForm)
 #------------------------------------------------------------------------------
+#The main views-
 
 @admin_only
 def papers(request, user_id):
@@ -306,45 +309,25 @@ def papers(request, user_id):
                               context_instance=RequestContext(request))
 
 @admin_only
-def weekly_papers(request, user_id):
-    """Returns all of the papers that the user worked on since the given date,
-    IF date is not given as a param, then assumes date = beginning of the week
-    IF NO user_id is given, returns a page allowing the user to select which
-    user to view
+def datasets(request):
+    """Returns all of the datasets
     """
-    if user_id:
-        #NOTE: the current url regex doesn't parse out the / from the user_id
-        if user_id.endswith("/"):
-            user_id = user_id[:-1]
-        
-        papers = models.Papers.objects.filter(user=user_id)
-        today = datetime.date.today()
-        begin = today - datetime.timedelta(today.weekday())
-        if "date" in request.GET:
-            if re.match(_datePattern, request.GET['date']):
-                tmp = request.GET['date'].split("-")
-                d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
-            else:
-                d = begin
-            papers = papers.filter(date_collected__gte=d)
-        else:
-            #No date param, take the beginning of the week
-            papers = papers.filter(date_collected__gte=begin)
+    datasets = models.Datasets.objects.all()
+    paginator = Paginator(datasets, _items_per_page) #25 dataset per page
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        pg = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        pg = paginator.page(paginator.num_pages)
 
-        #is this fragile?
-        return render_to_response('datacollection/papers.html', locals(),
-                                  context_instance=RequestContext(request))
-    else:
-        #list users
-        title = "Weekly Papers"
-        users = auth.models.User.objects.all()
-        url = reverse('weekly_papers')
-        return render_to_response('datacollection/list_users.html', locals(),
-                                  context_instance=RequestContext(request))
+    return render_to_response('datacollection/datasets.html', locals(),
+                              context_instance=RequestContext(request))
 
 #NOTE: i sould cache these!!
 @admin_only
-#def datasets(request):
 def samples(request):
     """View all of the samples in an excel like table
     IF given species, factor_type, and/or paper url params, then we further
@@ -446,46 +429,8 @@ def samples(request):
         
     return render_to_response('datacollection/samples.html', locals(),
                               context_instance=RequestContext(request))
-
-@admin_only
-def weekly_datasets(request, user_id):
-    """Returns all of the datasets that the user worked on since the given date
-    IF date is not given as a param, then assumes date = beginning of the week
-    IF a url param uploader is given, then we use uploader instead of user to
-    get the datasets
-    IF NO user_id is given, returns a page allowing the user to select which
-    user to view
-    """
-    if user_id:
-        #NOTE: the current url regex doesn't parse out the / from the user_id
-        if user_id.endswith("/"):
-            user_id = user_id[:-1]
-        if 'uploader' in request.GET:
-            datasets = models.Datasets.objects.filter(uploader=user_id)
-        else:
-            datasets = models.Datasets.objects.filter(user=user_id)
-        today = datetime.date.today()
-        begin = today - datetime.timedelta(today.weekday())
-        if "date" in request.GET:
-            if re.match(_datePattern, request.GET['date']):
-                tmp = request.GET['date'].split("-")
-                d = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
-            else:
-                d = begin
-            datasets = datasets.filter(date_collected__gte=d)
-        else:
-            #No date param, take the beginning of the week
-            datasets = datasets.filter(date_collected__gte=begin)
-
-        return render_to_response('datacollection/datasets.html', locals(),
-                                  context_instance=RequestContext(request))
-    else:
-        #list users
-        title = "Weekly Datasets"
-        users = auth.models.User.objects.all()
-        url = reverse('weekly_datasets')
-        return render_to_response('datacollection/list_users.html', locals(),
-                                  context_instance=RequestContext(request))
+#END: The main views
+#------------------------------------------------------------------------------
 
 def get_datasets(request, paper_id):
     """return all of the datasets associated w/ paper_id in json
@@ -499,24 +444,6 @@ def get_datasets(request, paper_id):
     dlist = ",".join([jsrecord.views.jsonify(d) for d in datasets])
     return HttpResponse("[%s]" % dlist)
 
-@admin_only
-#def samples(request):
-def datasets(request):
-    """Returns all of the datasets
-    """
-    datasets = models.Datasets.objects.all()
-    paginator = Paginator(datasets, _items_per_page) #25 dataset per page
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
-    try:
-        pg = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        pg = paginator.page(paginator.num_pages)
-
-    return render_to_response('datacollection/datasets.html', locals(),
-                              context_instance=RequestContext(request))
 
 #DROP the FOLLOWING fn/view?
 def register(request):
@@ -685,66 +612,6 @@ def sample_profile(request, sample_id):
                               locals(),
                               context_instance=RequestContext(request))
 
-@admin_only
-def report(request):
-    """Generates the weekly report page
-    Takes an optional url param date that tells us which date to generate the
-    report from
-    """
-    today = datetime.date.today()
-    if "date" in request.GET:
-        if re.match(_datePattern, request.GET['date']):
-            tmp = request.GET['date'].split("-")
-            date = today = datetime.date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
-    #to get to Monday, subtract the current day of the week from the date
-    begin = today - datetime.timedelta(today.weekday())
-    end = begin + datetime.timedelta(days=6);
-    week = {'begin':begin, 'end':end}
-
-    paperTeam = models.UserProfiles.objects.filter(team="paper")
-    #Get all of the papers and datasets the user created for the week
-    for u in paperTeam:
-        u.allPapers = models.Papers.objects.filter(user=u.user)
-        u.weekPapers = u.allPapers.filter(date_collected__gte=begin).filter(date_collected__lte=end)
-        for p in u.weekPapers:
-            p.datasets = models.Datasets.objects.filter(paper=p.id)
-
-        u.allDatasets = models.Datasets.objects.filter(user=u.user)
-        u.weekDatasets = u.allDatasets.filter(date_collected__gte=begin).filter(date_collected__lte=end)
-
-        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
-        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
-        #categories - NOTE: how we SPAN relationships w/ __
-        u.humanTF = u.allHuman.filter(factor__type="tf")
-        u.humanHM = u.allHuman.filter(factor__type="hm")
-        u.mouseTF = u.allMouse.filter(factor__type="tf")
-        u.mouseHM = u.allMouse.filter(factor__type="hm")
-        
-    #dataTeam = models.UserProfiles.objects.filter(team="data")
-    #The paper team can both create datasets and upload dataset data
-    dataTeam = models.UserProfiles.objects.filter(Q(team="data") | Q(team="paper"))
-    for u in dataTeam:
-        u.allDatasets = models.Datasets.objects.filter(uploader=u.user)
-        u.weekDatasets = u.allDatasets.filter(upload_date__gte=begin).filter(upload_date__lte=end)
-
-        u.allHuman = u.allDatasets.filter(species__name="Homo Sapien")
-        u.allMouse = u.allDatasets.filter(species__name="Mus Musculus")
-        #categories
-        u.humanTF = u.allHuman.filter(factor__type="tf")
-        u.humanHM = u.allHuman.filter(factor__type="hm")
-        u.mouseTF = u.allMouse.filter(factor__type="tf")
-        u.mouseHM = u.allMouse.filter(factor__type="hm")
-
-    return render_to_response('datacollection/report.html',
-                              locals(),
-                              context_instance=RequestContext(request))
-
-@admin_only
-def teams(request):
-    """A page to list the current teams and assign users to different teams"""
-    return render_to_response('datacollection/teams.html',
-                              locals(),
-                              context_instance=RequestContext(request))
 
 def _allSameOrNone(objs, attr):
     """If the all of the objects.attr are the same, return that attr,
