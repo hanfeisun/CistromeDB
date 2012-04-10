@@ -1,12 +1,10 @@
 {% extends "datacollection/login_base.html" %}
-{% load dc_extras %}
-
-{% block title %}CistromeMap - Samples{% endblock %}
+{% block title %}CistromeMap - Datasets{% endblock %}
 {% block include %}
-<link href="{% url static_url %}css/samples.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
-<script src="{% url static_url %}js/samples.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/datasets.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block onload %}
@@ -14,87 +12,113 @@ onload="init();"
 {% endblock %}
 
 {% block content %}
-<!-- NOTE: the content is created in javascript -->
       {% if user.is_authenticated %}
-      <!--<input type="button" id="batchEdit" value="batch edit"/>-->
+      <input type="button" id="batchEdit" value="batch edit"/>
       <input type="button" id="deleteBtn" value="delete"/>
       {% endif %}
-      {% if pg.paginator.num_pages %}
+      {% if datasets.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
-              {% if pg.has_previous %}
-	      {% ifnotequal pg.previous_page_number 1 %}
+              {% if datasets.has_previous %}
+	      {% ifnotequal datasets.previous_page_number 1 %}
 	      <a href="?page=1{{rest}}">first</a>
 	      {% endifnotequal %}
-              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
-              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+              <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
 
-              {% if pg.has_next %}
-              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
-	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
-	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+              {% if datasets.has_next %}
+              <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal datasets.next_page_number datasets.paginator.num_pages %}
+	      <a href="?page={{datasets.paginator.num_pages}}{{rest}}">last</a>
 	      {% endifnotequal %}
               {% endif %}
           </span>
       </div>
       {% endif %}
-      <table class="datatable" id="samples_table">
+      <table>
          <tr>{% if user.is_authenticated %}
 	     <th><input type="checkbox" id="masterCheckbox"/></th>
 	     {% endif %}
 	     <th>ID</th>
+	     <th>GSMID</th>
 	     <th>Paper</th>
-	     <th>Pubmed ID</th>
-	     <th>GSEID</th>
-	     <th>Treatments</th>
-	     <th>Controls</th>
+	     <th>Factor</th>
+	     <th>Antibody</th>
+	     <th>Experiment Type</th>
+	     <th>Platform</th>
+	     <th>Species</th>
+	     <th>Cell Type</th>
+	     <th>Tissue Type</th>
+	     <th>Cell Line</th>
+	     <th>Cell Pop</th>
+	     <th>Strain</th>
+	     <th>Condition</th>
+	     <th>Disease State</th>
 	     <th>Status</th>
 	     <th>Comments</th>
+	     <th>User</th>
 	     <th>Uploader</th>
-	     <th>Upload Date</th>
+	     <th>Curator</th>
+	     <th>Date Collected</th>
 	     {% if user.is_authenticated %}
 	     <th>Action</th>
 	     {% endif %}
 	 </tr>
-	 {% for s in pg.object_list %}
+	 {% for d in datasets.object_list %}
 	 <tr>
 	     {% if user.is_authenticated %}
-	     <td><input type="checkbox" class="rowSelect" id="{{s.id}}"/>
-	         <a href="{% url update_sample_form s.id %}?next={% url samples %}?page={{pg.number}}{{rest}}">edit</a>
+	     <td><input type="checkbox" class="rowSelect" id="{{d.id}}"/>
+	         <a href="{% url update_dataset_form d.id %}?next={% url datasets %}?page={{datasets.number}}">edit</a>
 	     </td>
 	     {% endif %}
-	     <td><a href="{% url sample_profile s.id %}">{{ s.id }}</a></td>
-	     <td><a href="{% url paper_profile s.paper.id %}">{{ s.paper.id }}</a></td>
-	     <td><a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{s.paper.pmid}}" target="_blank">{{ s.paper.pmid }}</a></td>
-	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{s.paper.gseid}}" target="_blank">{{ s.paper.gseid }}</a></td>
-	     <td>{{ s.treatments }}</td>
-	     <td>{{ s.controls }}</td>
-	     {% ifequal s.status "new" %}
-	     <td class="new_row">{{ s.get_status_display }}</td>
-	     {% else %} {% ifequal s.status "checked" %}
-	     <td class="checked_row">{{ s.get_status_display }}</td>
-	     {% else %} {% ifequal s.status "running" %}
-	     <td class="running_row">{{ s.get_status_display }}</td>
-	     {% else %} {% ifequal s.status "complete" %}
-	     <td class="complete_row">{{ s.get_status_display }}</td>
-	     {% else %} {% ifequal s.status "error" %}
-	     <td class="error_row">{{ s.get_status_display }}</td>
+	     <td><a href="{% url dataset_profile d.id %}">{{d.id}}</a></td>
+	     <td><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{d.gsmid}}" target="_blank">{{d.gsmid}}</a></td>
+	     <td>
+	      <a href="http://www.ncbi.nlm.nih.gov/pubmed?term={{d.paper.pmid}}" target="_blank">{{d.paper.pmid}}</a></br></br>
+	      <a href="{% url paper_profile d.paper.id %}">paper profile</a>
+	     </td>
+	     <td><a href="{% url datasets %}?factor={{d.factor.id}}">{{d.factor.name}}</a></td>
+	     <td><a href="{% url datasets %}?antibody={{d.factor.id}}">{{d.factor.antibody}}</a></td>
+	     <td>{{d.platform.get_experiment_type_display}}</td>
+	     <td><a href="{%url datasets %}?platform={{d.platform.id}}">{{d.platform.name}}</a></td>
+	     <td><a href="{% url datasets %}?species={{d.species.id}}">{{d.species}}</a></td>
+	     <td><a href="{% url datasets %}?celltype={{d.cell_type.id}}">{{d.cell_type.name}}</a></td>
+	     <td><a href="{% url datasets %}?tissuetype={{d.cell_type.id}}">{{d.cell_type.tissue_type}}</a></td>
+	     <td><a href="{% url datasets %}?cellline={{d.cell_line.id}}">{{d.cell_line.name}}</a></td>
+	     <td><a href="{% url datasets %}?cellpop={{d.cell_pop.id}}">{{d.cell_pop.name}}</a></td>
+	     <td><a href="{% url datasets %}?strain={{d.strain.id}}">{{d.strain.name}}</a></td>
+	     <td><a href="{% url datasets %}?condition={{d.condition.id}}">{{d.condition.name}}</a></td>
+	     <td><a href="{% url datasets %}?diseasestate={{d.disease_state.id}}">{{d.disease_state.name}}</a></td>
+	     {% ifequal d.status "imported" %}
+	     <td class="imported_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "info" %}
+	     <td class="info_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "valid" %}
+	     <td class="valid_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "transfer" %}
+	     <td class="transfer_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "downloaded" %}
+	     <td class="downloaded_row">{{ d.get_status_display }}</td>
+	     {% else %} {% ifequal d.status "error" %}
+	     <td class="error_row">{{ d.get_status_display }}</td>
 	     {% else %}
-	     <td>{{ s.get_status_display }}</td>
-	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
-	     <td>{{ s.comments }}</td>
-	     <td>{{ s.uploader }}</td>
-	     <td>{{ s.upload_date|date:"Y-m-d" }}</td>
+	     <td>{{ d.get_status_display }}</td>
+	     {% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+	     <td>{{ d.comments }}</td>
+	     <td><a href="{% url datasets %}{{d.user.id}}/">{{ d.user.username }}</a></td>
+	     <td>{{d.uploader.username}}</td>
+	     <td>{{d.curator.username}}</td>
+	     <td>{{ d.date_collected|date:"Y-m-d"}}</td>
 	     {% comment %} ACTIONS HERE {% endcomment %}
 	     {% if user.is_authenticated %}
-	     {% ifequal s.status "new" %}
-	     <td><input type="button" value="check raw files" onclick="checkRawFiles({{s.id}}, {{pg.number}});"/></td>
-	     {% else %} {% ifequal s.status "checked" %}
-	     <td><input type="button" value="run!" onclick="runAnalysis({{s.id}}, {{pg.number}});"/></td>
-	     {% else %} {% ifequal s.status "running" %}
-	     <td><input type="button" value="run!" disabled="true"/></td>
+	     {% ifequal d.status "info" %}
+	     <td><input type="button" value="validate" onclick=""/></td>
+	     {% else %}{% ifequal d.status "valid" %}
+	     <td><input type="button" value="download raw file" onclick="downloadFile({{d.id}}, {{datasets.number}});"/></td>
+	     {% else %} {% ifequal d.status "transfer" %}
+	     <td><input type="button" value="download raw file" disabled="true"/></td>
 	     {% else %} 
 	     <td> </td>
 	     {% endifequal %}{% endifequal %}{% endifequal %}
@@ -102,22 +126,23 @@ onload="init();"
 	 </tr>
 	 {% endfor %}
       </table>
-      {% if pg.paginator.num_pages %}
+<!-- from http://docs.djangoproject.com/en/1.1/topics/pagination/-->
+      {% if datasets.paginator.num_pages %}
       <div class="pagination">
           <span class="step-links">
-              {% if pg.has_previous %}
-	      {% ifnotequal pg.previous_page_number 1 %}
+              {% if datasets.has_previous %}
+	      {% ifnotequal datasets.previous_page_number 1 %}
 	      <a href="?page=1{{rest}}">first</a>
 	      {% endifnotequal %}
-              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              <a href="?page={{ datasets.previous_page_number }}{{rest}}">previous</a>
               {% endif %}
 
-              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+              <span class="current">Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.</span>
 
-              {% if pg.has_next %}
-              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
-	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
-	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+              {% if datasets.has_next %}
+              <a href="?page={{ datasets.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal datasets.next_page_number datasets.paginator.num_pages %}
+	      <a href="?page={{datasets.paginator.num_pages}}{{rest}}">last</a>
 	      {% endifnotequal %}
               {% endif %}
           </span>
