@@ -344,25 +344,16 @@ def weekly_papers(request, user_id):
 
 #NOTE: i sould cache these!!
 @admin_only
-def datasets(request, user_id):
-    """View all of the datasets in an excel like table; as with papers
-    if given a user_id, it will return a page of all of the datsets collected
-    by the user
+#def datasets(request):
+def samples(request):
+    """View all of the samples in an excel like table
     IF given species, factor_type, and/or paper url params, then we further
     filter the results accordingly;
     [other fields: factor, antibody, platform, cell type, tissue type,
     cell type, cell pop, strain, condition]
     IF url param uploader is sent, we use uploader instead of user
     """
-    if user_id:
-        if user_id.endswith("/"):
-            user_id = user_id[:-1]
-        if 'uploader' in request.GET:
-            datasets = models.Datasets.objects.filter(uploader=user_id)
-        else:
-            datasets = models.Datasets.objects.filter(user=user_id)
-    else:
-        datasets = models.Datasets.objects.all()
+    samples = models.Samples.objects.all()
 
     #note: we have to keep track of these URL params so that we can feed them
     #into the paginator, e.g. if we click on platform=1, then when we paginate
@@ -373,87 +364,87 @@ def datasets(request, user_id):
         #if request.GET['species'] in dict:
         #    datasets = datasets.filter(species__name=\
         #                               dict[request.GET['species']])
-        datasets = datasets.filter(species=request.GET['species'])
+        samples = samples.filter(species=request.GET['species'])
         rest += "&species=%s" % request.GET['species']
         
     if 'ftype' in request.GET:
-        datasets = datasets.filter(factor__type=request.GET['ftype'])
+        samples = samples.filter(factor__type=request.GET['ftype'])
         rest += "&ftype=%s" % request.GET['ftype']
 
     if 'paper' in request.GET:
-        datasets = datasets.filter(paper=request.GET['paper'])
+        samples = samples.filter(paper=request.GET['paper'])
         rest += "&paper=%s" % request.GET['paper']
 
     if 'factor' in request.GET:
         factor = models.Factors.objects.get(pk=request.GET['factor'])
-        datasets = datasets.filter(factor__name=factor.name)
+        samples = samples.filter(factor__name=factor.name)
         rest += "&factor=%s" % request.GET['factor']
 
     if 'antibody' in request.GET:
         factor = models.Factors.objects.get(pk=request.GET['antibody'])
-        datasets = datasets.filter(factor__antibody=factor.antibody)
+        samples = samples.filter(factor__antibody=factor.antibody)
         rest += "&antibody=%s" % request.GET['antibody']
 
     if 'platform' in request.GET:
-        datasets = datasets.filter(platform=request.GET['platform'])
+        samples = samples.filter(platform=request.GET['platform'])
         rest += "&platform=%s" % request.GET['platform']
         
     if 'celltype' in request.GET:
         celltype = models.CellTypes.objects.get(pk=request.GET['celltype'])
-        datasets = datasets.filter(cell_type__name=celltype.name)
+        samples = samples.filter(cell_type__name=celltype.name)
         rest += "&celltype=%s" % request.GET['celltype']
 
     if 'tissuetype' in request.GET:
         celltype = models.CellTypes.objects.get(pk=request.GET['tissuetype'])
-        datasets = datasets.filter(cell_type__tissue_type=celltype.tissue_type)
+        samples = samples.filter(cell_type__tissue_type=celltype.tissue_type)
         rest += "&tissuetype=%s" % request.GET['tissuetype']
 
     if 'cellline' in request.GET:
-        datasets = datasets.filter(cell_line=request.GET['cellline'])
+        samples = samples.filter(cell_line=request.GET['cellline'])
         rest += "&cellline=%s" % request.GET['cellline']
 
     if 'cellpop' in request.GET:
-        datasets = datasets.filter(cell_pop=request.GET['cellpop'])
+        samples = samples.filter(cell_pop=request.GET['cellpop'])
         rest += "&cellpop=%s" % request.GET['cellpop']
                 
     if 'strain' in request.GET:
-        datasets = datasets.filter(strain=request.GET['strain'])
+        samples = samples.filter(strain=request.GET['strain'])
         rest += "&strain=%s" % request.GET['strain']
 
     if 'condition' in request.GET:
-        datasets = datasets.filter(condition=request.GET['condition'])
+        samples = samples.filter(condition=request.GET['condition'])
         rest += "&condition=%s" % request.GET['condition']
 
     if 'disease_state' in request.GET:
-        datasets = datasets.filter(disease_state=request.GET['disease_state'])
+        samples = samples.filter(disease_state=request.GET['disease_state'])
         rest += "&disease_state=%s" % request.GET['disease_state']
 
     if 'lab' in request.GET:
-        datasets = [d for d in datasets \
-                    if smart_str(d.paper.lab) == smart_str(request.GET['lab'])]
+        samples = [s for s in samples \
+                    if smart_str(s.paper.lab) == smart_str(request.GET['lab'])]
         rest += "&lab=%s" % request.GET['lab']
     
     #here is where we order things by paper and then gsmid for the admins
-    datasets = datasets.order_by("paper", "gsmid")
+    samples = samples.order_by("paper", "gsmid")
 
     #HACK: get singleton
     if 'id' in request.GET:
-        datasets = [datasets.get(id=request.GET['id'])]
+        samples = [samples.get(id=request.GET['id'])]
         rest += "&id=%s" % request.GET['id']
 
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
-    paginator = Paginator(datasets, _items_per_page) #25 dataset per page
+    paginator = Paginator(samples, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
         page = 1
     try:
-        datasets = paginator.page(page)
+        samples = paginator.page(page)
     except (EmptyPage, InvalidPage):
-        datasets = paginator.page(paginator.num_pages)
+        samples = paginator.page(paginator.num_pages)
         
-    return render_to_response('datacollection/datasets.html', locals(),
+    return render_to_response('datacollection/samples.html', locals(),
                               context_instance=RequestContext(request))
 
 @admin_only
@@ -509,11 +500,12 @@ def get_datasets(request, paper_id):
     return HttpResponse("[%s]" % dlist)
 
 @admin_only
-def samples(request):
-    """Returns all of the samples
+#def samples(request):
+def datasets(request):
+    """Returns all of the datasets
     """
-    samples = models.Samples.objects.all()
-    paginator = Paginator(samples, _items_per_page) #25 dataset per page
+    datasets = models.Datasets.objects.all()
+    paginator = Paginator(datasets, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
@@ -523,7 +515,7 @@ def samples(request):
     except (EmptyPage, InvalidPage):
         pg = paginator.page(paginator.num_pages)
 
-    return render_to_response('datacollection/samples.html', locals(),
+    return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
 #DROP the FOLLOWING fn/view?
