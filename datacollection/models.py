@@ -83,25 +83,22 @@ class DCModel(models.Model):
 
 
 class Papers(DCModel):
-    """Papers are publications that are publicly available on Pubmed and Geo.
+    """Papers are publications that are publicly available
     The fields are:
     pmid - the pubmed id of the publication
     gseid - the GEO series id associated with the publication
+    generic_id - id IF the paper does not have a GEO series
     user - the user who currated the dataset
     title - the title of the publication
+    reference - shorthand of the publication details
     abstract - the abstract of the publication
     pub_date - the publication date
     authors - list of the paper's authors
-    corresponding_email - the email address of the last/corresponding author
-    --Should we have this?
+    last_aut_email - the email address of the last/corresponding author
+    journal- paper's journal
 
-    diseas_state - the disease state of the samples used in the paper
-    platform - the platform, e.g. Affymetrix Human Genome Version 2.0
-    species - the species
-    factor - the factor used in the paper, e.g. PolII
-    cell_type - the cell type used in the paper, e.g. embryonic stem cell
-    cell_line, cell_pop, strain - the cell line used in the paper
-    condition - the condition used in the paper, e.g. PTIP-knockout
+    status- SEE PAPER_STATUS above
+    comments- any comments about this paper
     """
     #def __init__(self, *args):
     #    super(Papers, self).__init__(*args)
@@ -127,6 +124,7 @@ class Papers(DCModel):
     #a place for curators to add comments
     comments = models.TextField(null=True, blank=True, default="")
 
+    #MIG_NOTE: these will have to change from DATASET --> SAMPLE
     def _datasetAggregator(dset_field):
         """Given a dataset field, tries to aggregate all of the associated 
         datasets"""
@@ -195,31 +193,24 @@ Papers._meta._virtualfields = ['lab', 'factors', 'platforms', 'species',
 
 
 class Datasets(DCModel):
-    """Datasets are the data associated with the papers.  They are usually
-    available for download from Geo.
-    The fields are:
-    gsmid - GEO sample identifier
-    chip_page - (not sure) the url of the platform? (optional)
-    control_gsmid - GEO sample identifier for control (optional)
-    control_page - (not sure) the url of the platform? (optional)
-    date_collected - the date we collected the sample from GEO
-    file - file path ref
+    """Datasets are SETS of samples, typically a set (1 or more) of treatment
+    samples and a set (0 or more) of control samples.
+
+    **They are the HIGHER-level representations; samples are the lower-level.
+
+    Dataset fields:
     user_id - the user who currated the dataset
     paper_id - the paper that the dataset is associated with
-    factor_id - the factor associated with the sample
 
-    NOTE: from here on out, they are all optional, and they override the
-    paper field. e.g. if platform is defined for a dataset, then it takes
-    precedence over the dataset's paper's platform.  IF it is not defined,
-    then it inherits the paper's info.
-    
-    platform - the platform, e.g. Affymetrix Human Genome Version 2.0
-    species - the sample's species
-    factor - the sample's factor, e.g. PolII
-    cell_type - the sample's cell type, e.g. embryonic stem cell
-    cell_line, cell_pop, strain - the sample's cell line
-    condition - the sample's condition, e.g. PTIP-knockout
+    [Virtual fields- meta data inferred from treatment (and sometimes 
+    control) samples]
+    [File fields]
+    peak_bed
+    peak_wig
+    ...etc..
     """
+
+    #MIG_NOTE: CAN'T depend on GSMIDS
     def upload_factory(sub_dir):
         """a factory for generating upload_to_path fns--e.g. use to generate
         the various sub-directories we use to store the info associated w/
@@ -237,35 +228,131 @@ class Datasets(DCModel):
     #def __init__(self, *args):
     #    super(Datasets, self).__init__(*args)
     #    self._meta._donotSerialize = ['user']
+
+    #user = the person curated/created the dataset
+    user = models.ForeignKey(User, null=True, blank=True, default=None)
+    paper = models.ForeignKey('Papers')
+
+    treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
+                                                   blank=True)
+    controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
+                                                 blank=True)
+
+    #FileFields
+    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
+                                      null=True, blank=True)
+    peak_file = models.FileField(upload_to=upload_factory("peak"),
+                                 null=True, blank=True)
+    peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
+                                     null=True, blank=True)
+    summit_file = models.FileField(upload_to=upload_factory("summit"),
+                                   null=True, blank=True)
+    wig_file = models.FileField(upload_to=upload_factory("wig"),
+                                null=True, blank=True)
+    #control_wig_file = models.FileField(upload_to=upload_factory("wig"),
+    #                                    null=True, blank=True)
+    bw_file = models.FileField(upload_to=upload_factory("bw"),
+                                null=True, blank=True)
+    bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
+                                      null=True, blank=True)
+    control_bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
+                                              null=True, blank=True)
+    conservation_file = models.FileField(upload_to=upload_factory("conservation"),
+                                    null=True, blank=True)
+    conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
+                                      null=True, blank=True)
+    qc_file = models.FileField(upload_to=upload_factory("qc"),
+                               null=True, blank=True)
+    qc_r_file = models.FileField(upload_to=upload_factory("qc"),
+                                 null=True, blank=True)
+    ceas_file = models.FileField(upload_to=upload_factory("ceas"),
+                                 null=True, blank=True)
+    ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
+                                   null=True, blank=True)
+    venn_file = models.FileField(upload_to=upload_factory("venn"),
+                                 null=True, blank=True)
+    seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
+                                   null=True, blank=True)
+
+    #adding meta files
+    conf_file = models.FileField(upload_to=upload_factory("meta"),
+                                 null=True, blank=True)
+    log_file = models.FileField(upload_to=upload_factory("meta"),
+                                 null=True, blank=True)
+    summary_file = models.FileField(upload_to=upload_factory("meta"),
+                                    null=True, blank=True)
+    #NOTE: even though dhs stats are saved in a table, we're going to store it
+    #in meta
+    dhs_file = models.FileField(upload_to=upload_factory("meta"),
+                                null=True, blank=True)
+
+    date_created = models.DateTimeField(blank=True, null=True, default=None)
+
+    status = models.CharField(max_length=255, choices=DATASET_STATUS,
+                              default="new")
+
+    comments = models.TextField(blank=True, default="")
+
+    def _printInfo(self):
+        """Tries to print the treatment and controls list like this:
+        GSMXXX,GSMYYY::GSMZZZ where the :: is a separator btwn the two lists"""
+        treat = []
+        control = []
+        if self.treatments:
+            treat = [Datasets.objects.get(id=d) \
+                         for d in self.treatments.split(',')]
+        if self.controls:
+            controls = [Datasets.objects.get(id=d) \
+                         for d in self.controls.split(',')]
+        return "%s::%s" % (",".join(treat), ",".join(control))
+    
+Datasets._meta._donotSerialize = ['user']
+
+class Samples(DCModel):
+    """a table to store all of the sample information: a sample is a
+    set of one or more datasets; it is associated with a paper (one paper to
+    many samples)"""
+
+    #MIG_NOTE: can't rely on GSE!
+    def upload_factory(sub_dir):
+        """a factory for generating upload_to_path fns--e.g. use to generate
+        the various sub-directories we use to store the info associated w/
+        a sample"""
+        def upload_to_path(self, filename):
+            """Returns the upload_to path for this sample.
+            NOTE: we are going to store the files by the paper's gseid and
+            the sample id, e.g. gseid = GSE20852, sample id = 578
+            is going to be stored in: data/samples/gse20/852/578/[peak,wig,etc]
+            """
+            return os.path.join('data', 'samples',
+                                'gse%s' % self.paper.gseid[3:5],
+                                self.paper.gseid[5:], str(self.id), sub_dir,
+                                filename)
+        return upload_to_path
+
+    #user = curator/uploader of this sample
+    user = models.ForeignKey(User, null=True, blank=True, default=None)
+    paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
     
     gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
+    #IF not a geo sample, then use generic_id
     generic_id = models.CharField(max_length=255, null=True, blank=True,
                                   default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
-    #FILES--maybe these should be in a different table, but for now here they r
-    raw_file = models.FileField(upload_to=upload_factory("raw"),
+
+    #RAW FILES assoc. w/ sample--i.e. FASTQ, and then when aligned --> BAM;
+    #DELETE fastq when bam is generated
+    fastq_file = models.FileField(upload_to=upload_factory("fastq"),
                                 null=True, blank=True)
-    raw_file_url = models.URLField(max_length=255,
+    fastq_file_url = models.URLField(max_length=255,
                                    null=True, blank=True)
-    raw_file_type = models.ForeignKey('FileTypes',
-                                      null=True, blank=True, default=None)
-    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
+    bam_file = models.FileField(upload_to=upload_factory("bam"),
                                       null=True, blank=True)
-    peak_file = models.FileField(upload_to=upload_factory("peak"),
-                                 null=True, blank=True)
-    wig_file = models.FileField(upload_to=upload_factory("wig"),
-                                null=True, blank=True)
-    bw_file = models.FileField(upload_to=upload_factory("bw"),
-                                null=True, blank=True)
     
-    #IF everything is done by auto import we might not need this
-    user = models.ForeignKey(User, null=True, blank=True, default=None)
-    paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
-
+    #META information
     factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
-
     platform = models.ForeignKey('Platforms',
                                  null=True, blank=True, default=None)
     species = models.ForeignKey('Species',
@@ -283,31 +370,30 @@ class Datasets(DCModel):
     strain = models.ForeignKey('Strains',
                                null=True, blank=True, default=None)
     condition = models.ForeignKey('Conditions',
-                                  null=True, blank=True, default=None)
-    
-    status = models.CharField(max_length=255, choices=DATASET_STATUS,
-                              null=True, blank=True, default="imported")
-    comments = models.TextField(null=True, blank=True, default="")
-    
-    #user = the person who created this dataset (paper team)
-    #uploader = the person who uploaded the files (data team)
-    uploader = models.ForeignKey(User, null=True, blank=True, default=None,
-                                 related_name="uploader")
-    upload_date = models.DateTimeField(blank=True, null=True, default=None)
-    
+                                  null=True, blank=True, default=None)    
     disease_state = models.ForeignKey('DiseaseStates',
                                       null=True, blank=True, default=None)
-    #curator = the person who double checks the info
-    curator = models.ForeignKey(User, null=True, blank=True, default=None,
-                                related_name="curator")
-
     tissue_type = models.ForeignKey('TissueTypes', null=True, blank=True, 
                                     default=None)
     antibody = models.ForeignKey('Antibodies', null=True, blank=True, 
                                  default=None)
 
+    #curator = the person who double checks the info
+    curator = models.ForeignKey(User, null=True, blank=True, default=None,
+                                related_name="curator")
+
+    status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
+                              null=True, blank=True, default="imported")
+    comments = models.TextField(null=True, blank=True, default="")
     
-Datasets._meta._donotSerialize = ['user', 'uploader', 'curator']
+    upload_date = models.DateTimeField(blank=True, null=True, default=None)
+
+
+    def __str__(self):
+        #return self._printInfo()
+        return smart_str(str(self.id))
+
+Samples._meta._donotSerialize = ['user', 'curator']
 
 class Platforms(DCModel):
     """Platforms are the chips/assemblies used to generate the dataset.
@@ -402,12 +488,6 @@ class PaperSubmissions(DCModel):
 
 PaperSubmissions._meta._donotSerialize = ['user']
 
-class FileTypes(DCModel):
-    """File types for our geo datasets"""
-    name = models.CharField(max_length=20)
-    def __str__(self):
-        return smart_str(self.name)
-
 class Species(DCModel):
     name = models.CharField(max_length=255)
     def __str__(self):
@@ -418,140 +498,6 @@ class Assemblies(DCModel):
     pub_date = models.DateField(blank=True)
     def __str__(self):
         return smart_str(self.name)
-
-class Samples(DCModel):
-    """a table to store all of the sample information: a sample is a
-    set of one or more datasets; it is associated with a paper (one paper to
-    many samples)"""
-    def upload_factory(sub_dir):
-        """a factory for generating upload_to_path fns--e.g. use to generate
-        the various sub-directories we use to store the info associated w/
-        a sample"""
-        def upload_to_path(self, filename):
-            """Returns the upload_to path for this sample.
-            NOTE: we are going to store the files by the paper's gseid and
-            the sample id, e.g. gseid = GSE20852, sample id = 578
-            is going to be stored in: data/samples/gse20/852/578/[peak,wig,etc]
-            """
-            return os.path.join('data', 'samples',
-                                'gse%s' % self.paper.gseid[3:5],
-                                self.paper.gseid[5:], str(self.id), sub_dir,
-                                filename)
-        return upload_to_path
-    
-    user = models.ForeignKey(User)
-    paper = models.ForeignKey('Papers')
-    #DROPPING datasets in favor of a more robust way of defining which 
-    #datasets.
-    treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
-                                                   blank=True)
-    controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
-                                                 blank=True)
-    #FileFields
-    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
-                                      null=True, blank=True)
-    peak_file = models.FileField(upload_to=upload_factory("peak"),
-                                 null=True, blank=True)
-    peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
-                                     null=True, blank=True)
-    summit_file = models.FileField(upload_to=upload_factory("summit"),
-                                   null=True, blank=True)
-    wig_file = models.FileField(upload_to=upload_factory("wig"),
-                                null=True, blank=True)
-    #control_wig_file = models.FileField(upload_to=upload_factory("wig"),
-    #                                    null=True, blank=True)
-    bw_file = models.FileField(upload_to=upload_factory("bw"),
-                                null=True, blank=True)
-    bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
-                                      null=True, blank=True)
-    control_bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
-                                              null=True, blank=True)
-    conservation_file = models.FileField(upload_to=upload_factory("conservation"),
-                                    null=True, blank=True)
-    conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
-                                      null=True, blank=True)
-    qc_file = models.FileField(upload_to=upload_factory("qc"),
-                               null=True, blank=True)
-    qc_r_file = models.FileField(upload_to=upload_factory("qc"),
-                                 null=True, blank=True)
-    ceas_file = models.FileField(upload_to=upload_factory("ceas"),
-                                 null=True, blank=True)
-    ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
-                                   null=True, blank=True)
-    venn_file = models.FileField(upload_to=upload_factory("venn"),
-                                 null=True, blank=True)
-    seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
-                                   null=True, blank=True)
-
-    #adding meta files
-    conf_file = models.FileField(upload_to=upload_factory("meta"),
-                                 null=True, blank=True)
-    log_file = models.FileField(upload_to=upload_factory("meta"),
-                                 null=True, blank=True)
-    summary_file = models.FileField(upload_to=upload_factory("meta"),
-                                    null=True, blank=True)
-    #NOTE: even though dhs stats are saved in a table, we're going to store it
-    #in meta
-    dhs_file = models.FileField(upload_to=upload_factory("meta"),
-                                null=True, blank=True)
-
-    #uploader = the person who uploaded the files (data team)
-    uploader = models.ForeignKey(User, null=True, blank=True, default=None,
-                                 related_name="sample_uploader")
-    upload_date = models.DateTimeField(blank=True, null=True, default=None)
-
-    status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
-                              default="new")
-
-    comments = models.TextField(blank=True, default="")
-
-
-    def _printInfo(self):
-        """Tries to print the treatment and controls list like this:
-        GSMXXX,GSMYYY::GSMZZZ where the :: is a separator btwn the two lists"""
-        treat = []
-        control = []
-        if self.treatments:
-            treat = [Datasets.objects.get(id=d) \
-                         for d in self.treatments.split(',')]
-        if self.controls:
-            controls = [Datasets.objects.get(id=d) \
-                         for d in self.controls.split(',')]
-        return "%s::%s" % (",".join(treat), ",".join(control))
-
-    def __str__(self):
-        #return self._printInfo()
-        return smart_str(str(self.id))
-Samples._meta._donotSerialize = ['user', 'uploader']
-
-class SampleControls(DCModel):
-    """a table to store all of the control files for a given sample.
-    The replicates of each sample uses the same control--so this is the
-    central repository.
-    """
-    def upload_factory(sub_dir):
-        """a factory for generating upload_to_path fns--e.g. use to generate
-        the various sub-directories we use to store the info associated w/
-        a samplecontrol"""
-        def upload_to_path(self, filename):
-            """Returns the upload_to path for this sample.
-            NOTE: we are going to store the files by the paper's gseid and
-            the sample id, e.g. gseid = GSE20852, sample id = 578
-            is going to be stored in:data/controls/gse20/852/578/[peak,wig,etc]
-            """
-            return os.path.join('data', 'controls','gse%s' % \
-                                self.sample.paper.gseid[3:5],
-                                self.sample.paper.gseid[5:],
-                                str(self.sample.id), sub_dir, filename)
-        return upload_to_path
-    
-    sample = models.ForeignKey('Samples')
-    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
-                                      null=True, blank=True)
-    wig_file = models.FileField(upload_to=upload_factory("wig"),
-                                null=True, blank=True)
-    bw_file = models.FileField(upload_to=upload_factory("bw"),
-                               null=True, blank=True)
     
 class UserProfiles(DCModel):
     """We want to add additional fields to the auth user model.  So creating
@@ -574,12 +520,6 @@ class DiseaseStates(DCModel):
     def __str__(self):
         return smart_str(str(self.name))
 
-class SampleDhsStats(DCModel):
-    """Stats about the sample"""
-    sample = models.ForeignKey('Samples', unique=True)
-    total_peaks = models.IntegerField(default=0)
-    peaks_in_dhs = models.IntegerField(default=0)
-
 class Antibodies(DCModel):
     """Antibodies"""
     name = models.CharField(max_length=255)
@@ -592,3 +532,8 @@ class TissueTypes(DCModel):
     def __str__(self):
         return smart_str(self.name)
 
+# class SampleDhsStats(DCModel):
+#     """Stats about the sample"""
+#     sample = models.ForeignKey('Samples', unique=True)
+#     total_peaks = models.IntegerField(default=0)
+#     peaks_in_dhs = models.IntegerField(default=0)

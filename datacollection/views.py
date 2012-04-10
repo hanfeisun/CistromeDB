@@ -229,7 +229,7 @@ def form_view_factory(title_in, form_class):
 
 #Cool! but we need the decorators!
 generic_forms_list = ['platform','factor','celltype','cellline', 'cellpop',
-                      'strain', 'condition', 'journal', 'species', 'filetype',
+                      'strain', 'condition', 'journal', 'species', 
                       'assembly', "diseasestate", "tissuetype"]
 #new_platform_form = form_view_factory('Platform Form', forms.PlatformForm)
 #Generate the generic form views
@@ -1239,8 +1239,7 @@ def modelPagesFactory(model, base_name):
 #DUPLICATE!!! kind of!
 generic_model_list = ["Platforms", "Factors", "CellTypes", "CellLines", 
                       "CellPops", "Strains", "Conditions", "Journals", 
-                      "FileTypes",  "DiseaseStates", "Species",
-                      "TissueTypes",
+                      "DiseaseStates", "Species", "TissueTypes",
                       ]
 
 for name in generic_model_list:

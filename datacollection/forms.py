@@ -42,7 +42,6 @@ form_dict = {'Paper': models.Papers, 'Dataset': models.Datasets,
              'Cellline': models.CellLines, 'Cellpop':models.CellPops,
              'Strain': models.Strains, 'Condition':models.Conditions,
              'Journal': models.Journals, 'Species':models.Species,
-             'Filetype': models.FileTypes,
              'Assembly': models.Assemblies, 'Sample':models.Samples,
              'Diseasestate': models.DiseaseStates, 
              'Tissuetype':models.TissueTypes}
