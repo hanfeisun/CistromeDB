@@ -86,8 +86,7 @@ class Papers(DCModel):
     """Papers are publications that are publicly available
     The fields are:
     pmid - the pubmed id of the publication
-    gseid - the GEO series id associated with the publication
-    generic_id - id IF the paper does not have a GEO series
+    unique_id - the unique identifier for an external db, e.g. GSEID
     user - the user who currated the dataset
     title - the title of the publication
     reference - shorthand of the publication details
@@ -105,9 +104,7 @@ class Papers(DCModel):
     #    self._meta._donotSerialize = ['user']
 
     pmid = models.IntegerField(null=True, blank=True, default=None)
-    gseid = models.CharField(max_length=255, null=True, blank=True, default="")
-    generic_id = models.CharField(max_length=255, null=True, blank=True,
-                                  default="")
+    unique_id = models.CharField(max_length=255, null=True, blank=True, default="")
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     title = models.CharField(max_length=255, null=True, blank=True, default="")
     reference = models.CharField(max_length=255, null=True, blank=True, default="")
@@ -125,50 +122,50 @@ class Papers(DCModel):
     comments = models.TextField(null=True, blank=True, default="")
 
     #MIG_NOTE: these will have to change from DATASET --> SAMPLE
-    def _datasetAggregator(dset_field):
-        """Given a dataset field, tries to aggregate all of the associated 
-        datasets"""
-        #pluralizing the dset_field
-        #exceptions first
-        if dset_field == 'species':
-            plural = 'species'
-        elif dset_field == 'assembly':
-            plural = 'assemblies'
-        else:
-            plural = dset_field+'s'
+    # def _datasetAggregator(dset_field):
+    #     """Given a dataset field, tries to aggregate all of the associated 
+    #     datasets"""
+    #     #pluralizing the dset_field
+    #     #exceptions first
+    #     if dset_field == 'species':
+    #         plural = 'species'
+    #     elif dset_field == 'assembly':
+    #         plural = 'assemblies'
+    #     else:
+    #         plural = dset_field+'s'
 
-        def nameless(self):
-            "Returns a list of %s associates with the papers" % plural
-            ids = []
-            vals = []
-            dsets = Datasets.objects.filter(paper=self.id)
-            for d in dsets:
-                val = getattr(d, dset_field)
-                if val and val.id not in ids:
-                    ids.append(val.id)
-                    vals.append(smart_str(val))
-            return vals
-        return nameless
+    #     def nameless(self):
+    #         "Returns a list of %s associates with the papers" % plural
+    #         ids = []
+    #         vals = []
+    #         dsets = Datasets.objects.filter(paper=self.id)
+    #         for d in dsets:
+    #             val = getattr(d, dset_field)
+    #             if val and val.id not in ids:
+    #                 ids.append(val.id)
+    #                 vals.append(smart_str(val))
+    #         return vals
+    #     return nameless
 
     
-    factors = property(_datasetAggregator('factor'))
-    platforms = property(_datasetAggregator('platform'))
-    species = property(_datasetAggregator('species'))
-    assemblies = property(_datasetAggregator('assembly'))
-    cell_types = property(_datasetAggregator('cell_type'))
-    cell_lines = property(_datasetAggregator('cell_line'))
-    cell_pops = property(_datasetAggregator('cell_pop'))
-    tissue_types = property(_datasetAggregator('tissue_type'))
-    strains = property(_datasetAggregator('strain'))
-    conditions = property(_datasetAggregator('condition'))
-    disease_states = property(_datasetAggregator('disease_state'))
+    # factors = property(_datasetAggregator('factor'))
+    # platforms = property(_datasetAggregator('platform'))
+    # species = property(_datasetAggregator('species'))
+    # assemblies = property(_datasetAggregator('assembly'))
+    # cell_types = property(_datasetAggregator('cell_type'))
+    # cell_lines = property(_datasetAggregator('cell_line'))
+    # cell_pops = property(_datasetAggregator('cell_pop'))
+    # tissue_types = property(_datasetAggregator('tissue_type'))
+    # strains = property(_datasetAggregator('strain'))
+    # conditions = property(_datasetAggregator('condition'))
+    # disease_states = property(_datasetAggregator('disease_state'))
 
-    def _aggGSMIDS(self):
-        dsets = Datasets.objects.filter(paper=self.id)
-        #NOTE: we are wrapping up the gsmid and the associated factor!
-        return [[smart_str(d.gsmid), smart_str(d.factor), smart_str(d.generic_id)] for d in dsets]
+    # def _aggGSMIDS(self):
+    #     dsets = Datasets.objects.filter(paper=self.id)
+    #     #NOTE: we are wrapping up the gsmid and the associated factor!
+    #     return [[smart_str(d.gsmid), smart_str(d.factor), smart_str(d.generic_id)] for d in dsets]
 
-    gsmids = property(_aggGSMIDS)
+    # gsmids = property(_aggGSMIDS)
 
     def _get_lab(self):
         """Returns the last author in the authors list"""
@@ -186,10 +183,11 @@ class Papers(DCModel):
 Papers._meta._donotSerialize = ['user']
 
 #Dataset fields which we will aggregate and make into virtual paper fields
-Papers._meta._virtualfields = ['lab', 'factors', 'platforms', 'species', 
-                               'assemblies', 'cell_types', 'cell_lines', 
-                               'cell_pops', 'tissue_types', 'strains', 
-                               'conditions', 'disease_states', 'gsmids']
+Papers._meta._virtualfields = ['lab', #'factors', 'platforms', 'species', 
+                               #'assemblies', 'cell_types', 'cell_lines', 
+                               #'cell_pops', 'tissue_types', 'strains', 
+                               #'conditions', 'disease_states', 'gsmids'
+                               ]
 
 
 class Datasets(DCModel):
@@ -334,10 +332,7 @@ class Samples(DCModel):
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
     
-    gsmid = models.CharField(max_length=255, null=True, blank=True, default="")
-    #IF not a geo sample, then use generic_id
-    generic_id = models.CharField(max_length=255, null=True, blank=True,
-                                  default="")
+    unique_id = models.CharField(max_length=255, null=True, blank=True, default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
@@ -477,7 +472,9 @@ class PaperSubmissions(DCModel):
     ip_addr - the ip address of the submitter
     submitter_name - optional name of the submitter
     comments - any comments a currator might attach to the submission
-    """        
+    """  
+    #MIG_NOTE: need to change gseid to maybe unique_id or add something for 
+    #SRA/ENCODE etc
     pmid = models.IntegerField(default=0)
     gseid = models.CharField(max_length=8, blank=True)
     status = models.CharField(max_length=255, choices=SUBMISSION_STATUS)
