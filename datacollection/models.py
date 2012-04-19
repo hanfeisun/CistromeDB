@@ -104,6 +104,7 @@ class Papers(DCModel):
     #    self._meta._donotSerialize = ['user']
 
     pmid = models.IntegerField(null=True, blank=True, default=None)
+    #NOTE: papers can have multiple unique_ids attached--if so, comma-sep them
     unique_id = models.CharField(max_length=255, null=True, blank=True, default="")
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     title = models.CharField(max_length=255, null=True, blank=True, default="")
