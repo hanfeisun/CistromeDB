@@ -238,32 +238,22 @@ class Datasets(DCModel):
                                                  blank=True)
 
     #FileFields
-    treatment_file = models.FileField(upload_to=upload_factory("treatment"),
-                                      null=True, blank=True)
     peak_file = models.FileField(upload_to=upload_factory("peak"),
                                  null=True, blank=True)
     peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
                                      null=True, blank=True)
     summit_file = models.FileField(upload_to=upload_factory("summit"),
                                    null=True, blank=True)
-    wig_file = models.FileField(upload_to=upload_factory("wig"),
-                                null=True, blank=True)
-    #control_wig_file = models.FileField(upload_to=upload_factory("wig"),
-    #                                    null=True, blank=True)
-    bw_file = models.FileField(upload_to=upload_factory("bw"),
-                                null=True, blank=True)
-    bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
-                                      null=True, blank=True)
-    control_bed_graph_file = models.FileField(upload_to=upload_factory("bedgraph"),
-                                              null=True, blank=True)
+        
+    treat_bw_file = models.FileField(upload_to=upload_factory("bw"),
+                                     null=True, blank=True)
+    cont_bw_file = models.FileField(upload_to=upload_factory("bw"),
+                                    null=True, blank=True)
+    
     conservation_file = models.FileField(upload_to=upload_factory("conservation"),
                                     null=True, blank=True)
     conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
                                       null=True, blank=True)
-    qc_file = models.FileField(upload_to=upload_factory("qc"),
-                               null=True, blank=True)
-    qc_r_file = models.FileField(upload_to=upload_factory("qc"),
-                                 null=True, blank=True)
     ceas_file = models.FileField(upload_to=upload_factory("ceas"),
                                  null=True, blank=True)
     ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
@@ -272,7 +262,12 @@ class Datasets(DCModel):
                                  null=True, blank=True)
     seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
                                    null=True, blank=True)
-
+    
+    rep_treat_bw = models.CharField( null=True, blank=True, default ="", max_length=1024)
+    rep_treat_peaks = models.CharField( null=True, blank=True, default ="",max_length=1024)
+    rep_treat_summits = models.CharField( null=True, blank=True, default ="",max_length=1024)
+    rep_cont_bw = models.CharField( null=True, blank=True, default ="",max_length=1024)
+    
     #adding meta files
     conf_file = models.FileField(upload_to=upload_factory("meta"),
                                  null=True, blank=True)
