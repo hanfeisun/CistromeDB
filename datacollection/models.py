@@ -441,16 +441,16 @@ class CellLines(DCModel):
 
 class Qc(DCModel):
     #used to store the QC measures
-    qc1 = models.CharField(max_length=255)
-    qc2 = models.CharField(max_length=255)
-    qc3 = models.CharField(max_length=255)
-    qc4 = models.CharField(max_length=255)
-    qc5 = models.CharField(max_length=255)
-    qc6 = models.CharField(max_length=255)
-    qc7 = models.CharField(max_length=255)
-    qc8 = models.CharField(max_length=255)
-    qc9 = models.CharField(max_length=255)
-    qc10= models.CharField(max_length=255)
+    qc1 = models.CharField(max_length=255, null=True)
+    qc2 = models.CharField(max_length=255, null=True)
+    qc3 = models.CharField(max_length=255, null=True)
+    qc4 = models.CharField(max_length=255, null=True)
+    qc5 = models.CharField(max_length=255, null=True)
+    qc6 = models.CharField(max_length=255, null=True)
+    qc7 = models.CharField(max_length=255, null=True)
+    qc8 = models.CharField(max_length=255, null=True)
+    qc9 = models.CharField(max_length=255, null=True)
+    qc10= models.CharField(max_length=255, null=True)
     def __str__(self):
         return smart_str(self.name)
 
@@ -477,19 +477,6 @@ class Journals(DCModel):
      impact_factor = models.FloatField(default=0.0)
      def __str__(self):
          return smart_str(self.name)
-class QC(DCModel):
-    """the table is used to store the 10 QC measures"""
-    qc1 = models.CharField(max_length=255)
-    qc2 = models.CharField(max_length=255)
-    qc3 = models.CharField(max_length=255)
-    qc4 = models.CharField(max_length=255)
-    qc5 = models.CharField(max_length=255)
-    qc6 = models.CharField(max_length=255)
-    qc7 = models.CharField(max_length=255)
-    qc8 = models.CharField(max_length=255)
-    qc9 = models.CharField(max_length=255)
-    qc10 = models.CharField(max_length=255)
-
 
 class PaperSubmissions(DCModel):
     """Public paper submission page
