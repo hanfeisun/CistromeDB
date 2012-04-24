@@ -258,15 +258,21 @@ class Datasets(DCModel):
                                  null=True, blank=True)
     ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
                                    null=True, blank=True)
+    ceas_xls_file = models.FileField(upload_to=upload_factory("ceas"),
+                                     null=True, blank=True)
+    
     venn_file = models.FileField(upload_to=upload_factory("venn"),
                                  null=True, blank=True)
     seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
                                    null=True, blank=True)
-    
     rep_treat_bw = models.CharField( null=True, blank=True, default ="", max_length=1024)
     rep_treat_peaks = models.CharField( null=True, blank=True, default ="",max_length=1024)
     rep_treat_summits = models.CharField( null=True, blank=True, default ="",max_length=1024)
     rep_cont_bw = models.CharField( null=True, blank=True, default ="",max_length=1024)
+    cor_pdf_file = models.FileField(upload_to=upload_factory("cor"),
+                                    null=True, blank=True)
+    cor_r_file = models.FileField(upload_to=upload_factory("cor"),
+                                  null=True, blank=True)
     
     #adding meta files
     conf_file = models.FileField(upload_to=upload_factory("meta"),
@@ -275,6 +281,7 @@ class Datasets(DCModel):
                                  null=True, blank=True)
     summary_file = models.FileField(upload_to=upload_factory("meta"),
                                     null=True, blank=True)
+        
     #NOTE: even though dhs stats are saved in a table, we're going to store it
     #in meta
     dhs_file = models.FileField(upload_to=upload_factory("meta"),
