@@ -357,33 +357,34 @@ function FactorInfoView(container, model) {
 		}
 	    }
 
-	    if (dset.gseid || dset.gsmid || dset.generic_id) {
+	    //LEN- THIS IS IN FLUX! 2012-05-08
+	    if (dset.paper_unique_id || dset.unique_id) {
 		var span = $D('span', {innerHTML:'data:',className:'label'});
 		td1.appendChild(span);
-		if (dset.gseid && !dset.gseid.match(/SRA.*/)) {
+		if (dset.paper_unique_id && 
+		    !dset.paper_unique_id.match(/SRA.*/)) {
 		    span = $D('span', {className:'value2'});
-		    var newA = $D('a',{innerHTML:dset.gseid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gseid, target:"_blank"});
+		    var newA = $D('a',{innerHTML:dset.paper_unique_id, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.paper_unique_id, target:"_blank"});
 		    span.appendChild(newA);
 		    td1.appendChild(span);
 		    //space
 		    td1.appendChild($D('span',{innerHTML:' '}));
 		}
 
-		if (dset.gsmid){
-		    span = $D('span', {className:'value2'});
-		    var newA = $D('a',{innerHTML:dset.gsmid, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.gsmid, target:"_blank"});
-		    span.appendChild(newA);
-		    td1.appendChild(span);
+		if (dset.unique_id){
+		    if (dset.unique_id.match(/.RX.*/)) {
+			span = $D('span', {className:'value2'});
+			var newA = $D('a',{innerHTML:dset.unique_id, href:'http://sra.dnanexus.com/experiments/'+dset.unique_id, target:"_blank"});
+			span.appendChild(newA);
+			td1.appendChild(span);		    
+		    } else {
+			span = $D('span', {className:'value2'});
+			var newA = $D('a',{innerHTML:dset.unique_id, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.unique_id, target:"_blank"});
+			span.appendChild(newA);
+			td1.appendChild(span);
+		    }
 		}
 		
-		//download link for SRX, DRX, ERX data
-		if (dset.generic_id && dset.generic_id.match(/.RX.*/)) {
-		    span = $D('span', {className:'value2'});
-		    var newA = $D('a',{innerHTML:dset.generic_id, href:'http://sra.dnanexus.com/experiments/'+dset.generic_id, target:"_blank"});
-		    span.appendChild(newA);
-		    td1.appendChild(span);		    
-		}
-
 		td1.appendChild($D('br'));
 	    }
 
