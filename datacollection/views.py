@@ -1362,11 +1362,17 @@ def factors_view(request):
                             #NEED to make a copy of _paperFldsToPull
                             d._meta._virtualfields = list(_paperFldsToPull)
                             for fld in d._meta._virtualfields:
-                                setattr(d, fld, getattr(d.paper, fld))
+                                if d.paper and getattr(d.paper, f):
+                                    setattr(d, fld, getattr(d.paper, fld))
+                                else:
+                                    setattr(d, f, None)
                             #NOTE: since unique_id is a fld in both papers and
                             #samples, we don't want to clobber the samples val
-                            setattr(d, "paper_unique_id", 
-                                    getattr(d.paper, "unique_id"))
+                            if d.paper and d.paper.unique_id:
+                                setattr(d, "paper_unique_id", 
+                                        getattr(d.paper, "unique_id"))
+                            else:
+                                d.paper_unique_id = None
                             d._meta._virtualfields.append("paper_unique_id")
                             d.paper = None
 
@@ -1404,7 +1410,7 @@ def cells_view(request):
 
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
-    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid", 
+    _paperFldsToPull = ["pmid", "authors", "last_auth_email", #"gseid", 
                         "reference"]
     _hashTAG = "####SEARCH_CELLS####"
     ret = {}
@@ -1423,10 +1429,12 @@ def cells_view(request):
             if res:
                 #track what's added
                 for r in res:
-                    if r.model is models.Datasets:
+                    #if r.model is models.Datasets:
+                    if r.model is models.Samples:
                         restrictSetIds.append(r.object.id)
                     else: #it's a paper
-                        dsets = models.Datasets.objects.filter(paper=r.object)
+                        #dsets = models.Datasets.objects.filter(paper=r.object)
+                        dsets = models.Samples.objects.filter(paper=r.object)
                         for d in dsets:
                             if d.id not in restrictSetIds:
                                 restrictSetIds.append(d.id)
@@ -1434,7 +1442,8 @@ def cells_view(request):
         #NOTE: the user can only select 1 cell--we use that to our advantage!
         (m, cid) = request.GET['cells'].split(",")
         params = {_Mapping[m]:cid}
-        dsets = models.Datasets.objects.filter(**params)
+        #dsets = models.Datasets.objects.filter(**params)
+        dsets = models.Samples.objects.filter(**params)
         (cls, cps, cts, tts) = partition(dsets)
         
         if not restrictSetIds:
@@ -1453,9 +1462,21 @@ def cells_view(request):
                     if d.id not in allDsets and d.id in restrictSetIds:
                         if d.species:
                             #Optimization: not jsonifying the papers
-                            d._meta._virtualfields = _paperFldsToPull
+                            #NEED to make a copy of _paperFldsToPull
+                            d._meta._virtualfields = list(_paperFldsToPull)
                             for f in d._meta._virtualfields:
-                                setattr(d, f, getattr(d.paper, f))
+                                if d.paper and getattr(d.paper, f):
+                                    setattr(d, f, getattr(d.paper, f))
+                                else:
+                                    setattr(d, f, None)
+                            #NOTE: since unique_id is a fld in both papers and
+                            #samples, we don't want to clobber the samples val
+                            if d.paper and d.paper.unique_id:
+                                setattr(d, "paper_unique_id", 
+                                        getattr(d.paper, "unique_id"))
+                            else:
+                                d.paper_unique_id = None
+                            d._meta._virtualfields.append("paper_unique_id")
                             d.paper = None
 
                             allDsets.append(d.id)
