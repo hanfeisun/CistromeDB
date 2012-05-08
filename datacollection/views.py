@@ -1301,7 +1301,7 @@ def factors_view(request):
     _hashTAG = "####SEARCH_FACTORS####"
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
-    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "gseid", 
+    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "unique_id", 
                         "reference"]
     _timeout = 60*60*24 #1 day
     ret = {}
@@ -1324,10 +1324,12 @@ def factors_view(request):
             if res:
                 #track what's added
                 for r in res:
-                    if r.model is models.Datasets:
+                    #if r.model is models.Datasets:
+                    if r.model is models.Samples:
                         restrictSetIds.append(r.object.id)
                     else: #it's a paper
-                        dsets = models.Datasets.objects.filter(paper=r.object)
+                        #dsets = models.Datasets.objects.filter(paper=r.object)
+                        dsets = models.Samples.objects.filter(paper=r.object)
                         for d in dsets:
                             if d.id not in restrictSetIds:
                                 restrictSetIds.append(d.id)
@@ -1343,7 +1345,8 @@ def factors_view(request):
                     #build it up
                     params = {'factor':f, dsetFld:m}
                     #NOTE: we have to pass in the param as a **
-                    tmp = models.Datasets.objects.filter(**params)
+                    #tmp = models.Datasets.objects.filter(**params)
+                    tmp = models.Samples.objects.filter(**params)
                     if restrictSetIds:
                         tmp = [d for d in tmp if d.id not in allDsets\
                                    and d.id in restrictSetIds]
