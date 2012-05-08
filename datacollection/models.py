@@ -122,51 +122,52 @@ class Papers(DCModel):
     #a place for curators to add comments
     comments = models.TextField(null=True, blank=True, default="")
 
-    #MIG_NOTE: these will have to change from DATASET --> SAMPLE
-    # def _datasetAggregator(dset_field):
-    #     """Given a dataset field, tries to aggregate all of the associated 
-    #     datasets"""
-    #     #pluralizing the dset_field
-    #     #exceptions first
-    #     if dset_field == 'species':
-    #         plural = 'species'
-    #     elif dset_field == 'assembly':
-    #         plural = 'assemblies'
-    #     else:
-    #         plural = dset_field+'s'
+    def _sampleAggregator(sample_field):
+        """Given a sample field, tries to aggregate all of the associated 
+        samples"""
+        #pluralizing the dset_field
+        #exceptions first
+        if sample_field == 'species':
+            plural = 'species'
+        elif sample_field == 'assembly':
+            plural = 'assemblies'
+        else:
+            plural = sample_field+'s'
 
-    #     def nameless(self):
-    #         "Returns a list of %s associates with the papers" % plural
-    #         ids = []
-    #         vals = []
-    #         dsets = Datasets.objects.filter(paper=self.id)
-    #         for d in dsets:
-    #             val = getattr(d, dset_field)
-    #             if val and val.id not in ids:
-    #                 ids.append(val.id)
-    #                 vals.append(smart_str(val))
-    #         return vals
-    #     return nameless
+        def nameless(self):
+            "Returns a list of %s associates with the papers" % plural
+            ids = []
+            vals = []
+            samples = Samples.objects.filter(paper=self.id)
+            for s in samples:
+                val = getattr(s, sample_field)
+                if val and val.id not in ids:
+                    ids.append(val.id)
+                    vals.append(smart_str(val))
+            return vals
+        return nameless
 
-    
-    # factors = property(_datasetAggregator('factor'))
-    # platforms = property(_datasetAggregator('platform'))
-    # species = property(_datasetAggregator('species'))
-    # assemblies = property(_datasetAggregator('assembly'))
-    # cell_types = property(_datasetAggregator('cell_type'))
-    # cell_lines = property(_datasetAggregator('cell_line'))
-    # cell_pops = property(_datasetAggregator('cell_pop'))
-    # tissue_types = property(_datasetAggregator('tissue_type'))
-    # strains = property(_datasetAggregator('strain'))
-    # conditions = property(_datasetAggregator('condition'))
-    # disease_states = property(_datasetAggregator('disease_state'))
+    #NOTE: these are killing the initial cache!!! AND we're only using one
+    # of these--species.  For efficiency sake, commenting the rest out!
+    # factors = property(_sampleAggregator('factor'))
+    # platforms = property(_sampleAggregator('platform'))
+    species = property(_sampleAggregator('species'))
+    # assemblies = property(_sampleAggregator('assembly'))
+    # cell_types = property(_sampleAggregator('cell_type'))
+    # cell_lines = property(_sampleAggregator('cell_line'))
+    # cell_pops = property(_sampleAggregator('cell_pop'))
+    # tissue_types = property(_sampleAggregator('tissue_type'))
+    # strains = property(_sampleAggregator('strain'))
+    # conditions = property(_sampleAggregator('condition'))
+    # disease_states = property(_sampleAggregator('disease_state'))
 
-    # def _aggGSMIDS(self):
-    #     dsets = Datasets.objects.filter(paper=self.id)
-    #     #NOTE: we are wrapping up the gsmid and the associated factor!
-    #     return [[smart_str(d.gsmid), smart_str(d.factor), smart_str(d.generic_id)] for d in dsets]
+    def _aggUniqueIds(self):
+        """aggregates the unique ids of the samples associated w/ the paper"""
+        samples = Samples.objects.filter(paper=self.id)
+        #NOTE: we are wrapping up the unique_id and the associated factor!
+        return [[smart_str(s.unique_id), smart_str(s.factor)] for s in samples]
 
-    # gsmids = property(_aggGSMIDS)
+    sample_unique_ids = property(_aggUniqueIds)
 
     def _get_lab(self):
         """Returns the last author in the authors list"""
@@ -184,10 +185,13 @@ class Papers(DCModel):
 Papers._meta._donotSerialize = ['user']
 
 #Dataset fields which we will aggregate and make into virtual paper fields
-Papers._meta._virtualfields = ['lab', #'factors', 'platforms', 'species', 
+#NOTE: the only ones used by jscript is species and sample_unique_ids!!
+Papers._meta._virtualfields = [#'lab', 'factors', 'platforms', 'species', 
                                #'assemblies', 'cell_types', 'cell_lines', 
                                #'cell_pops', 'tissue_types', 'strains', 
-                               #'conditions', 'disease_states', 'gsmids'
+                               #'conditions', 'disease_states', 
+                               'species',
+                               'sample_unique_ids',
                                ]
 
 
