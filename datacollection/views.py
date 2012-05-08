@@ -1301,7 +1301,7 @@ def factors_view(request):
     _hashTAG = "####SEARCH_FACTORS####"
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
-    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "unique_id", 
+    _paperFldsToPull = ["pmid", "authors", "last_auth_email", #"unique_id", 
                         "reference"]
     _timeout = 60*60*24 #1 day
     ret = {}
@@ -1359,9 +1359,15 @@ def factors_view(request):
                         for d in tmp:
                             allDsets.append(d.id)
                             #Optimization: not jsonifying the papers
-                            d._meta._virtualfields = _paperFldsToPull
+                            #NEED to make a copy of _paperFldsToPull
+                            d._meta._virtualfields = list(_paperFldsToPull)
                             for fld in d._meta._virtualfields:
                                 setattr(d, fld, getattr(d.paper, fld))
+                            #NOTE: since unique_id is a fld in both papers and
+                            #samples, we don't want to clobber the samples val
+                            setattr(d, "paper_unique_id", 
+                                    getattr(d.paper, "unique_id"))
+                            d._meta._virtualfields.append("paper_unique_id")
                             d.paper = None
 
                         dsets = [jsrecord.views.jsonify(d) for d in tmp]
