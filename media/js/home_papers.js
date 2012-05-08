@@ -383,7 +383,7 @@ function PaperInfoView(container, model) {
 	//clear the container
 	outer.container.innerHTML = "";
 	var currPaper = outer.model.getCurrPaper();
-	
+
 	//check for null
 	if (!currPaper) { return; }
 
@@ -412,12 +412,15 @@ function PaperInfoView(container, model) {
 	tmp.appendChild($D('a', {innerHTML:currPaper.pmid, target:'_blank',
 			href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+currPaper.pmid}));
 	tmp.appendChild($D('br'))
-	
-	tmp.appendChild($D('span', {'className':'label', 'innerHTML':"GEO Series ID:"}));
-	tmp.appendChild($D('a', {innerHTML:currPaper.gseid, target:'_blank',
+
+	if (currPaper.unique_id && currPaper.unique_id.match(/GSE\d{9}/)) {
+	    tmp.appendChild($D('span', {'className':'label', 'innerHTML':"GEO Series ID:"}));
+	    tmp.appendChild($D('a', {innerHTML:currPaper.unique_id, target:'_blank',
 			href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+currPaper.gseid}));
-	tmp.appendChild($D('br'));
-	//BUILD the GSMIDS
+	    tmp.appendChild($D('br'));
+	}
+
+	//BUILD the DATA
 	tmp.appendChild($D('span', {'className':'label', 'innerHTML':"Data:"}));
 	//FOR ENCODE papers, have a link to the data
 	if (currPaper['title'].match(/ENCODE.*/)) {
@@ -427,18 +430,20 @@ function PaperInfoView(container, model) {
 	    tmp.appendChild(sp);
 	}
 
-	//NOTE: GSMIDS is an array of tuples (or the jscript equiv--arrays), 
-	//where the first field is the gsmid, and the second is the factor
-	var gsmids = getattr(currPaper, "gsmids");
-	for (var i = 0; i < gsmids.length; i++) {
+	//NOTE: uniqueIds is an array of tuples (or the jscript equiv-arrays), 
+	//where the first field is the uniqueId, and the second is the factor
+	var uniqueIds = getattr(currPaper, "sample_unique_ids");
+	for (var i = 0; i < uniqueIds.length; i++) {
 	    var sp = $D('span', {className:'value'});
-	    if (gsmids[i][0]) {
-		sp.appendChild($D('a', {innerHTML:gsmids[i][0], target:'_blank',
-			    href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+gsmids[i][0]}));
-	    } else { //try the generic_id
-		sp.appendChild($D('span', {innerHTML:gsmids[i][2]}));
+	    if (uniqueIds[i][0]) {
+		if (uniqueIds[i][0].match(/GSM\d{6}/)) {
+		    sp.appendChild($D('a', {innerHTML:uniqueIds[i][0], target:'_blank',
+			    href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+uniqueIds[i][0]}));
+		} else {
+		    sp.appendChild($D('span', {innerHTML:uniqueIds[i][0]}));
+		}
 	    }
-	    sp.appendChild($D('span', {innerHTML:"  ("+gsmids[i][1]+")"}));
+	    sp.appendChild($D('span', {innerHTML:"  ("+uniqueIds[i][1]+")"}));
 	    tmp.appendChild(sp);
 	}
 	
