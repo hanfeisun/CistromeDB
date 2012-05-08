@@ -413,7 +413,7 @@ function PaperInfoView(container, model) {
 			href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+currPaper.pmid}));
 	tmp.appendChild($D('br'))
 
-	if (currPaper.unique_id && currPaper.unique_id.match(/GSE\d{9}/)) {
+	if (currPaper.unique_id && currPaper.unique_id.match(/GSE\d{5}/)) {
 	    tmp.appendChild($D('span', {'className':'label', 'innerHTML':"GEO Series ID:"}));
 	    tmp.appendChild($D('a', {innerHTML:currPaper.unique_id, target:'_blank',
 			href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+currPaper.gseid}));
