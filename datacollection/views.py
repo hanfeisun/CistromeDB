@@ -1324,62 +1324,59 @@ def factors_view(request):
             if res:
                 #track what's added
                 for r in res:
-                    #if r.model is models.Datasets:
                     if r.model is models.Samples:
                         restrictSetIds.append(r.object.id)
                     else: #it's a paper
-                        #dsets = models.Datasets.objects.filter(paper=r.object)
-                        dsets = models.Samples.objects.filter(paper=r.object)
-                        for d in dsets:
-                            if d.id not in restrictSetIds:
-                                restrictSetIds.append(d.id)
+                        samples = models.Samples.objects.filter(paper=r.object)
+                        for s in samples:
+                            if s.id not in restrictSetIds:
+                                restrictSetIds.append(s.id)
         
         for f in factors:
-            #track dsets, to ensure no duplicates within factors.
-            allDsets = []
+            #track samples, to ensure no duplicates within factors.
+            allSamples = []
             if f.name not in ret:
                 ret[f.name] = {}
 
-            for (dsetFld, model) in _MODELS:
+            for (sampleFld, model) in _MODELS:
                 for m in model.objects.all():
                     #build it up
-                    params = {'factor':f, dsetFld:m}
+                    params = {'factor':f, sampleFld:m}
                     #NOTE: we have to pass in the param as a **
-                    #tmp = models.Datasets.objects.filter(**params)
                     tmp = models.Samples.objects.filter(**params)
                     if restrictSetIds:
-                        tmp = [d for d in tmp if d.id not in allDsets\
-                                   and d.id in restrictSetIds]
+                        tmp = [s for s in tmp if s.id not in allSamples\
+                                   and s.id in restrictSetIds]
                     else:
-                        tmp = [d for d in tmp if d.id not in allDsets]
+                        tmp = [s for s in tmp if s.id not in allSamples]
                     
                     if tmp:
                         if m.name not in mnames:
                             mnames.append(m.name)
-                        for d in tmp:
-                            allDsets.append(d.id)
+                        for s in tmp:
+                            allSamples.append(s.id)
                             #Optimization: not jsonifying the papers
                             #NEED to make a copy of _paperFldsToPull
-                            d._meta._virtualfields = list(_paperFldsToPull)
-                            for fld in d._meta._virtualfields:
-                                if d.paper and getattr(d.paper, fld):
-                                    setattr(d, fld, getattr(d.paper, fld))
+                            s._meta._virtualfields = list(_paperFldsToPull)
+                            for fld in s._meta._virtualfields:
+                                if s.paper and getattr(s.paper, fld):
+                                    setattr(s, fld, getattr(s.paper, fld))
                                 else:
-                                    setattr(d, fld, None)
+                                    setattr(s, fld, None)
                             #NOTE: since unique_id is a fld in both papers and
                             #samples, we don't want to clobber the samples val
-                            if d.paper and d.paper.unique_id:
-                                setattr(d, "paper_unique_id", 
-                                        getattr(d.paper, "unique_id"))
+                            if s.paper and s.paper.unique_id:
+                                setattr(s, "paper_unique_id", 
+                                        getattr(s.paper, "unique_id"))
                             else:
-                                d.paper_unique_id = None
-                            d._meta._virtualfields.append("paper_unique_id")
-                            d.paper = None
+                                s.paper_unique_id = None
+                            s._meta._virtualfields.append("paper_unique_id")
+                            s.paper = None
 
-                        dsets = [jsrecord.views.jsonify(d) for d in tmp]
-                        ret[f.name][m.name] = dsets
+                        samples = [jsrecord.views.jsonify(s) for s in tmp]
+                        ret[f.name][m.name] = samples
 
-            resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
+            resp = "{'factors': %s, 'models': %s, 'samples': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
 
         return HttpResponse(resp)
 
