@@ -1387,17 +1387,17 @@ def cells_view(request):
     tissuetype ids, and returns 
     information to fill out the factors view.  
     """
-    def partition(ds):
-        """given a set of datasets, returns a 4-tuple, indicating which 
+    def partition(smps):
+        """given a set of samples, returns a 4-tuple, indicating which 
         cell_lines, cellpops, cell_type, and tissue type are represented in
-        the dset"""
+        the samples"""
         
         (cls, cps, cts, tts) = ([],[],[],[])
         ls = [(cls, "cell_line"), (cps, "cell_pop"), (cts, "cell_type"),
               (tts, "tissue_type")]
-        for d in ds:
+        for s in smps:
             for (lst, fld) in ls:
-                val = getattr(d, fld)
+                val = getattr(s, fld)
                 if val and val not in lst:
                     lst.append(val)
         return (cls, cps, cts, tts)
@@ -1426,80 +1426,78 @@ def cells_view(request):
             if res:
                 #track what's added
                 for r in res:
-                    #if r.model is models.Datasets:
                     if r.model is models.Samples:
                         restrictSetIds.append(r.object.id)
                     else: #it's a paper
-                        #dsets = models.Datasets.objects.filter(paper=r.object)
-                        dsets = models.Samples.objects.filter(paper=r.object)
-                        for d in dsets:
-                            if d.id not in restrictSetIds:
-                                restrictSetIds.append(d.id)
+                        samples = models.Samples.objects.filter(paper=r.object)
+                        for s in samples:
+                            if s.id not in restrictSetIds:
+                                restrictSetIds.append(s.id)
 
         #NOTE: the user can only select 1 cell--we use that to our advantage!
         (m, cid) = request.GET['cells'].split(",")
         params = {_Mapping[m]:cid}
-        #dsets = models.Datasets.objects.filter(**params)
-        dsets = models.Samples.objects.filter(**params)
-        (cls, cps, cts, tts) = partition(dsets)
+        samples = models.Samples.objects.filter(**params)
+        (cls, cps, cts, tts) = partition(samples)
         
         if not restrictSetIds:
             #if not using a restriction set, then all of the dset ids is ok!
-            restrictSetIds = [d.id for d in dsets]
+            restrictSetIds = [s.id for s in samples]
  
         #assign the datasets to each partition, starting with cls, until we 
         #exhaust the list
-        allDsets = [] #this is to track that we're not adding duplicates
+        allSamples = [] #this is to track that we're not adding duplicates
         for (ls, fld) in [(cls, "cell_line"), (cps, "cell_pop"),
                           (cts, "cell_type"), (tts, "tissue_type")]:
             for c in ls:
                 params = {fld:c}
-                tmp = dsets.filter(**params)
-                for d in tmp:
-                    if d.id not in allDsets and d.id in restrictSetIds:
-                        if d.species:
+                tmp = samples.filter(**params)
+                for s in tmp:
+                    if s.id not in allSamples and s.id in restrictSetIds:
+                        if s.species:
                             #Optimization: not jsonifying the papers
                             #NEED to make a copy of _paperFldsToPull
-                            d._meta._virtualfields = list(_paperFldsToPull)
-                            for f in d._meta._virtualfields:
-                                if d.paper and getattr(d.paper, f):
-                                    setattr(d, f, getattr(d.paper, f))
+                            s._meta._virtualfields = list(_paperFldsToPull)
+                            for f in s._meta._virtualfields:
+                                if s.paper and getattr(s.paper, f):
+                                    setattr(s, f, getattr(s.paper, f))
                                 else:
-                                    setattr(d, f, None)
+                                    setattr(s, f, None)
                             #NOTE: since unique_id is a fld in both papers and
                             #samples, we don't want to clobber the samples val
-                            if d.paper and d.paper.unique_id:
-                                setattr(d, "paper_unique_id", 
-                                        getattr(d.paper, "unique_id"))
+                            if s.paper and s.paper.unique_id:
+                                setattr(s, "paper_unique_id", 
+                                        getattr(s.paper, "unique_id"))
                             else:
-                                d.paper_unique_id = None
-                            d._meta._virtualfields.append("paper_unique_id")
-                            d.paper = None
+                                s.paper_unique_id = None
+                            s._meta._virtualfields.append("paper_unique_id")
+                            s.paper = None
 
-                            allDsets.append(d.id)
-                            if d.factor.name not in fnames:
-                                fnames.append(d.factor.name)
-                            val = getattr(d, fld)
+                            allSamples.append(s.id)
+                            if s.factor.name not in fnames:
+                                fnames.append(s.factor.name)
+                            val = getattr(s, fld)
                             #key to organize the data: cell*_name + species
                             #before it was orgKey=val.name
-                            specKey = "h" if d.species.id == 1 else "m"
+                            specKey = "h" if s.species.id == 1 else "m"
                             orgKey = "%s(%s)" % (val.name, specKey)
                             if orgKey not in mnames:
                                 mnames.append(orgKey)
                             
-                            if d.factor.name not in ret:
-                                ret[d.factor.name] = {}
+                            if s.factor.name not in ret:
+                                ret[s.factor.name] = {}
                         
-                            if orgKey not in ret[d.factor.name]:
-                                ret[d.factor.name][orgKey] = []
-                            ret[d.factor.name][orgKey].append(jsrecord.views.jsonify(d))
+                            if orgKey not in ret[s.factor.name]:
+                                ret[s.factor.name][orgKey] = []
+                            ret[s.factor.name][orgKey].append(jsrecord.views.jsonify(s))
                         else: 
-                            #SKIPPING BAD dsets! add to allDset w/o add to ret
-                            allDsets.append(d.id)
-            #once allDsets == dsets, we can return
-            if len(allDsets) == len(dsets):
+                            #SKIPPING BAD samples! 
+                            #add to allSamples w/o adding to ret
+                            allSamples.append(s.id)
+            #once allSamples == samples, we can return
+            if len(allSamples) == len(samples):
                 break;
-        resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % \
+        resp = "{'factors': %s, 'models': %s, 'samples': %s}" % \
             (json.dumps(sorted(fnames)), \
                  json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), \
                  json.dumps(ret))
