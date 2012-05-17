@@ -232,6 +232,57 @@ class Datasets(DCModel):
     #    super(Datasets, self).__init__(*args)
     #    self._meta._donotSerialize = ['user']
 
+    @staticmethod
+    def sample_filter(**params): 
+        """Returns a list of datasets whose associated samples have that 
+        information.
+        NOTE: paper is a dataset field and a sample field--
+              sample_filter will go to the paper level (for consistency)
+              IF you want the datasets assoc. with a paper, use
+              Datasets.objects.filter(paper = )
+        """
+        ret = []
+        dsets = Datasets.objects.all()
+        for d in dsets:
+            valid = True
+            for k in params.keys():
+                if getattr(d,k) != params[k]:
+                    valid = False
+                    break;
+            if valid:
+                ret.append(d)
+        return ret
+
+    def _sampleAggregator(sample_field):
+        """given a sample field, like 'Factor'--TRIES:
+        1. to take the factor of the first treatment if that is valid
+        2. take the factor of the first control
+        3. Otherwise None
+        """
+        def nameless(self):
+            """Assumes that the assoc. sample %s entries are all consistent
+            so this fn returns the first valid %s--otherwise None""" % \
+                (sample_field, sample_field)
+            val = None
+            if self.treatments:
+                tmp = self.treatments.split(",")
+                if tmp: #Try to set it to first treatment
+                    try:
+                        s = Samples.objects.get(pk=tmp[0])
+                        val = getattr(s, sample_field)
+                    except Exception as ignored: #ERR: tmp[0] is GSMID!
+                        pass
+            elif self.controls:
+                tmp = self.controls.split(",")
+                if tmp: #Try first control
+                    try:
+                        s = Samples.objects.get(pk=tmp[0])
+                        val = getattr(s, sample_field)
+                    except Exception as ignored: #ERR: tmp[0] is GSMID!
+                        pass
+            return val
+        return nameless
+
     #user = the person curated/created the dataset
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     paper = models.ForeignKey('Papers')
@@ -240,6 +291,19 @@ class Datasets(DCModel):
                                                    blank=True)
     controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
                                                  blank=True)
+
+    #Virtual fields:
+    factor = property(_sampleAggregator('factor'))
+    platform = property(_sampleAggregator('platform'))
+    species = property(_sampleAggregator('species'))
+    assembly = property(_sampleAggregator('assembly'))
+    cell_type = property(_sampleAggregator('cell_type'))
+    cell_line = property(_sampleAggregator('cell_line'))
+    cell_pop = property(_sampleAggregator('cell_pop'))
+    tissue_type = property(_sampleAggregator('tissue_type'))
+    strain = property(_sampleAggregator('strain'))
+    condition = property(_sampleAggregator('condition'))
+    disease_state = property(_sampleAggregator('disease_state'))
 
     #FileFields
     peak_file = models.FileField(upload_to=upload_factory("peak"),
