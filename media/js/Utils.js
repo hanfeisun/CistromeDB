@@ -58,3 +58,11 @@ function getattr(obj, field, debug) {
     }
     return curr;
 }
+
+function inspect(obj) {
+    var flds = "";
+    for (x in obj) {
+	flds += x + "\n";
+    }
+    return flds;
+}
