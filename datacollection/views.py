@@ -1362,10 +1362,10 @@ def factors_view(request):
                             #NEED to make a copy of _paperFldsToPull
                             d._meta._virtualfields = list(_paperFldsToPull)
                             for fld in d._meta._virtualfields:
-                                if d.paper and getattr(d.paper, f):
+                                if d.paper and getattr(d.paper, fld):
                                     setattr(d, fld, getattr(d.paper, fld))
                                 else:
-                                    setattr(d, f, None)
+                                    setattr(d, fld, None)
                             #NOTE: since unique_id is a fld in both papers and
                             #samples, we don't want to clobber the samples val
                             if d.paper and d.paper.unique_id:
