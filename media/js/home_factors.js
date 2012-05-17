@@ -1,7 +1,7 @@
 var FactorsTabModel = ModelFactory(["factors", "factorsList", "models", 
-				    "dsets", "currTd", 'currSearchTerm'], []);
+				    "samples", "currTd", 'currSearchTerm'],[]);
 var factorsModel = new FactorsTabModel({'factors':null, 'factorsList':null,
-					'models':null, 'dsets':null, 
+					'models':null, 'samples':null, 
 					'currTd':null, 'currSearchTerm':null});
 var allFactors = [];
 //NOTE: this is a global defined in home.js
@@ -57,7 +57,7 @@ function init_factors() {
     var factorInfoView = 
 	new FactorInfoView($('factorInfo'), factorsModel);
 
-    factorsModel.dsetsEvent.register(function() { factorsTableView.makeHTML();});
+    factorsModel.samplesEvent.register(function() { factorsTableView.makeHTML();});
     factorsModel.currTdEvent.register(function() { factorInfoView.makeHTML();});
 
     var drawBtn = $('drawBtn');
@@ -83,7 +83,7 @@ function init_factors() {
 	    var resp = eval("("+req.responseText+")");
 	    factorsModel.setFactors(resp.factors);
 	    factorsModel.setModels(resp.models);
-	    factorsModel.setDsets(resp.dsets);
+	    factorsModel.setSamples(resp.samples);
 	    //CLEAR the factorInfoView
 	    factorInfoView.clearHTML();
 	}
@@ -134,7 +134,7 @@ function FactorsTableView(container, model, factorsAsRow) {
 	outer.container.innerHTML = "";
 	var factors = outer.model.getFactors();
 	var mnames = outer.model.getModels();
-	var dsets = outer.model.getDsets();
+	var samples = outer.model.getSamples();
 
 	var fields = (outer.factorsAsRow)? [mnames,factors]:[factors,mnames];
 	//BUILD the table!
@@ -153,11 +153,11 @@ function FactorsTableView(container, model, factorsAsRow) {
 		var found = false;
 		//find the first factor that hits
 		for (var f = 0; f < factors.length && !found; f++) {
-		    if (dsets[factors[f]][mnames[i]] && 
-			dsets[factors[f]][mnames[i]].length > 0) {
+		    if (samples[factors[f]][mnames[i]] && 
+			samples[factors[f]][mnames[i]].length > 0) {
 			found = true;
 			//TAKE THE FIRST SPECIES-- this seems to be ok!
-			var foo =eval("("+dsets[factors[f]][mnames[i]][0]+")");
+			var foo=eval("("+samples[factors[f]][mnames[i]][0]+")");
 			spec = foo.species.id;
 			if (spec && spec == 1) { //Human - Blue
 			    th.style.backgroundColor = "#424da4";
@@ -184,19 +184,19 @@ function FactorsTableView(container, model, factorsAsRow) {
 		td = $D('td', {'className':'no_r2td'});
 		var m = (outer.factorsAsRow)? mnames[j]:mnames[i];
 		var fact = (outer.factorsAsRow)? factors[i]:factors[j];
-		if (dsets[fact] && dsets[fact][m]) {
+		if (samples[fact] && samples[fact][m]) {
 		    //add to species list
-		    if (dsets[fact][m].length > 0) {
+		    if (samples[fact][m].length > 0) {
 			//TAKE THE FIRST SPECIES-- this seems to be ok!
-			var foo =eval("("+dsets[fact][m][0]+")");
+			var foo =eval("("+samples[fact][m][0]+")");
 			spec = foo.species.id;
 		    }
 
-		    td.innerHTML = dsets[fact][m].length;
+		    td.innerHTML = samples[fact][m].length;
 		    //NICE TRICK!
 		    td["_data"] = {'factor':fact,
 				   'mname': m,
-				   'dsets': dsets[fact][m]};
+				   'samples': samples[fact][m]};
 		    
 		    td.onclick = function(t) {
 			return function(event) {
@@ -274,23 +274,23 @@ function FactorInfoView(container, model) {
 	//make the table:
 	
 	var tbl = $D('table');
-	for (var i = 0; i < data.dsets.length; i++) {
+	for (var i = 0; i < data.samples.length; i++) {
 	    //NOTE: when we do our trick, by storing the data in the dom el
 	    //IT gets stored as a string....to get the jscript back we have to
 	    //evaluate the string
-	    var dset = eval("("+data.dsets[i]+")");
+	    var sample = eval("("+data.samples[i]+")");
 	    var tr = $D('tr');
 	    var td1 = $D('td');
 
-	    if (dset.pmid) {
+	    if (sample.pmid) {
 		var span = $D('span', {innerHTML:'reference:',className:'label'});		      
 		td1.appendChild(span);
 		var p = $D('p', {className:'reference'});
 		
 		//CLEAN REFERENCE: double dots
 		var ref = "";
-		if (dset.reference) {
-		    var refAr = dset.reference.split(".");
+		if (sample.reference) {
+		    var refAr = sample.reference.split(".");
 		    for (var jj = 0; jj < refAr.length; jj++) {
 			//alert("$"+refAr[jj].strip()+"#");
 			if (refAr[jj].strip().length != 0) {
@@ -300,7 +300,7 @@ function FactorInfoView(container, model) {
 		}
 
 
-		var newA = $D('a',{innerHTML:ref, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+dset.pmid, target:"_blank"});
+		var newA = $D('a',{innerHTML:ref, href:'http://www.ncbi.nlm.nih.gov/pubmed?term='+sample.pmid, target:"_blank"});
 		p.appendChild(newA);
 		td1.appendChild(p);
 		//td1.appendChild($D('br'));
@@ -317,11 +317,11 @@ function FactorInfoView(container, model) {
 		tr.style.borderTop = "0px";
 	    } else { //PMID is null; may be 1. ENCODE OR 2. unpublished paper
 		//hack for ENCODE data
-		if (dset.reference && dset.reference.match(/ENCODE.*/)) {
+		if (sample.reference && sample.reference.match(/ENCODE.*/)) {
 		    var span = $D('span', {innerHTML:'reference:',className:'label'});
 		    td1.appendChild(span);
 		    
-		    span = $D('span', {innerHTML:dset.reference, className:'value2'});
+		    span = $D('span', {innerHTML:sample.reference, className:'value2'});
 		    td1.appendChild(span);
 		    //td1.appendChild($D('br'));
 		    //MAKING the reference line span the columns
@@ -341,7 +341,7 @@ function FactorInfoView(container, model) {
 		    td1.appendChild(span);
 		    span = $D('span', {className:'value2'});
 		    //NOTE: 1 = human, 2 = mouse
-		    var href = (dset.species.id == 1) ? "http://genome.ucsc.edu/ENCODE/downloads.html" : "http://genome.ucsc.edu/ENCODE/downloadsMouse.html";
+		    var href = (sample.species.id == 1) ? "http://genome.ucsc.edu/ENCODE/downloads.html" : "http://genome.ucsc.edu/ENCODE/downloadsMouse.html";
 		    span.appendChild($D('a', {innerHTML:'ENCODE Link', href:href, target:'_blank'}));
 		    td1.appendChild(span);
 		    td1.appendChild($D('br'));
@@ -358,28 +358,28 @@ function FactorInfoView(container, model) {
 	    }
 
 	    //LEN- THIS IS IN FLUX! 2012-05-08
-	    if (dset.paper_unique_id || dset.unique_id) {
+	    if (sample.paper_unique_id || sample.unique_id) {
 		var span = $D('span', {innerHTML:'data:',className:'label'});
 		td1.appendChild(span);
-		if (dset.paper_unique_id && 
-		    !dset.paper_unique_id.match(/SRA.*/)) {
+		if (sample.paper_unique_id && 
+		    !sample.paper_unique_id.match(/SRA.*/)) {
 		    span = $D('span', {className:'value2'});
-		    var newA = $D('a',{innerHTML:dset.paper_unique_id, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.paper_unique_id, target:"_blank"});
+		    var newA = $D('a',{innerHTML:sample.paper_unique_id, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+sample.paper_unique_id, target:"_blank"});
 		    span.appendChild(newA);
 		    td1.appendChild(span);
 		    //space
 		    td1.appendChild($D('span',{innerHTML:' '}));
 		}
 
-		if (dset.unique_id){
-		    if (dset.unique_id.match(/.RX.*/)) {
+		if (sample.unique_id){
+		    if (sample.unique_id.match(/.RX.*/)) {
 			span = $D('span', {className:'value2'});
-			var newA = $D('a',{innerHTML:dset.unique_id, href:'http://sra.dnanexus.com/experiments/'+dset.unique_id, target:"_blank"});
+			var newA = $D('a',{innerHTML:sample.unique_id, href:'http://sra.dnanexus.com/experiments/'+sample.unique_id, target:"_blank"});
 			span.appendChild(newA);
 			td1.appendChild(span);		    
 		    } else {
 			span = $D('span', {className:'value2'});
-			var newA = $D('a',{innerHTML:dset.unique_id, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+dset.unique_id, target:"_blank"});
+			var newA = $D('a',{innerHTML:sample.unique_id, href:'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+sample.unique_id, target:"_blank"});
 			span.appendChild(newA);
 			td1.appendChild(span);
 		    }
@@ -388,10 +388,10 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('br'));
 	    }
 
-	    if (dset.authors) {
+	    if (sample.authors) {
 		var span = $D('span', {innerHTML:'last author:',className:'label'});
 		td1.appendChild(span);
-		var authors = dset.authors.split(",");
+		var authors = sample.authors.split(",");
 		span = $D('span', {innerHTML:authors[authors.length - 1], className:'value2'});
 		td1.appendChild(span);
 		td1.appendChild($D('br'));
@@ -404,13 +404,13 @@ function FactorInfoView(container, model) {
 			  'cell_type', 'cell_pop', 'strain', 'disease_state'];
 	    var td2 = $D('td');
 	    for (var j = 0; j < fields.length; j++) {
-		if (dset[fields[j]] && dset[fields[j]].name) {
+		if (sample[fields[j]] && sample[fields[j]].name) {
 		    //replace underscores in the name
 		    var fldName = fields[j].replace("_", " ");
 
 		    td2.appendChild($D('span', {innerHTML:fldName+':',
 				    className:'label'}));
-		    td2.appendChild($D('span', {innerHTML:dset[fields[j]].name, className:'value2'}));
+		    td2.appendChild($D('span', {innerHTML:sample[fields[j]].name, className:'value2'}));
 		    td2.appendChild($D('br'));
 		}
 	    }
