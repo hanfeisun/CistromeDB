@@ -2,10 +2,10 @@
 //home_factors.js.  So you must make sure that you include that file afore this
 
 //NOTE: CellsTabModel is duplicate of FactorsTabModel
-var CellsTabModel = ModelFactory(["factors", "cellsList", "models", "samples", 
+var CellsTabModel = ModelFactory(["factors", "cellsList", "models", "dsets", 
 				  "currTd", "currSearchTerm"], []);
 var cellsModel = new CellsTabModel({'factors':null, 'cellsList':null, 
-				    'models':null, 'samples':null, 
+				    'models':null, 'dsets':null, 
 				    'currTd':null, 'currSearchTerm':null});
 var allCells = [];
 var cells_msg = msg;
@@ -71,7 +71,7 @@ function init_cells() {
 	new FactorsTableView($('cellsFactorsTable'), cellsModel, true);
     var cellsFactorInfoView = 
 	new FactorInfoView($('cellsFactorInfo'), cellsModel);
-    cellsModel.samplesEvent.register(function() { cellsFactorsTableView.makeHTML();});
+    cellsModel.dsetsEvent.register(function() { cellsFactorsTableView.makeHTML();});
     cellsModel.currTdEvent.register(function() { cellsFactorInfoView.makeHTML();});
 
     var cellsDrawBtn = $('cellsDrawBtn');
@@ -93,7 +93,7 @@ function init_cells() {
 	    var resp = eval("("+req.responseText+")");
 	    cellsModel.setFactors(resp.factors);
 	    cellsModel.setModels(resp.models);
-	    cellsModel.setSamples(resp.samples);
+	    cellsModel.setDsets(resp.dsets);
 	    //CLEAR the factorInfoView
 	    cellsFactorInfoView.clearHTML();
 	}

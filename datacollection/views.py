@@ -1324,13 +1324,13 @@ def factors_view(request):
             if res:
                 #track what's added
                 for r in res:
-                    if r.model is models.Samples:
+                    if r.model is models.Datasets:
                         restrictSetIds.append(r.object.id)
                     else: #it's a paper
-                        samples = models.Samples.objects.filter(paper=r.object)
-                        for s in samples:
-                            if s.id not in restrictSetIds:
-                                restrictSetIds.append(s.id)
+                        dsets = models.Datasets.objects.filter(paper=r.object)
+                        for d in dsets:
+                            if d.id not in restrictSetIds:
+                                restrictSetIds.append(d.id)
         
         for f in factors:
             #track samples, to ensure no duplicates within factors.
@@ -1357,8 +1357,6 @@ def factors_view(request):
                         for d in tmp:
                             allDsets.append(d.id)
                             #Optimization: not jsonifying the papers
-                            #NEED to make a copy of _paperFldsToPull
-                            #d._meta._virtualfields = list(_paperFldsToPull)
                             for fld in _paperFldsToPull:
                                 if d.paper and getattr(d.paper, fld):
                                     setattr(d, fld, getattr(d.paper, fld))
@@ -1381,7 +1379,7 @@ def cells_view(request):
     tissuetype ids, and returns 
     information to fill out the factors view.  
     """
-    def partition(smps):
+    def partition(ds):
         """given a set of samples, returns a 4-tuple, indicating which 
         cell_lines, cellpops, cell_type, and tissue type are represented in
         the samples"""
@@ -1389,9 +1387,11 @@ def cells_view(request):
         (cls, cps, cts, tts) = ([],[],[],[])
         ls = [(cls, "cell_line"), (cps, "cell_pop"), (cts, "cell_type"),
               (tts, "tissue_type")]
-        for s in smps:
+        for d in ds:
+            #MUST use the first treatment Sample to get this info
+            s = d.treats.all()
             for (lst, fld) in ls:
-                val = getattr(s, fld)
+                val = getattr(s[0], fld)
                 if val and val not in lst:
                     lst.append(val)
         return (cls, cps, cts, tts)
@@ -1420,78 +1420,69 @@ def cells_view(request):
             if res:
                 #track what's added
                 for r in res:
-                    if r.model is models.Samples:
+                    if r.model is models.Datasets:
                         restrictSetIds.append(r.object.id)
                     else: #it's a paper
-                        samples = models.Samples.objects.filter(paper=r.object)
-                        for s in samples:
-                            if s.id not in restrictSetIds:
-                                restrictSetIds.append(s.id)
+                        dsets = models.Datasets.objects.filter(paper=r.object)
+                        for d in dsets:
+                            if d.id not in restrictSetIds:
+                                restrictSetIds.append(d.id)
 
         #NOTE: the user can only select 1 cell--we use that to our advantage!
         (m, cid) = request.GET['cells'].split(",")
-        params = {_Mapping[m]:cid}
-        samples = models.Samples.objects.filter(**params)
-        (cls, cps, cts, tts) = partition(samples)
+        params = {"treats__"+_Mapping[m]:cid}
+        dsets = models.Datasets.objects.filter(**params)
+        (cls, cps, cts, tts) = partition(dsets)
         
         if not restrictSetIds:
             #if not using a restriction set, then all of the dset ids is ok!
-            restrictSetIds = [s.id for s in samples]
+            restrictSetIds = [d.id for d in dsets]
  
         #assign the datasets to each partition, starting with cls, until we 
         #exhaust the list
-        allSamples = [] #this is to track that we're not adding duplicates
+        allDsets = [] #this is to track that we're not adding duplicates
         for (ls, fld) in [(cls, "cell_line"), (cps, "cell_pop"),
                           (cts, "cell_type"), (tts, "tissue_type")]:
             for c in ls:
-                params = {fld:c}
-                tmp = samples.filter(**params)
-                for s in tmp:
-                    if s.id not in allSamples and s.id in restrictSetIds:
-                        if s.species:
+                params = {"treats__"+fld:c}
+                tmp = dsets.filter(**params)
+                for d in tmp:
+                    if d.id not in allDsets and d.id in restrictSetIds:
+                        if d.species:
                             #Optimization: not jsonifying the papers
-                            #NEED to make a copy of _paperFldsToPull
-                            s._meta._virtualfields = list(_paperFldsToPull)
-                            for f in s._meta._virtualfields:
-                                if s.paper and getattr(s.paper, f):
-                                    setattr(s, f, getattr(s.paper, f))
+                            for f in _paperFldsToPull:
+                                if d.paper and getattr(d.paper, f):
+                                    setattr(d, f, getattr(d.paper, f))
                                 else:
-                                    setattr(s, f, None)
-                            #NOTE: since unique_id is a fld in both papers and
-                            #samples, we don't want to clobber the samples val
-                            if s.paper and s.paper.unique_id:
-                                setattr(s, "paper_unique_id", 
-                                        getattr(s.paper, "unique_id"))
-                            else:
-                                s.paper_unique_id = None
-                            s._meta._virtualfields.append("paper_unique_id")
-                            s.paper = None
+                                    setattr(d, f, None)
+                            d._meta._virtualfields.extend(_paperFldsToPull)
+                            d.paper = None
 
-                            allSamples.append(s.id)
-                            if s.factor.name not in fnames:
-                                fnames.append(s.factor.name)
-                            val = getattr(s, fld)
+                            allDsets.append(d.id)
+                            if d.factor not in fnames:
+                                fnames.append(d.factor)
+                            val = getattr(d, fld)
                             #key to organize the data: cell*_name + species
                             #before it was orgKey=val.name
-                            specKey = "h" if s.species.id == 1 else "m"
-                            orgKey = "%s(%s)" % (val.name, specKey)
+                            specKey = "h" if d.species == "Homo sapiens" else "m"
+                            orgKey = "%s(%s)" % (val, specKey)
                             if orgKey not in mnames:
                                 mnames.append(orgKey)
                             
-                            if s.factor.name not in ret:
-                                ret[s.factor.name] = {}
+                            if d.factor not in ret:
+                                ret[d.factor] = {}
                         
-                            if orgKey not in ret[s.factor.name]:
-                                ret[s.factor.name][orgKey] = []
-                            ret[s.factor.name][orgKey].append(jsrecord.views.jsonify(s))
+                            if orgKey not in ret[d.factor]:
+                                ret[d.factor][orgKey] = []
+                            ret[d.factor][orgKey].append(jsrecord.views.jsonify(d))
                         else: 
-                            #SKIPPING BAD samples! 
-                            #add to allSamples w/o adding to ret
-                            allSamples.append(s.id)
-            #once allSamples == samples, we can return
-            if len(allSamples) == len(samples):
+                            #SKIPPING BAD dsets! 
+                            #add to allDsets w/o adding to ret
+                            allDsets.append(d.id)
+            #once allDsets == dsets, we can return
+            if len(allDsets) == len(dsets):
                 break;
-        resp = "{'factors': %s, 'models': %s, 'samples': %s}" % \
+        resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % \
             (json.dumps(sorted(fnames)), \
                  json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), \
                  json.dumps(ret))
