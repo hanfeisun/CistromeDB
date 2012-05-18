@@ -1301,7 +1301,7 @@ def factors_view(request):
     _hashTAG = "####SEARCH_FACTORS####"
     #NOTE: we are not jsonifying papers for efficiency sake!
     #but we need to pull the following fields from it--see how we do this below
-    _paperFldsToPull = ["pmid", "authors", "last_auth_email", #"unique_id", 
+    _paperFldsToPull = ["pmid", "authors", "last_auth_email", "unique_id", 
                         "reference"]
     _timeout = 60*60*24 #1 day
     ret = {}
@@ -1334,49 +1334,43 @@ def factors_view(request):
         
         for f in factors:
             #track samples, to ensure no duplicates within factors.
-            allSamples = []
+            allDsets = []
             if f.name not in ret:
                 ret[f.name] = {}
 
-            for (sampleFld, model) in _MODELS:
+            for (dsetFld, model) in _MODELS:
                 for m in model.objects.all():
                     #build it up
-                    params = {'factor':f, sampleFld:m}
+                    #NOTE: the treats fld is the ManyToMany field
+                    params = {'treats__factor':f, "treats__"+dsetFld:m}
                     #NOTE: we have to pass in the param as a **
-                    tmp = models.Samples.objects.filter(**params)
+                    tmp = models.Datasets.objects.filter(**params)
                     if restrictSetIds:
-                        tmp = [s for s in tmp if s.id not in allSamples\
-                                   and s.id in restrictSetIds]
+                        tmp = [d for d in tmp if d.id not in allDsets\
+                                   and d.id in restrictSetIds]
                     else:
-                        tmp = [s for s in tmp if s.id not in allSamples]
+                        tmp = [d for d in tmp if d.id not in allDsets]
                     
                     if tmp:
                         if m.name not in mnames:
                             mnames.append(m.name)
-                        for s in tmp:
-                            allSamples.append(s.id)
+                        for d in tmp:
+                            allDsets.append(d.id)
                             #Optimization: not jsonifying the papers
                             #NEED to make a copy of _paperFldsToPull
-                            s._meta._virtualfields = list(_paperFldsToPull)
-                            for fld in s._meta._virtualfields:
-                                if s.paper and getattr(s.paper, fld):
-                                    setattr(s, fld, getattr(s.paper, fld))
+                            #d._meta._virtualfields = list(_paperFldsToPull)
+                            for fld in _paperFldsToPull:
+                                if d.paper and getattr(d.paper, fld):
+                                    setattr(d, fld, getattr(d.paper, fld))
                                 else:
-                                    setattr(s, fld, None)
-                            #NOTE: since unique_id is a fld in both papers and
-                            #samples, we don't want to clobber the samples val
-                            if s.paper and s.paper.unique_id:
-                                setattr(s, "paper_unique_id", 
-                                        getattr(s.paper, "unique_id"))
-                            else:
-                                s.paper_unique_id = None
-                            s._meta._virtualfields.append("paper_unique_id")
-                            s.paper = None
+                                    setattr(d, fld, None)
+                            d._meta._virtualfields.extend(_paperFldsToPull)
+                            d.paper = None
 
-                        samples = [jsrecord.views.jsonify(s) for s in tmp]
-                        ret[f.name][m.name] = samples
+                        dsets = [jsrecord.views.jsonify(d) for d in tmp]
+                        ret[f.name][m.name] = dsets
 
-            resp = "{'factors': %s, 'models': %s, 'samples': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
+            resp = "{'factors': %s, 'models': %s, 'dsets': %s}" % (json.dumps(fnames), json.dumps(sorted(mnames, cmp=lambda x,y: cmp(x.lower(), y.lower()))), json.dumps(ret))
 
         return HttpResponse(resp)
 

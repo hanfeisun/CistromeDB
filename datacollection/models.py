@@ -264,28 +264,21 @@ class Datasets(DCModel):
             so this fn returns the first valid %s--otherwise None""" % \
                 (sample_field, sample_field)
             val = None
-            if self.treatments:
-                tmp = self.treatments.split(",")
-                if tmp: #Try to set it to first treatment
-                    try:
-                        s = Samples.objects.get(pk=tmp[0])
-                        val = getattr(s, sample_field)
-                    except Exception as ignored: #ERR: tmp[0] is GSMID!
-                        pass
-            elif self.controls:
-                tmp = self.controls.split(",")
-                if tmp: #Try first control
-                    try:
-                        s = Samples.objects.get(pk=tmp[0])
-                        val = getattr(s, sample_field)
-                    except Exception as ignored: #ERR: tmp[0] is GSMID!
-                        pass
-            return val
+            if self.treats:
+                if self.treats.all():
+                    val = getattr(self.treats.all()[0], sample_field)
+            elif self.conts:
+                if self.conts.all():
+                    val = getattr(self.conts.all()[0], sample_field)
+            if val:
+                return val.name
+            else:
+                return val
         return nameless
 
     #user = the person curated/created the dataset
     user = models.ForeignKey(User, null=True, blank=True, default=None)
-    paper = models.ForeignKey('Papers')
+    paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
 
     treats = models.ManyToManyField('Samples', related_name="treatments")
     conts = models.ManyToManyField('Samples', related_name="controls")
@@ -378,6 +371,11 @@ class Datasets(DCModel):
          return "%s::%s" % (",".join(treat), ",".join(control))
 
 Datasets._meta._donotSerialize = ['user']
+Datasets._meta._virtualfields = ['factor', 'platform', 'species', 
+                                 'assembly', 'cell_type', 'cell_line', 
+                                 'cell_pop', 'tissue_type', 'strain', 
+                                 'condition', 'disease_state', 
+                                 ]
 
 class Samples(DCModel):
     """a table to store all of the sample information: a sample is a
