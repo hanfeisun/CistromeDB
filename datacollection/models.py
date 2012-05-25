@@ -303,53 +303,53 @@ class Datasets(DCModel):
 
     #FileFields
     peak_file = models.FileField(upload_to=upload_factory("peak"),
-                                 null=True, blank=True)
+                                 null=True, blank=True, max_length=1024)
     peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
-                                     null=True, blank=True)
+                                     null=True, blank=True, max_length=1024)
     summit_file = models.FileField(upload_to=upload_factory("summit"),
-                                   null=True, blank=True)
+                                   null=True, blank=True, max_length=1024)
         
     treat_bw_file = models.FileField(upload_to=upload_factory("bw"),
-                                     null=True, blank=True)
+                                     null=True, blank=True, max_length=1024)
     cont_bw_file = models.FileField(upload_to=upload_factory("bw"),
-                                    null=True, blank=True)
+                                    null=True, blank=True, max_length=1024)
     
     conservation_file = models.FileField(upload_to=upload_factory("conservation"),
-                                    null=True, blank=True)
+                                    null=True, blank=True, max_length=1024)
     conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
-                                      null=True, blank=True)
+                                      null=True, blank=True, max_length=1024)
     ceas_file = models.FileField(upload_to=upload_factory("ceas"),
-                                 null=True, blank=True)
+                                 null=True, blank=True, max_length=1024)
     ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
-                                   null=True, blank=True)
+                                   null=True, blank=True, max_length=1024)
     ceas_xls_file = models.FileField(upload_to=upload_factory("ceas"),
-                                     null=True, blank=True)
+                                     null=True, blank=True, max_length=1024)
     
     venn_file = models.FileField(upload_to=upload_factory("venn"),
-                                 null=True, blank=True)
+                                 null=True, blank=True, max_length=1024)
     seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
-                                   null=True, blank=True)
+                                   null=True, blank=True, max_length=1024)
     rep_treat_bw = models.CharField( null=True, blank=True, default ="", max_length=1024)
     rep_treat_peaks = models.CharField( null=True, blank=True, default ="",max_length=1024)
     rep_treat_summits = models.CharField( null=True, blank=True, default ="",max_length=1024)
     rep_cont_bw = models.CharField( null=True, blank=True, default ="",max_length=1024)
     cor_pdf_file = models.FileField(upload_to=upload_factory("cor"),
-                                    null=True, blank=True)
+                                    null=True, blank=True, max_length=1024)
     cor_r_file = models.FileField(upload_to=upload_factory("cor"),
-                                  null=True, blank=True)
+                                  null=True, blank=True, max_length=1024)
     
     #adding meta files
     conf_file = models.FileField(upload_to=upload_factory("meta"),
-                                 null=True, blank=True)
+                                 null=True, blank=True, max_length=1024)
     log_file = models.FileField(upload_to=upload_factory("meta"),
-                                 null=True, blank=True)
+                                 null=True, blank=True, max_length=1024)
     summary_file = models.FileField(upload_to=upload_factory("meta"),
-                                    null=True, blank=True)
+                                    null=True, blank=True, max_length=1024)
         
     #NOTE: even though dhs stats are saved in a table, we're going to store it
     #in meta
     dhs_file = models.FileField(upload_to=upload_factory("meta"),
-                                null=True, blank=True)
+                                null=True, blank=True, max_length=1024)
 
     date_created = models.DateTimeField(blank=True, null=True, default=None)
 
@@ -411,11 +411,11 @@ class Samples(DCModel):
      #RAW FILES assoc. w/ sample--i.e. FASTQ, and then when aligned --> BAM;
      #DELETE fastq when bam is generated
     fastq_file = models.FileField(upload_to=upload_factory("fastq"),
-                                  null=True, blank=True)
+                                  null=True, blank=True, max_length=1024)
     fastq_file_url = models.URLField(max_length=255,
                                      null=True, blank=True)
     bam_file = models.FileField(upload_to=upload_factory("bam"),
-                                null=True, blank=True)
+                                null=True, blank=True, max_length=1024)
 
      #META information
     factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
