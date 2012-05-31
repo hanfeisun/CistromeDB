@@ -1364,6 +1364,13 @@ def factors_view(request):
                                     setattr(d, fld, None)
                             d._meta._virtualfields.extend(_paperFldsToPull)
                             d.paper = None
+                            #ADD the qc fields
+                            qc = models.Qc.objects.get(id=d.id)
+                            #Init to NA
+                            d.qc = ['NA' for i in range(1, 11)]
+                            for i in range(1,11):
+                                d.qc[i -1] = getattr(qc, "qc%s" % i)
+                            d._meta._virtualfields.append('qc')
 
                         dsets = [jsrecord.views.jsonify(d) for d in tmp]
                         ret[f.name][m.name] = dsets
@@ -1457,6 +1464,15 @@ def cells_view(request):
                                     setattr(d, f, None)
                             d._meta._virtualfields.extend(_paperFldsToPull)
                             d.paper = None
+
+                            #ADD the qc fields
+                            qc = models.Qc.objects.get(id=d.id)
+                            #Init to NA
+                            d.qc = ['NA' for i in range(1, 11)]
+                            for i in range(1,11):
+                                d.qc[i -1] = getattr(qc, "qc%s" % i)
+                            d._meta._virtualfields.append('qc')
+
 
                             allDsets.append(d.id)
                             if d.factor not in fnames:

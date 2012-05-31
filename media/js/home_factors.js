@@ -397,6 +397,20 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('br'));
 	    }
 
+	    //ADD the QC measures!
+	    if (dset['qc']) {
+		td1.appendChild($D('span',{innerHTML:'QC:',className:'label'}));
+		td1.appendChild($D('br'));
+		for (var j = 0; j < dset['qc'].length; j++) {
+		    td1.appendChild($D('span', {innerHTML:'QC'+(j+1)+':',
+				    className:'label'}));
+		    td1.appendChild($D('span', {innerHTML:dset['qc'][j],
+						className:'value2'}));
+		    td1.appendChild($D('br'));
+
+		}
+	    }
+
 	    tr.appendChild(td1);
 
 	    //other info
@@ -415,6 +429,7 @@ function FactorInfoView(container, model) {
 		    td2.appendChild($D('br'));
 		}
 	    }
+
 	    //Dump the files! in a new row
 	    var group1 = [['peak_file','peak file'], 
 			  ['peak_xls_file', 'peak xls file'], 
