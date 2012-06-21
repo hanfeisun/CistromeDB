@@ -100,7 +100,7 @@ def home(request):
     currpage = "home"
 
     papers = models.Papers.objects.order_by('-date_collected')[:10]
-    factors = models.Factors.objects.all().order_by('name')
+    factors = models.Factors.objects.all().extra(select={'upper_name':'upper(name)'}).order_by('upper_name');
 
     #build cells
     cells = []
@@ -108,7 +108,7 @@ def home(request):
                      (models.CellTypes, "ct"), (models.TissueTypes, "tt")]:
         tmp = [(ann, c) for c in m.objects.all()]
         cells.extend(tmp)
-    cells = sorted(cells, key=lambda x: x[1].name)
+    cells = sorted(cells, key=lambda x: x[1].name.upper())
 
     #remove control factors
     _removeList = ['Control', 'gfp', 'IgG', 'RevXlinkChromatin', 'Input']
