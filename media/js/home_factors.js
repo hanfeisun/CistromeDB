@@ -450,7 +450,7 @@ function FactorInfoView(container, model) {
 		    td2.appendChild($D('span', {innerHTML:fldName+':',
 				    className:'label'}));
 		    //td2.appendChild($D('span', {innerHTML:'view', className:'value2'}));
-		    var a = $D('a', {innerHTML:'download', href:"static"+dset[group1[j][0]]});
+		    var a = $D('a', {innerHTML:'download', href:"static/data/"+dset[group1[j][0]]});
 		    var sp = $D('span', {className:'value2'});
 		    sp.appendChild(a)
 		    td2.appendChild(sp)
