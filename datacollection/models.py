@@ -172,9 +172,9 @@ class Papers(DCModel):
     def _get_lab(self):
         """Returns the last author in the authors list"""
         try:
-            return smart_str(self.authors.split(",")[-1:][0])
+            return smart_str(self.authors.split(",")[-1:][0]).strip()
         except:
-            return smart_str(self.authors)
+            return smart_str(self.authors).strip()
 
     lab = property(_get_lab)
     
