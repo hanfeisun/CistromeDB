@@ -398,12 +398,24 @@ function FactorInfoView(container, model) {
 	    }
 
 	    //ADD the QC measures!
+	    var qc_names = [['reads','Reads QC: Pass if > 5M unique reads'], 
+			    ['model','Model QC: Pass if Model and d>2*tag size'], 
+			    ['folds', 'Folds QC: The ratio of peaks\' fold change > 20. We use 50% as cutoff to say whether it works or not.'], 
+			    ['fdr', 'Fdr QC: Pass if > 500 peaks with q=0.01 cutoff'],
+			    ['replic.',  'Replicate QC: Pass if wig corr> 0.6'],
+			    ['DNase','DNase QC: Pass if overlap> 80%'], 
+			    ['velcro', 'Velcro QC: Pass if peaks overlap velcro region/ all peaks. less than 10%'],
+			    ['conserv', 'Conservation QC: Pass by inspecting plot'],
+			    ['ceas', 'Ceas QC: depends on what kind of TF or histone mark, should be enriched at different region'],
+			    ['motif','Motif QC: Pass if known motif within top 5 and zscore < -15 (from top 1K peaks)']];
+
 	    if (dset['qc']) {
 		td1.appendChild($D('span',{innerHTML:'QC:',className:'label'}));
 		td1.appendChild($D('br'));
 		for (var j = 0; j < dset['qc'].length; j++) {
-		    td1.appendChild($D('span', {innerHTML:'QC'+(j+1)+':',
-				    className:'label'}));
+		    var zzz = $D('span', {innerHTML:'QC'+(j+1)+' ('+qc_names[j][0]+'):', title:qc_names[j][1], className:'label'});
+		    zzz.onmouseover = function(){this.style.cursor="pointer"}
+		    td1.appendChild(zzz);
 		    td1.appendChild($D('span', {innerHTML:dset['qc'][j],
 						className:'value2'}));
 		    td1.appendChild($D('br'));
