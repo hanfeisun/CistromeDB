@@ -442,26 +442,29 @@ function FactorInfoView(container, model) {
 
 	    //TD2 = dataset files!
 	    var td2 = $D('td');
-	    //Dump the files! in a new row
-	    var group1 = [['peak_file','peak file'], 
-			  ['peak_xls_file', 'peak xls file'], 
-			  ['summit_file', 'summit file'],
-			  ['treat_bw_file', 'treatment big wig'],
-			  ['cont_bw_file', 'control big wig'],
-			  ['conservation_file', 'conservation file'],
-			  ['ceas_file', 'ceas file'],
-			  ['venn_file', 'venn diagram'],
-			  ['seqpos_file', 'motif'],
-			  ['cor_pdf_file', 'correlation'],
+	    //Dump the files! in a new row--[field, name, is viewable?]
+	    var group1 = [['peak_file','peak file', null], 
+			  ['peak_xls_file', 'peak xls file', null], 
+			  ['summit_file', 'summit file', null],
+			  ['treat_bw_file', 'treatment big wig', null],
+			  ['cont_bw_file', 'control big wig', null],
+			  ['conservation_file', 'conservation file', true],
+			  ['ceas_file', 'ceas file', true],
+			  ['venn_file', 'venn diagram', true],
+			  ['seqpos_file', 'motif', null],
+			  ['cor_pdf_file', 'correlation', true],
 			 ]
 	    for (var j = 0; j < group1.length; j++) {
 		if (dset[group1[j][0]]) {
 		    //replace underscores in the name
-		    var fldName = group1[j][1]
-
+		    var fldName = group1[j][1];
+		    var viewable = group1[j][2];
 		    td2.appendChild($D('span', {innerHTML:fldName+':',
 				    className:'label'}));
-		    //td2.appendChild($D('span', {innerHTML:'view', className:'value2'}));
+		    if (viewable) {
+			td2.appendChild($D('a', {innerHTML:'view', href:"static/data/"+dset[group1[j][0]], target:"_blank"}));
+			td2.appendChild($D('span', {innerHTML:' '}));
+		    }
 		    var a = $D('a', {innerHTML:'download', href:"static/data/"+dset[group1[j][0]]});
 		    var sp = $D('span', {className:'value2'});
 		    sp.appendChild(a)
