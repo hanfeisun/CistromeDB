@@ -1,7 +1,7 @@
 {% extends "datacollection/login_base.html" %}
 {% load dc_extras %}
 
-{% block title %}CistromeMap - Help{% endblock %}
+{% block title %}CistromeDC - Help{% endblock %}
 {% block include %}
 <link href="{% url static_url %}css/help.css" rel="stylesheet" type="text/css"/>
 <!--
@@ -17,16 +17,16 @@ onload="init();"
 
 {% block content %}
   <header>
-    <h3>CistromeMap Help:</h3>
+    <h3>CistromeDC Help:</h3>
   </header>
   <p>
-    <span class="label">About CistromeMap</span>
-    <span class="value">CistromeMap is a comprehensive knowledgebase of all of the publicly available ChIP-Seq and DNase-Seq data in mouse and human. We have also manually curated metadata to ensure annotation consistency, and developed a user-friendly display matrix for quick navigation and retrieval of data for specific factors, cells, and papers.
+    <span class="label">About CistromeDC</span>
+    <span class="value">CistromeDC is a comprehensive knowledgebase of all of the publicly available ChIP-Seq and DNase-Seq data in mouse and human. We have also manually curated metadata to ensure annotation consistency, and developed a user-friendly display matrix for quick navigation and retrieval of data for specific factors, cells, and papers.
     </span>
   </p>
   <p>
-    <span class="label">How to use CistromeMap: Overview</span>
-    <span class="value">There are three main tabs on the CistromeMap homepage: Factors View, Cells View, and Papers View.<br/><br/>
+    <span class="label">How to use CistromeDC: Overview</span>
+    <span class="value">There are three main tabs on the CistromeDC homepage: Factors View, Cells View, and Papers View.<br/><br/>
     </span>
     <span class="value">In the Factors View you can select a factor or factors of interest and can retrieve information from about samples associated with those factors.  The information may include the publication which the sample is associated and the cell line, species, cell type, etc. of the sample.  In most cases when there is data associated with the sample, a link will be provided so that you may download the data.<br/><br/>
     </span>
@@ -37,7 +37,7 @@ in this view you would be selecting for the cell line, cell type, cell populatio
     </span>
   </p>
   <p>
-    <span class="label">How to use CistromeMap: Factors and Cells View</span>
+    <span class="label">How to use CistromeDC: Factors and Cells View</span>
     <span class="value">
       <ol>
 	<li>Select the factors or cell of interest.  <br/>Note 1: In the factors view, to select multiple factors, hold the control-key while you click.<br/>Note 2: To quickly target your factor or cell of interest, click on the list and start typing out the name.  For example, clicking on the factors list and typing "CTCF" will take you directly to the CTCF factor.<br/>Note 3: Our factor names are derived from the NCBI EntrezGene gene symbols.  To find the official symbol of a factor, please refer to <a href="http://www.ncbi.nlm.nih.gov/gene" target="_blank">EntrezGene</a> site. </li>
@@ -47,16 +47,16 @@ in this view you would be selecting for the cell line, cell type, cell populatio
     </span>
   </p>
   <p>
-    <span class="label">How to use CistromeMap: Papers View</span>
+    <span class="label">How to use CistromeDC: Papers View</span>
     <span class="value">The papers view allows you to browse through the publications in our database.  Clicking on any of the publications will give you more detailed information about the paper.<br/><br/>
     </span>
     <span class="value">By default the papers are sorted by the Date column.  The Date represents when the paper was added to our collection.  The other columns in the Paper View are: Authors, Title, and Journal.  By clicking on any of the columns, you can sort the papers according to that category--e.g. if you click on "Title" at the top of the table, the table will be re-sorted by paper titles (in ascending order).  You can toggle between ascending and descending order by clicking on the column multiple times, so for example, if you were to click on "Title" again, the table will be resorted in descending title order.<br/><br/>
     </span>
   </p>
   <p>
-    <span class="label">How to use CistromeMap: Search</span>
+    <span class="label">How to use CistromeDC: Search</span>
     <span class="value">
-      CistromeMap has a built-in text search engine which can help you query the database.  <br/><br/>
+      CistromeDC has a built-in text search engine which can help you query the database.  <br/><br/>
     </span>
     <span class="value">
       If, for example, you are interested in data that the Liu lab has published, simply type "Liu" (case sensitive) in the search box in any of the three views.  The search engine will return factors/cells/papers related to your search term.  <br/><br/>
@@ -72,7 +72,7 @@ in this view you would be selecting for the cell line, cell type, cell populatio
     </span>
   </p>
   <p>
-    <span class="label">How to use CistromeMap: Jump to (Factor and Cells View only)</span>
+    <span class="label">How to use CistromeDC: Jump to (Factor and Cells View only)</span>
     <span class="value">The "Jump to" links are navigational aids that help you filter the options in the Factors/Cells View items menu.  For example, to cull the factors that begin with the letter 'k' in the Factors View, you simply click the "K" in the Jump To list.
     </span>
   </p>
