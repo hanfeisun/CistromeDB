@@ -1,6 +1,6 @@
 var TabsModel = ModelFactory(["currTab"],[]);
 var tabsModel = new TabsModel({"currTab":null});
-var msg = "Search CistromeMap";
+var msg = "Search CistromeDC";
 
 //load the sub-scripts
 var head = $$('head')[0];
