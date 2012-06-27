@@ -1372,6 +1372,12 @@ def factors_view(request):
                                 d.qc[i -1] = getattr(qc, "qc%s" % i)
                             d._meta._virtualfields.append('qc')
 
+                            #ADD the sample information
+                            d.samples = {}
+                            d.samples['treats'] = [{'id':s.id, 'unique_id':s.unique_id, 'fastq_file_url':s.fastq_file_url} for s in d.treats.all() if s]
+                            d.samples['conts'] = [{'id':s.id, 'unique_id':s.unique_id, 'fastq_file_url':s.fastq_file_url} for s in d.conts.all() if s]
+                            d._meta._virtualfields.append('samples')
+
                         dsets = [jsrecord.views.jsonify(d) for d in tmp]
                         ret[f.name][m.name] = dsets
 
@@ -1473,6 +1479,11 @@ def cells_view(request):
                                 d.qc[i -1] = getattr(qc, "qc%s" % i)
                             d._meta._virtualfields.append('qc')
 
+                            #ADD the sample information
+                            d.samples = {}
+                            d.samples['treats'] = [{'id':s.id, 'unique_id':s.unique_id, 'fastq_file_url':s.fastq_file_url} for s in d.treats.all() if s]
+                            d.samples['conts'] = [{'id':s.id, 'unique_id':s.unique_id, 'fastq_file_url':s.fastq_file_url} for s in d.conts.all() if s]
+                            d._meta._virtualfields.append('samples')
 
                             allDsets.append(d.id)
                             if d.factor not in fnames:

@@ -306,7 +306,7 @@ function FactorInfoView(container, model) {
 		//td1.appendChild($D('br'));
 
 		//MAKING the reference line span the columns
-		td1.colSpan = "2";
+		td1.colSpan = "3";
 		tr.appendChild(td1);
 		//remove the tr's bottom border
 		tr.style.borderBottom = "0px";
@@ -471,6 +471,38 @@ function FactorInfoView(container, model) {
 		}
 	    }
 	    tr.appendChild(td2);
+
+	    //THIRD td will be the raw files:
+	    var td3 = $D('td');
+	    td3.style.width="30%";
+	    //print the header for the td
+	    td3.appendChild($D('span', {innerHTML:'Raw Data:',className:'label'}));
+	    td3.appendChild($D('br'));
+	    if (dset.samples && dset.samples.treats.length > 0) {
+		td3.appendChild($D('span', {innerHTML:'Treatment files:',className:'label'}));	
+		//td3.appendChild($D('br'));
+		for (var tt = 0; tt < dset.samples.treats.length; tt++) {
+		    var span = $D('span', {className:'value2'});
+                    var newA = $D('a',{innerHTML:dset.samples.treats[tt].unique_id+" ", href:dset.samples.treats[tt].fastq_file_url, target:"_blank"});
+                    span.appendChild(newA);
+		    td3.appendChild(span)
+		}
+		td3.appendChild($D('br'));
+	    }
+
+	    if (dset.samples && dset.samples.conts.length > 0) {
+		td3.appendChild($D('span', {innerHTML:'Control files:',className:'label'}));	
+		//td3.appendChild($D('br'));
+		for (var cc = 0; cc < dset.samples.conts.length; cc++) {
+		    var span = $D('span', {className:'value2'});
+                    var newA = $D('a',{innerHTML:dset.samples.conts[cc].unique_id+" ", href:dset.samples.conts[cc].fastq_file_url, target:"_blank"});
+                    span.appendChild(newA);
+		    td3.appendChild(span)
+		}
+		td3.appendChild($D('br'));
+	    }
+
+	    tr.appendChild(td3);
 	    tbl.appendChild(tr);
 	}
 	outer.container.appendChild(tbl);
