@@ -443,16 +443,16 @@ function FactorInfoView(container, model) {
 	    //TD2 = dataset files!
 	    var td2 = $D('td');
 	    //Dump the files! in a new row--[field, name, is viewable?]
-	    var group1 = [['peak_file','peak file', null], 
+	    var group1 = [['peak_file','peak file', "browser"], 
 			  ['peak_xls_file', 'peak xls file', null], 
-			  ['summit_file', 'summit file', null],
+			  ['summit_file', 'summit file', "browser"],
 			  ['treat_bw_file', 'treatment big wig', null],
 			  ['cont_bw_file', 'control big wig', null],
-			  ['conservation_file', 'conservation file', true],
-			  ['ceas_file', 'ceas file', true],
-			  ['venn_file', 'venn diagram', true],
+			  ['conservation_file', 'conservation file', "image"],
+			  ['ceas_file', 'ceas file', "pdf"],
+			  ['venn_file', 'venn diagram', "image"],
 			  ['seqpos_file', 'motif', null],
-			  ['cor_pdf_file', 'correlation', true],
+			  ['cor_pdf_file', 'correlation', "pdf"],
 			 ]
 	    for (var j = 0; j < group1.length; j++) {
 		if (dset[group1[j][0]]) {
@@ -461,8 +461,12 @@ function FactorInfoView(container, model) {
 		    var viewable = group1[j][2];
 		    td2.appendChild($D('span', {innerHTML:fldName+':',
 				    className:'label'}));
-		    if (viewable) {
+		    if (viewable && (viewable == "image" || viewable=="pdf")) {
 			td2.appendChild($D('a', {innerHTML:'view', href:"static/data/"+dset[group1[j][0]], target:"_blank"}));
+			td2.appendChild($D('span', {innerHTML:' '}));
+		    } else if (viewable && viewable == "browser") {
+			var assembly = (dset.species == "Homo sapiens")?"hg19":"mm9";
+			td2.appendChild($D('a', {innerHTML:'view', href:"http://genome.ucsc.edu/cgi-bin/hgTracks?position=chr1&db="+assembly+"&hgt.customText=http://cistrome.org/dc/static/data/"+dset[group1[j][0]], target:"_blank"}));
 			td2.appendChild($D('span', {innerHTML:' '}));
 		    }
 		    var a = $D('a', {innerHTML:'download', href:"static/data/"+dset[group1[j][0]]});
