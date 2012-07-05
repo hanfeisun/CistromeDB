@@ -61,13 +61,28 @@ class PaperForm(forms.ModelForm):
         exclude = ('date_collected', 'user', 'status', 'comments')
 
 class DatasetForm(forms.ModelForm):
-     class Meta:
-         model = models.Datasets
-         exclude = ('date_collected', 'user', 'paper',
-                    'raw_file', 'raw_file_type', 'raw_file_url',
-                    'treatment_file', 'peak_file', 'wig_file', 'bw_file',
-                    'assembly', 'description', 'comments', 'status',
-                    'uploader', 'upload_date', 'curator')
+    def __init__(self, *args, **kwargs):
+        super(DatasetForm, self).__init__(*args, **kwargs)
+        #TURNING ManyToMany fields as TextInput
+        self.fields['treats'].widget = forms.TextInput()
+        self.fields['treats'].help_text = "example: [886L, 887L, 888L]"
+        self.fields['conts'].widget = forms.TextInput()
+        self.fields['conts'].help_text = "example: [886L, 887L, 888L]"
+        
+    class Meta:
+        model = models.Datasets
+        exclude = ("peak_file", "peak_xls_file", "summit_file", 
+                   "treat_bw_file", "cont_bw_file", "conservation_file",
+                   "conservation_r_file", "ceas_file", "ceas_r_file", 
+                   "ceas_xls_file", "venn_file", "seqpos_file", 
+                   #WHY are these charfields??
+                   "rep_treat_bw", "rep_treat_peaks", 
+                   "rep_treat_summits", "rep_cont_bw", 
+                   #END WHY
+                   "cor_pdf_file", "cor_r_file", "conf_file", "log_file", 
+                   "summary_file", "dhs_file",
+                   #NOTE: following fields should be removed from the model
+                   "treatments", "controls")
 
 class SampleForm(forms.ModelForm):
     class Meta:
@@ -97,11 +112,18 @@ class UpdatePaperForm(forms.ModelForm):
         model = models.Papers
 
 class UpdateDatasetForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(UpdateDatasetForm, self).__init__(*args, **kwargs)
+        #TURNING ManyToMany fields as TextInput
+        self.fields['treats'].widget = forms.TextInput()
+        self.fields['treats'].help_text = "example: [886L, 887L, 888L]"
+        self.fields['conts'].widget = forms.TextInput()
+        self.fields['conts'].help_text = "example: [886L, 887L, 888L]"
+
     class Meta:
         model = models.Datasets
         #Don't include the files--use the Upload form for that
-        exclude = UploadDatasetForm.Meta.fields
-        exclude = exclude + ("raw_file_url", "raw_file_type", )
+        exclude = DatasetForm.Meta.exclude
     
     #NOTE: if you get validating errs, you can override the validators like
     # def clean_raw_file_type(self):
