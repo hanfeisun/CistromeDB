@@ -134,11 +134,14 @@ onload="init();"
       <nav>
          <h3>Admin:</h3>
          <ul>
-	    <li><a href="{% url report %}">Weekly Report</a></li>
+	    {% comment %}
+	    <!--<li><a href="{% url report %}">Weekly Report</a></li>
 	    <li><a href="{% url weekly_papers %}">Weekly Papers</a></li>
 	    <li><a href="{% url weekly_datasets %}">Weekly Datasets</a></li>
 	    <li><a href="{% url admin %}">Admin</a></li>
 	    <li><a href="{% url teams %}">Teams</a></li>
+	    -->
+	    {% endcomment %}
 	    <li><a href="{% url submissions_admin %}">Paper Submissions</a></li>
 	    <li><a href="{% url admin_help %}">Help</a></li>
 	 </ul>
