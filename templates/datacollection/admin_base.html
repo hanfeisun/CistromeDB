@@ -1,0 +1,15 @@
+{% extends "datacollection/login_base.html" %}
+
+{% block sidebar %}
+      <nav>
+	 <ul>
+	    {% for pg, url, name in sidebar  %}
+	    {% ifequal currpage pg %}
+	    <li class="chicletSelected">{{name}}</li>
+	    {% else %}
+	    <li class="chiclet" onclick="window.location={{url}}">{{name}}</li>
+	    {% endifequal %}
+	    {% endfor %}
+	 </ul>
+      </nav>
+{% endblock %}

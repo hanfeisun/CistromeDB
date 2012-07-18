@@ -52,6 +52,18 @@ _sidebarPages = ['home', 'paper_submission', 'dcstats', 'help', 'contact']
 #how they are printed on the page
 _sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help", 'Contact Us']
 
+_adminSidebar = ['datasets', 'samples', 'papers', 'factors', 'celllines', 
+                 'cellpops', 'celltypes', 'tissuetypes', 'strains',
+                 'diseasestates']
+#default uppercase the names
+_adminSidebarNames = [n[0].upper() + n[1:] for n in _adminSidebar]
+#exceptions
+_adminSidebarNames[4] = "Cell Lines"
+_adminSidebarNames[5] = "Cell Pops"
+_adminSidebarNames[6] = "Cell Types"
+_adminSidebarNames[7] = "Tissue Types"
+_adminSidebarNames[9] = "Disease States"
+
 def admin_only(function=None):
     """
     Decorator for views that checks that the user is logged in AND is_staff.
@@ -284,6 +296,9 @@ update_sample_form = update_form_factory('Sample Update Form',
 def papers(request, user_id):
     """If given a user_id, shows all of the papers imported by the user,
     otherwise shows all papers in the db"""
+    sidebarURLs = [reverse(p) for p in _adminSidebar]
+    sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+    currpage = "papers"
 
     if user_id:
         #NOTE: the current url regex doesn't parse out the / from the user_id
@@ -312,6 +327,10 @@ def papers(request, user_id):
 def datasets(request):
     """Returns all of the datasets
     """
+    sidebarURLs = [reverse(p) for p in _adminSidebar]
+    sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+    currpage = "datasets"
+
     datasets = models.Datasets.objects.all()
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
     try:
@@ -336,6 +355,10 @@ def samples(request):
     cell type, cell pop, strain, condition]
     IF url param uploader is sent, we use uploader instead of user
     """
+    sidebarURLs = [reverse(p) for p in _adminSidebar]
+    sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+    currpage = "samples"
+
     samples = models.Samples.objects.all()
 
     #note: we have to keep track of these URL params so that we can feed them
@@ -1068,6 +1091,10 @@ def download_paper_datasets(request, paper_id):
 #------------------------------------------------------------------------------
 def modelPagesFactory(model, base_name):
     def generic_model_view(request):
+        sidebarURLs = [reverse(p) for p in _adminSidebar]
+        sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+        currpage = base_name+"s"
+
         #model fields
         fields = [f.name for f in model._meta.fields]
         

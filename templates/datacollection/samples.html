@@ -1,6 +1,7 @@
-{% extends "datacollection/login_base.html" %}
+{% extends "datacollection/admin_base.html" %}
 {% block title %}CistromeDC - Datasets{% endblock %}
 {% block include %}
+<link href="{% url static_url %}css/admin_base.css" rel="stylesheet" type="text/css"/>
 <link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
