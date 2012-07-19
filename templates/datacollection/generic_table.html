@@ -42,7 +42,7 @@ onload="init('{{title}}', '{{current_path}}');"
       </div>
       {% endif %}
       <table class="datatable" id="data_table">
-         <tr>
+         <tr class="tableHeader">
 	     {% if user.is_authenticated %}
 	     <th><input type="checkbox" id="masterCheckbox"/></th>
 	     {% endif %}
@@ -54,11 +54,15 @@ onload="init('{{title}}', '{{current_path}}');"
 	 <tr>
 	     {% if user.is_authenticated %}
 	     <td><input type="checkbox" class="rowSelect" id="{{o.id}}"/>
-	         <a href="{{ update_form|my_reverse:o.id }}?next={{current_path}}">edit</a>
+	         <!--<a href="{{ update_form|my_reverse:o.id }}?next={{current_path}}">edit</a>-->
 	     </td>
 	     {% endif %}
 	     {% for f in fields %}
+	     {% ifequal f "id" %}
+	     <td class="fakeLink" onclick="alert({{ o|get_attr:f }});">{{ o|get_attr:f }}</td>
+	     {% else %}
 	     <td>{{ o|get_attr:f }}</td>
+	     {% endifequal %}
 	     {% endfor %}
 	 </tr>
 	 {% endfor %}
