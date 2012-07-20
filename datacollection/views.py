@@ -52,17 +52,24 @@ _sidebarPages = ['home', 'paper_submission', 'dcstats', 'help', 'contact']
 #how they are printed on the page
 _sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help", 'Contact Us']
 
-_adminSidebar = ['datasets', 'samples', 'papers', 'factors', 'celllines', 
+_adminSidebar = [#'datasets', 'samples', 'papers', 
+                 'factors', 'celllines', 
                  'cellpops', 'celltypes', 'tissuetypes', 'strains',
                  'diseasestates']
 #default uppercase the names
 _adminSidebarNames = [n[0].upper() + n[1:] for n in _adminSidebar]
 #exceptions
-_adminSidebarNames[4] = "Cell Lines"
-_adminSidebarNames[5] = "Cell Pops"
-_adminSidebarNames[6] = "Cell Types"
-_adminSidebarNames[7] = "Tissue Types"
-_adminSidebarNames[9] = "Disease States"
+#_adminSidebarNames[4] = "Cell Lines"
+#_adminSidebarNames[5] = "Cell Pops"
+#_adminSidebarNames[6] = "Cell Types"
+#_adminSidebarNames[7] = "Tissue Types"
+#_adminSidebarNames[9] = "Disease States"
+
+_adminSidebarNames[1] = "Cell Lines"
+_adminSidebarNames[2] = "Cell Pops"
+_adminSidebarNames[3] = "Cell Types"
+_adminSidebarNames[4] = "Tissue Types"
+_adminSidebarNames[6] = "Disease States"
 
 def admin_only(function=None):
     """
