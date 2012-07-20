@@ -14,9 +14,11 @@ function init(mdl, this_pg) {
 	}
 	masterHandler(tmp);
     }
-
-    var addBtn = $('addBtn');
-    addBtn.onclick = function(event) {
+    var createBtn = $('createBtn');
+    createBtn.disabled = "true";
+    /*
+    //CHANGE THIS BELOW!
+    createBtn.onclick = function(event) {
 	//model = Factors
 	//we want to redirect to new_factor_form
 	var tmp = mdl.toLowerCase();
@@ -26,6 +28,7 @@ function init(mdl, this_pg) {
 	//alert(SUB_SITE+"new_"+tmp+"_form/?next="+this_pg);
 	window.location = SUB_SITE+"new_"+tmp+"_form/?next="+this_pg;
     }
+    */
 
     var deleteBtn = $('deleteBtn');
     deleteBtn.onclick = function(event) {
