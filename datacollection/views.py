@@ -1089,11 +1089,16 @@ def download_paper_datasets(request, paper_id):
 #------------------------------------------------------------------------------
 # Model Pages
 #------------------------------------------------------------------------------
-def modelPagesFactory(model, base_name):
+#2012-07-19: changing this Factory to take in modelName instead of models b/c
+#I need to send in modelNames to the templates, so we can use jsrecord on them
+def modelPagesFactory(modelName, base_name):
     def generic_model_view(request):
         sidebarURLs = [reverse(p) for p in _adminSidebar]
         sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
         currpage = base_name+"s"
+
+        modelNm = modelName
+        model = getattr(models, modelName)
 
         #model fields
         fields = [f.name for f in model._meta.fields]
@@ -1140,7 +1145,7 @@ for name in generic_model_list:
     else:
         base_name = url_name
     setattr(_this_mod, url_name, 
-            modelPagesFactory(getattr(models, name), base_name))
+            modelPagesFactory(name, base_name))
 
 assemblies = modelPagesFactory(models.Assemblies, "assembly")
 
