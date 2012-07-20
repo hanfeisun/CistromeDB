@@ -45,7 +45,10 @@ function init(mdl, this_pg) {
 	    if (mdl == "Assembly") {
 		m = "Assemblies";
 	    }
-	    window.location = SUB_SITE+"generic_delete/"+m+"/?objects="+tmp+"&next="+next;
+	    
+	    if (tmp.length > 0) { //CHECK for the empty list
+		window.location = SUB_SITE+"generic_delete/"+m+"/?objects="+tmp+"&next="+next;
+	    }
 	}
     }
     
