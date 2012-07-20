@@ -107,6 +107,7 @@ function showInfo(id) {
     //a spacer to move the buttons to the right
     p.appendChild($D('span', {className:'diagBtnSpacer'}));
     var edit = $D('input', {type:'button', value:'edit', className:'diagBtn'});
+    edit.disabled = "true";
     p.appendChild(edit);
     var close = $D('input', {type:'button', value:'close', className:'diagBtn'});
     close.onclick = function(){destroyOverlay();}
