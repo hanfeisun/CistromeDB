@@ -7,7 +7,7 @@
 	    {% ifequal currpage pg %}
 	    <li class="chicletSelected">{{name}}</li>
 	    {% else %}
-	    <li class="chiclet" onclick="window.location={{url}}">{{name}}</li>
+	    <li class="chiclet" onclick="window.location='{{url}}'">{{name}}</li>
 	    {% endifequal %}
 	    {% endfor %}
 	 </ul>
