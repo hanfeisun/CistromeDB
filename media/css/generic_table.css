@@ -25,3 +25,47 @@ body {
 .pagination {
     padding-left:50%;
 }
+
+#overlay {
+    background-color:rgba(0,0,0,0.75);
+    position:absolute;
+    top:0px;
+    left:0px;
+}
+
+#overlayDialogue {
+    border-radius:10px;
+    margin-left:25%;
+    margin-right:25%;
+    background-color:#fff;
+}
+
+span.label {
+    color:gray;
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:0px;
+    margin:0;
+    display:inline-block;
+    width:25%;
+    text-align:right;
+}
+span.value {
+    color:#000;
+    display:inline-block;
+}
+
+p {
+    margin-bottom:0px;
+    margin-left:10px;
+    margin-right:10px;
+}
+
+.diagBtnSpacer {
+    margin-left:75%;
+}
+.diagBtn {
+    margin-top:10px;
+    margin-bottom:10px;
+}
