@@ -19,7 +19,7 @@ onload="init('{{modelNm}}', '{{current_path}}');"
 {% block content %}
 <!-- NOTE: the content is created in javascript -->
       {% if user.is_authenticated %}
-      <input type="button" id="addBtn" value="add new"/>
+      <input type="button" id="createBtn" value="create"/>
       <input type="button" id="deleteBtn" value="delete"/>
       {% endif %}
       {% if pg.paginator.num_pages %}
