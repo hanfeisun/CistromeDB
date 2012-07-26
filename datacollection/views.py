@@ -349,7 +349,7 @@ def datasets(request):
     for r in _removeList: fields.remove(r);
 
 
-    datasets = models.Datasets.objects.all()
+    datasets = models.Datasets.objects.all().order_by("id")
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
