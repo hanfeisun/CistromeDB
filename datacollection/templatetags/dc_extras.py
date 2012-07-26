@@ -35,3 +35,16 @@ def get_attr(obj, attr):
 @stringfilter
 def my_reverse(view_name, args):
     return reverse(view_name, args=[args])
+
+@register.filter
+def is_in(obj, lst):
+    """replicates the 'in' built-in operator in python"""
+    return obj in lst
+
+@register.filter
+@stringfilter
+def get_fname(s):
+    """expects file paths to be: zzz/xxx/filename.yyy
+    returns filename.yyy
+    """
+    return s.split("/")[-1]
