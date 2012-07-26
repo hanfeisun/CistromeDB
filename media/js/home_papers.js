@@ -142,6 +142,7 @@ function getPapers(type, model) {
  *
  * len - optional param specifying max length
  **/
+/* MOVED to UTILS
 function shorten(s, len) {
     if (s == null) { return "";}
 
@@ -152,6 +153,7 @@ function shorten(s, len) {
 	return s;
     }
 }
+*/
 
 //draws the search results
 function ResultsView(container, model) {

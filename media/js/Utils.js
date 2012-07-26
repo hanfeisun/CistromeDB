@@ -66,3 +66,40 @@ function inspect(obj) {
     }
     return flds;
 }
+
+/**
+ * shortens the string
+ *
+ * len - optional param specifying max length
+ **/
+function shorten(s, len) {
+    if (s == null) { return "";}
+
+    var max_length = (len) ? len : 30;
+    if (s.length > max_length) {
+	return s.substr(0, max_length - 3) + "...";
+    } else {
+	return s;
+    }
+}
+
+/**
+ * puts break tags </br> after every few words.  This is useful when
+ * you have a long string and you need to display it broken up
+ *
+ * if s = Robertson G et al, Genome-wide profiles of STAT1 DNA association using chromatin immunoprecipitation and massively parallel sequencing. Nat. Methods . 2007
+ * returns Robertson G et al, Genome-wide profiles of STAT1</br> DNA association using chromatin immunoprecipitation </br>and massively parallel sequencing. Nat. Methods . 2007
+ *
+ * k - number of words between breaks
+ */
+function insertBreaks(s, k) {
+    var tmp = s.split(" ");
+    var ret = "";
+    for (var i = 0; i < tmp.length; i++) {
+	ret += tmp[i] + " ";
+	if (i != 0 && (i % k) == 0) {
+	    ret += "</br>";
+	}
+    }
+    return ret;
+}
