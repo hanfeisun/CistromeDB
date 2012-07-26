@@ -52,24 +52,13 @@ _sidebarPages = ['home', 'paper_submission', 'dcstats', 'help', 'contact']
 #how they are printed on the page
 _sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help", 'Contact Us']
 
-_adminSidebar = [#'datasets', 'samples', 'papers', 
-                 'factors', 'celllines', 
-                 'cellpops', 'celltypes', 'tissuetypes', 'strains',
-                 'diseasestates']
-#default uppercase the names
-_adminSidebarNames = [n[0].upper() + n[1:] for n in _adminSidebar]
-#exceptions
-#_adminSidebarNames[4] = "Cell Lines"
-#_adminSidebarNames[5] = "Cell Pops"
-#_adminSidebarNames[6] = "Cell Types"
-#_adminSidebarNames[7] = "Tissue Types"
-#_adminSidebarNames[9] = "Disease States"
-
-_adminSidebarNames[1] = "Cell Lines"
-_adminSidebarNames[2] = "Cell Pops"
-_adminSidebarNames[3] = "Cell Types"
-_adminSidebarNames[4] = "Tissue Types"
-_adminSidebarNames[6] = "Disease States"
+_adminSidebar = [('datasets', 'Datasets'), 
+                 #('samples', 'Samples'), ('papers', 'Papers'), 
+                 ('factors', 'Factors'),
+                 ('celllines', 'Cell Lines'), ('cellpops', 'Cell Pops'),
+                 ('celltypes', 'Cell Types'), ('tissuetypes', 'Tissue Types'),
+                 ('strains', 'Strains'), ('diseasestates', 'Diseas States')]
+#_adminSidebarNames = [n[0].upper() + n[1:] for n in _adminSidebar]
 
 def admin_only(function=None):
     """
@@ -303,8 +292,10 @@ update_sample_form = update_form_factory('Sample Update Form',
 def papers(request, user_id):
     """If given a user_id, shows all of the papers imported by the user,
     otherwise shows all papers in the db"""
-    sidebarURLs = [reverse(p) for p in _adminSidebar]
-    sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+    #unzip _adminSidebar
+    adminSidebar, adminSidebarNames = zip(*_adminSidebar)
+    sidebarURLs = [reverse(p) for p in adminSidebar]
+    sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
     currpage = "papers"
 
     if user_id:
@@ -334,8 +325,10 @@ def papers(request, user_id):
 def datasets(request):
     """Returns all of the datasets
     """
-    sidebarURLs = [reverse(p) for p in _adminSidebar]
-    sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+    #unzip _adminSidebar
+    adminSidebar, adminSidebarNames = zip(*_adminSidebar)
+    sidebarURLs = [reverse(p) for p in adminSidebar]
+    sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
     currpage = "datasets"
 
     datasets = models.Datasets.objects.all()
@@ -362,8 +355,10 @@ def samples(request):
     cell type, cell pop, strain, condition]
     IF url param uploader is sent, we use uploader instead of user
     """
-    sidebarURLs = [reverse(p) for p in _adminSidebar]
-    sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+    #unzip _adminSidebar
+    adminSidebar, adminSidebarNames = zip(*_adminSidebar)
+    sidebarURLs = [reverse(p) for p in adminSidebar]
+    sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
     currpage = "samples"
 
     samples = models.Samples.objects.all()
@@ -1100,8 +1095,10 @@ def download_paper_datasets(request, paper_id):
 #I need to send in modelNames to the templates, so we can use jsrecord on them
 def modelPagesFactory(modelName, base_name):
     def generic_model_view(request):
-        sidebarURLs = [reverse(p) for p in _adminSidebar]
-        sidebar = zip(_adminSidebar, sidebarURLs, _adminSidebarNames)
+        #unzip _adminSidebar
+        adminSidebar, adminSidebarNames = zip(*_adminSidebar)
+        sidebarURLs = [reverse(p) for p in adminSidebar]
+        sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
         currpage = base_name+"s"
 
         modelNm = modelName
