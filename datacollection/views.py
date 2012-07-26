@@ -21,6 +21,7 @@ from django.core.cache import cache
 from django.utils.encoding import smart_str
 from django.utils.http import urlquote
 from django.conf import settings as conf_settings
+from django.db.models.fields.files import FileField
 
 import models
 import forms
@@ -330,6 +331,18 @@ def datasets(request):
     sidebarURLs = [reverse(p) for p in adminSidebar]
     sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
     currpage = "datasets"
+
+    fields = [f.name for f in models.Datasets._meta.fields]
+    fileFields = [f.name for f in models.Datasets._meta.fields \
+                      if f.__class__== FileField]
+    #remove some fields we don't want to display on the page
+    _removeList = ["user", "paper", "date_created", "status", "comments",
+                   #the following are buggy so we're not displaying them 
+                   "rep_treat_bw", "rep_treat_peaks", "rep_treat_summits",
+                   "rep_cont_bw"
+                   ]
+    for r in _removeList: fields.remove(r);
+
 
     datasets = models.Datasets.objects.all()
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
