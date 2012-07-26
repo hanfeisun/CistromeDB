@@ -1,57 +1,14 @@
 
-table {
-    width:100%;
-    border: 2px solid #626cac;
-    border-collapse: collapse;
-    margin-bottom:20px;
-    font-size:8pt;
-    color:#093955;
+/*override generic overlay*/
+#overlayDialogue {
+    border-radius:10px;
+    margin-left:10%;
+    margin-right:58%;
+    background-color:#fff;
 }
 
-td, th {
-    border: 1px dotted #000;
-}
-
-.imported_row {
-    /*background-color:#00cc00;*/
-    background-color:#ffff00;
-}
-
-.info_row {
-    background-color:#ff9900;
-}
-
-.valid_row {
-    background-color:#ff5500;
-}
-
-.transfer_row {
-    background-color:#808080;
-}
-
-.downloaded_row {
-    background-color:#00cc00;
-}
-
-.error_row {
-    background-color:red;
-}
-
-/* override the base.css def */
-body { 
-    width:1024px;     
-}
-
-/* override the base.css def */
-/*
-section#main{
-    float:left;
-    width:100%;
-    
-    padding-left:0%;
-}
-*/
-
+/*override generic pagination*/
 .pagination {
     padding-left:75%;
 }
+
