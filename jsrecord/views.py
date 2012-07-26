@@ -13,6 +13,9 @@ from django.views.decorators.cache import cache_page
 from new import classobj
 from datetime import date, datetime
 from django.db.models.fields.files import FieldFile
+from django.db.models.fields.related import ManyToManyField
+import django.db.models.fields.related as related
+#import django.db.models.fields.related.ManyRelatedManager as ManyRelatedManager
 import django.db.models.fields as fields
 from types import *
 
@@ -156,7 +159,14 @@ class ModelEncoder(json.JSONEncoder):
         if '_virtualfields' in dir(modelObj._meta):
             for f in modelObj._meta._virtualfields:
                 if f and getattr(modelObj, f):
-                    tmp[f] = getattr(modelObj, f)
+                    #check to see if it's a ManyToMany Field:
+                    val = getattr(modelObj, f)
+                    if val.__class__.__name__ == "ManyRelatedManager":
+                        #THIS seems to be too much!--but it is also right
+                        #val = [ModelEncoder._modelAsDict(s) for s in val.all()]
+                        #just return the obj.ids
+                        val = [s.id for s in val.all()]
+                    tmp[f] = val
 
         return tmp
     
