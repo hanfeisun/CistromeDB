@@ -48,3 +48,12 @@ def get_fname(s):
     returns filename.yyy
     """
     return s.split("/")[-1]
+
+@register.filter
+def getFldInLst(lst, fld):
+    """given a list of objects: returns: [o.fld for o in lst]
+    """
+    #NOTE:since this is only used in datasets.html i wrapping in a pretty print
+    #WHAT it should be
+    #return [getattr(o, fld) for o in lst]
+    return ",".join([str(getattr(o, fld)) for o in lst])
