@@ -333,13 +333,18 @@ def datasets(request):
     currpage = "datasets"
 
     fields = [f.name for f in models.Datasets._meta.fields]
+    fields.insert(1, "conts")
+    fields.insert(1, "treats")
+
     fileFields = [f.name for f in models.Datasets._meta.fields \
                       if f.__class__== FileField]
     #remove some fields we don't want to display on the page
     _removeList = ["user", "paper", "date_created", "status", "comments",
                    #the following are buggy so we're not displaying them 
                    "rep_treat_bw", "rep_treat_peaks", "rep_treat_summits",
-                   "rep_cont_bw"
+                   "rep_cont_bw", 
+                   #these are obsolete char fields!
+                   "treatments", "controls"
                    ]
     for r in _removeList: fields.remove(r);
 
@@ -348,6 +353,9 @@ def datasets(request):
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
+        #special case -1 = last page
+        if page == -1:
+            pg = paginator.page(paginator.num_pages);
     except ValueError:
         page = 1
     try:

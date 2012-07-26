@@ -1,3 +1,25 @@
+span.label2 {
+    color:gray;
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:0px;
+    margin:0;
+    display:inline-block;
+    width:35%;
+    text-align:right;
+    vertical-align:top;
+}
+
+span.value2 {
+    color:#000;
+    display:inline-block;
+    width:50%;
+}
+
+input.textInput {
+    width:100%;
+}
 
 /*override generic overlay*/
 #overlayDialogue {

@@ -66,9 +66,13 @@ onload="init();"
 	     <td class="fakeLink" onclick="showInfo({{ o|get_attr:f }});">{{ o|get_attr:f }}</td>
 	     {% else %}{% if f|is_in:fileFields %}
 	     <td><a href="{% url static_url %}data/{{ o|get_attr:f }}">{{ o|get_attr:f|get_fname}}</a></td>
+	     {% else %}{% ifequal f "treats" %}
+	     <td>{{o.treats.all|getFldInLst:"id"}}</td>
+	     {% else %}{% ifequal f "conts" %}
+	     <td>{{o.conts.all|getFldInLst:"id"}}</td>
 	     {% else %}
 	     <td>{{ o|get_attr:f }}</td>
-	     {% endif %} {% endifequal %}
+	     {% endifequal %}{% endifequal %}{% endif %} {% endifequal %}
 	     {% endfor %}
 	 </tr>
 	 {% endfor %}

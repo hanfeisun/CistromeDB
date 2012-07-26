@@ -57,19 +57,10 @@ function init() {
 	masterHandler(tmp);
     }
 
-    /* OBSOLETE
-    var btn = $('batchEdit');
-    btn.onclick = function(event) {
-	//redirect
-	if (dsetModel.dsets.length > 0) { //check for empty list
-	    window.location = SUB_SITE + "batch_update_datasets/?datasets="+ dsetModel.dsets+"&next="+window.location;
-	}
-	//NOTE: TODO--acutally the best way to do it is to just run down the 
-	//list of selected rows--i.e. generate dsetModel IN/AFTER onclick
-	//and not rely on dsetModel, b/c if you hit the back btn, the 
-	//item will still be checked but dsetModel is not populated.
+    var createBtn = $('createBtn');
+    createBtn.onclick = function(event) {
+	createDataset();
     }
-    */
 
     var deleteBtn = $('deleteBtn');
     deleteBtn.onclick = function(event) {
@@ -93,6 +84,85 @@ function downloadFile(datasetId, pg) {
 }
 
 */
+
+//draws and handles the create new dataset dialogue
+function createDataset() {
+    //show the overlay:
+    var overlay = $('overlay');
+    overlay.style.display="block";
+    
+    //clear the overlay
+    overlay.innerHTML = "";
+    
+    //create the dialogue:
+    var dialogue = $D('div', {id:'overlayDialogue'});
+    //NEED to create the dialogue in the current window frame-50px from top
+    dialogue.style.position="relative";
+    dialogue.style.top = (window.pageYOffset+ 50)+"px";
+    dialogue.style.width = "25%";
+    overlay.appendChild(dialogue);
+    
+    //build header
+    var p = $D('p');
+    var sp = $D('span', {innerHTML:"Create a new Dataset:",className:'label2'});
+    p.appendChild(sp);
+    p.style.paddingTop="10px";
+    p.style.paddingBottom="5px";
+    p.style.borderBottom="3px solid #c9c9c9";
+    dialogue.appendChild(p);
+
+    //add the inputs: TREATS
+    p = $D('p');
+    p.appendChild($D('span', {innerHTML:"Treatment Sample IDs:", className:'label2'}));
+    var input = $D('input', {type:'text', id:'treats', className:'textInput'});
+    sp = $D('span', {className:'value2'});
+    sp.appendChild(input);
+    p.appendChild(sp);
+    dialogue.appendChild(p);
+    //add the inputs: Conts
+    p = $D('p');
+    p.appendChild($D('span', {innerHTML:"Control Sample IDs:", className:'label2'}));
+    input = $D('input', {type:'text', id:'conts', className:'textInput'});
+    sp = $D('span', {className:'value2'});
+    sp.appendChild(input);
+    p.appendChild(sp);
+    dialogue.appendChild(p);
+
+    //add buttons
+    p = $D('p');
+    //a spacer to move the buttons to the right
+    p.appendChild($D('span', {className:'diagBtnSpacer'}));
+    var cancel = $D('input', {type:'button', value:'cancel', className:'diagBtn'});
+    cancel.onclick = function(){destroyOverlay();}
+
+    p.appendChild(cancel);
+    var save = $D('input', {type:'button',value:'save',className:'diagBtn'});
+    save.onclick = function() {
+	var cb = function(req) {
+	    console.log(req.responseText);
+	    var resp = eval("("+req.responseText+")");
+	    if (resp.success) {
+		//go to the last page
+		window.location = SUB_SITE+"datasets/?page=-1"
+	    } else {
+		console.log(resp.err);
+	    }
+	}
+	var dset = new Datasets({id:null});
+	//NOTE: WE NEED to set the new id to null so that jsrecords will know
+	//that we're trying to create/save a new obj!
+	dset.id = "null";
+	//NOTE: NO ERROR CHECKING?!?!
+	dset.treats = $('treats').value;
+	dset.conts = $('conts').value;
+	//NOTE: status can't be null--so we need to set it here
+	dset.status = "new";
+	dset.save(cb);
+    }
+    p.appendChild(save);
+    dialogue.appendChild(p);
+
+}
 
 function showInfo(id) {
     //NOTE: in CHROME, for some reason my global vars aren't global! so models
@@ -121,11 +191,11 @@ function showInfo(id) {
     p.appendChild($D('br'));
     //build treats and controls
     p.appendChild($D('span', {innerHTML:"Treatment Sample IDs:", className:'label'}));
-    p.appendChild($D('span', {innerHTML:dset.treatments, className:'value'}));
+    p.appendChild($D('span', {innerHTML:dset.treats, className:'value'}));
     //p.appendChild($D('br'));
     p.appendChild($D('br'));
     p.appendChild($D('span', {innerHTML:"Control Sample IDs:", className:'label'}));
-    p.appendChild($D('span', {innerHTML:dset.controls, className:'value'}));
+    p.appendChild($D('span', {innerHTML:dset.conts, className:'value'}));
     p.style.paddingTop="10px";
     p.style.paddingBottom="5px";
     p.style.borderBottom="3px solid #c9c9c9";
@@ -134,7 +204,7 @@ function showInfo(id) {
     
 
     //BUILD paper info:
-    if (dset.paper.pmid) {
+    if (dset.paper && dset.paper.pmid) {
 	p = $D('p');
 	var sp = $D('span', {innerHTML:'paper:', className:'label'});
 	p.appendChild(sp);
@@ -150,7 +220,7 @@ function showInfo(id) {
 	dialogue.appendChild(p);
     }
 
-    if (dset.paper.unique_id) {
+    if (dset.paper && dset.paper.unique_id) {
 	p = $D('p');
 	p.appendChild($D('span', {innerHTML:'unique id:', className:'label'}));
 	//build a (geo) link

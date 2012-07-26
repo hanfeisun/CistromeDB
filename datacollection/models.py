@@ -35,6 +35,7 @@ PAPER_STATUS = (
     )
 
 DATASET_STATUS = (
+    (u'new', u'dataset created'),
     (u'imported', u'imported awaiting meta-info'),
     (u'info', u'meta-info inputted awaiting validation'),
     (u'valid', u'meta-info validated awaiting file download'),
@@ -375,7 +376,11 @@ Datasets._meta._virtualfields = ['factor', 'platform', 'species',
                                  'assembly', 'cell_type', 'cell_line', 
                                  'cell_pop', 'tissue_type', 'strain', 
                                  'condition', 'disease_state', 
+                                 #not sure why treats and conts aren't in
+                                 #_meta.fields, but pull them in too
+                                 'treats', 'conts'
                                  ]
+
 
 class Samples(DCModel):
     """a table to store all of the sample information: a sample is a
