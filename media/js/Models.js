@@ -206,8 +206,14 @@ function JSRecordFactory(className, fields) {
 		    if (typeof val == 'string') {
 			val = "\""+val+"\"";
 		    } else if (typeof val == 'object') {
-			//for model objects
-			val = val.id;
+			//CHECK for arrays
+			if (val instanceof Array) {
+			    //dump the array as a string
+			    val = "["+val+"]";
+			} else {
+			    //for model objects
+			    val = val.id;
+			}
 		    }
 		    json += outer.fields[0]+":"+val;
 		}
@@ -218,8 +224,14 @@ function JSRecordFactory(className, fields) {
 		    if (typeof val == 'string') {
 			val = "\""+val+"\"";
 		    } else if (typeof val == 'object') {
-			//for model objects
-			val = val.id;
+			//CHECK for arrays
+			if (val instanceof Array) {
+			    //dump the array as a string
+			    val = "["+val+"]";
+			} else {
+			    //for model objects
+			    val = val.id;
+			}
 		    }
 		    json += ", "+outer.fields[i]+":"+val;
 		}
