@@ -202,27 +202,27 @@ function JSRecordFactory(className, fields) {
 	    json = "";
 	    if (outer.fields.length > 0) {
 		var val = outer[outer.fields[0]];
-		if (typeof val == 'string') {
-		    val = "\""+val+"\"";
-		} else if (typeof val == 'object') {
-		    //for model objects
-		    val = val.id;
+		if (val) {//check for null vals
+		    if (typeof val == 'string') {
+			val = "\""+val+"\"";
+		    } else if (typeof val == 'object') {
+			//for model objects
+			val = val.id;
+		    }
+		    json += outer.fields[0]+":"+val;
 		}
-		json += outer.fields[0]+":"+val;
-		//json += outer.fields[0]+":"+
-		//    (typeof val == 'string'?"\""+val+"\"":val)
 	    }
 	    for (i = 1; i < outer.fields.length; i++) {
 		var val = outer[outer.fields[i]];
-		if (typeof val == 'string') {
-		    val = "\""+val+"\"";
-		} else if (typeof val == 'object') {
-		    //for model objects
-		    val = val.id;
+		if (val) {//check for null vals
+		    if (typeof val == 'string') {
+			val = "\""+val+"\"";
+		    } else if (typeof val == 'object') {
+			//for model objects
+			val = val.id;
+		    }
+		    json += ", "+outer.fields[i]+":"+val;
 		}
-		json += ", "+outer.fields[i]+":"+val;
-		//json += ", "+outer.fields[i]+":"+
-		//(typeof val == 'string'?"\""+val+"\"":val)
 	    }
 	    return "{"+json+"}";
 	}
