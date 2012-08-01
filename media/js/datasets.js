@@ -153,8 +153,8 @@ function createDataset() {
 	//that we're trying to create/save a new obj!
 	dset.id = "null";
 	//NOTE: NO ERROR CHECKING?!?!
-	dset.treats = $('treats').value;
-	dset.conts = $('conts').value;
+	dset.treats = $('treats').value.split(",");
+	dset.conts = $('conts').value.split(",");
 	//NOTE: status can't be null--so we need to set it here
 	dset.status = "new";
 	dset.save(cb);
@@ -385,8 +385,8 @@ function editDialogue(id) {
 	    }
 	}
 	//NOTE: NO ERROR CHECKING?!?!
-	dset.treats = $('treats').value;
-	dset.conts = $('conts').value;
+	dset.treats = $('treats').value.split(",");
+	dset.conts = $('conts').value.split(",");
 	dset.save(cb);
     }
     p.appendChild(save);
