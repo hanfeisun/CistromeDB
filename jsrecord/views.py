@@ -78,7 +78,8 @@ def Save(request, model):
     if request.method == 'POST':
 #        print request.POST
         if request.POST['id'] and request.POST['id'] != "null":
-            s = model.objects.get(pk=request.POST['id'])
+            #s = model.objects.get(pk=request.POST['id'])
+            s = model(id=request.POST['id'])
         else:
             s = None
 
