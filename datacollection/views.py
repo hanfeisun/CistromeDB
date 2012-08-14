@@ -353,9 +353,37 @@ def datasets(request):
     paginator = Paginator(datasets, _items_per_page) #25 dataset per page
     try:
         page = int(request.GET.get('page', '1'))
-        #special case -1 = last page
-        if page == -1:
-            pg = paginator.page(paginator.num_pages);
+        #if givent an id, then go to the page that contains that id
+        dset_id = int(request.GET.get('id', '-1'))
+
+        if dset_id != -1:
+            #try to find the page that the dset is on
+            def binSearchDset(d_id, start, end):
+                """binary search datasets to find d_id obj, returns
+                the index if found, otherwise none
+                """
+                if start > end:
+                    return None
+
+                mid = (start + end) / 2
+                if datasets[mid].id == d_id:
+                    return mid
+                else:
+                    if (datasets[mid].id > d_id):
+                        return binSearchDset(d_id, start, mid -1)
+                    else:
+                        return binSearchDset(d_id, mid+1, end)
+
+            i = binSearchDset(dset_id, 0, len(datasets))
+            if i:
+                #if we found it
+                page = (i / _items_per_page) + 1
+            else:
+                page = 1
+        elif page == -1:
+            #special case -1 = last page
+            #pg = paginator.page(paginator.num_pages);
+            page = paginator.num_pages
     except ValueError:
         page = 1
     try:

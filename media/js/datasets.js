@@ -111,6 +111,14 @@ function createDataset() {
     p.style.borderBottom="3px solid #c9c9c9";
     dialogue.appendChild(p);
 
+    //add the inputs: ID
+    p = $D('p');
+    p.appendChild($D('span', {innerHTML:"Dataset ID (optional):", className:'label2'}));
+    var input = $D('input', {type:'text', id:'dset_id', className:'textInput'});
+    sp = $D('span', {className:'value2'});
+    sp.appendChild(input);
+    p.appendChild(sp);
+    dialogue.appendChild(p);
     //add the inputs: TREATS
     p = $D('p');
     p.appendChild($D('span', {innerHTML:"Treatment Sample IDs:", className:'label2'}));
@@ -143,7 +151,7 @@ function createDataset() {
 	    var resp = eval("("+req.responseText+")");
 	    if (resp.success) {
 		//go to the last page
-		window.location = SUB_SITE+"datasets/?page=-1"
+		window.location = SUB_SITE+"datasets/?id="+resp.obj.id;
 	    } else {
 		console.log(resp.err);
 	    }
@@ -151,7 +159,7 @@ function createDataset() {
 	var dset = new Datasets({id:null});
 	//NOTE: WE NEED to set the new id to null so that jsrecords will know
 	//that we're trying to create/save a new obj!
-	dset.id = "null";
+	dset.id = IsNumeric($('dset_id').value)?$('dset_id').value:"null";
 	//NOTE: NO ERROR CHECKING?!?!
 	dset.treats = $('treats').value.split(",");
 	dset.conts = $('conts').value.split(",");

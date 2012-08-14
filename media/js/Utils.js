@@ -103,3 +103,8 @@ function insertBreaks(s, k) {
     }
     return ret;
 }
+
+//ref: http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
+function IsNumeric(input) {
+    return (input - 0) == input && input.length > 0;
+}
