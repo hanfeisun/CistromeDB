@@ -448,11 +448,11 @@ function FactorInfoView(container, model) {
 			  ['summit_file', 'summit file', "browser"],
 			  ['treat_bw_file', 'treatment big wig', null],
 			  ['cont_bw_file', 'control big wig', null],
+			  ['cor_pdf_file', 'correlation', "pdf"],
+			  ['venn_file', 'venn diagram', "image"],
 			  ['conservation_file', 'conservation file', "image"],
 			  ['ceas_file', 'ceas file', "pdf"],
-			  ['venn_file', 'venn diagram', "image"],
-			  ['seqpos_file', 'motif', null],
-			  ['cor_pdf_file', 'correlation', "pdf"],
+			  ['seqpos_file', 'motif', null]
 			 ]
 	    for (var j = 0; j < group1.length; j++) {
 		if (dset[group1[j][0]]) {
