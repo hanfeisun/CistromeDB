@@ -442,6 +442,8 @@ function FactorInfoView(container, model) {
 
 	    //TD2 = dataset files!
 	    var td2 = $D('td');
+	    td2.appendChild($D('span',{innerHTML:'Downstream Analysis:',className:'label'}));
+	    td2.appendChild($D('br'));
 	    //Dump the files! in a new row--[field, name, is viewable?]
 	    var group1 = [['peak_file','peak file', "browser"], 
 			  ['peak_xls_file', 'peak xls file', null], 
@@ -474,6 +476,14 @@ function FactorInfoView(container, model) {
 		    sp.appendChild(a)
 		    td2.appendChild(sp)
 		    //td2.appendChild($D('span', {innerHTML:'import', className:'value2'}));
+		    td2.appendChild($D('br'));
+		} else {
+		    //FILE DNE!
+		    var fldName = group1[j][1];
+		    td2.appendChild($D('span', {innerHTML:fldName+':',
+				    className:'label'}));
+		    var sp = $D('span', {className:'value2', innerHTML:'n/a'});
+		    td2.appendChild(sp)
 		    td2.appendChild($D('br'));
 		}
 	    }
