@@ -225,6 +225,7 @@ class Datasets(DCModel):
             is going to be stored in: data/datasets/gsm566/957.
             I'm not sure if this is the place to validate gsmids, but it maybe
             """
+            #20120821 THIS WILL NOT WORK: gsmid DNE!
             return os.path.join('data', 'datasets','gsm%s' % self.gsmid[3:6],
                                 self.gsmid[6:], sub_dir, filename)
         return upload_to_path
@@ -330,10 +331,14 @@ class Datasets(DCModel):
                                  null=True, blank=True, max_length=1024)
     seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
                                    null=True, blank=True, max_length=1024)
-    rep_treat_bw = models.CharField( null=True, blank=True, default ="", max_length=1024)
-    rep_treat_peaks = models.CharField( null=True, blank=True, default ="",max_length=1024)
-    rep_treat_summits = models.CharField( null=True, blank=True, default ="",max_length=1024)
-    rep_cont_bw = models.CharField( null=True, blank=True, default ="",max_length=1024)
+    rep_treat_bw = models.FileField(upload_to=upload_factory("bw"), null=True, 
+                                    blank=True, max_length=1024)
+    rep_treat_peaks = models.FileField(upload_to=upload_factory("bw"), 
+                                       null=True, blank=True, max_length=1024)
+    rep_treat_summits = models.FileField(upload_to=upload_factory("bw"), 
+                                         null=True,blank=True, max_length=1024)
+    rep_cont_bw = models.FileField(upload_to=upload_factory("bw"), null=True, 
+                                   blank=True, max_length=1024)
     cor_pdf_file = models.FileField(upload_to=upload_factory("cor"),
                                     null=True, blank=True, max_length=1024)
     cor_r_file = models.FileField(upload_to=upload_factory("cor"),
