@@ -1388,6 +1388,10 @@ def factors_view(request):
     #but we need to pull the following fields from it--see how we do this below
     _paperFldsToPull = ["pmid", "authors", "last_auth_email", "unique_id", 
                         "reference"]
+    _fileFlds = [f.name for f in models.Datasets._meta.fields \
+                     if type(f) == FileField]
+    _data_dir = os.path.join(settings.MEDIA_ROOT, "data")
+
     _timeout = 60*60*24 #1 day
     ret = {}
     mnames = []
@@ -1463,6 +1467,15 @@ def factors_view(request):
                             d.samples['conts'] = [{'id':s.id, 'unique_id':s.unique_id, 'fastq_file_url':s.fastq_file_url} for s in d.conts.all() if s]
                             d._meta._virtualfields.append('samples')
 
+                            #CHECK if the files exist and are non-zero
+                            for f_fld in _fileFlds:
+                                f_path = os.path.join(_data_dir, 
+                                                      str(getattr(d, f_fld)))
+                                #IF the file DNE OR it is empty
+                                if not os.path.exists(f_path) or \
+                                        not os.path.getsize(f_path):
+                                    setattr(d, f_fld, None)
+
                         dsets = [jsrecord.views.jsonify(d) for d in tmp]
                         ret[f.name][m.name] = dsets
 
@@ -1501,6 +1514,10 @@ def cells_view(request):
     #but we need to pull the following fields from it--see how we do this below
     _paperFldsToPull = ["pmid", "authors", "last_auth_email", #"gseid", 
                         "reference"]
+    _fileFlds = [f.name for f in models.Datasets._meta.fields \
+                     if type(f) == FileField]
+    _data_dir = os.path.join(settings.MEDIA_ROOT, "data")
+
     _hashTAG = "####SEARCH_CELLS####"
     ret = {}
     mnames = []
@@ -1569,6 +1586,16 @@ def cells_view(request):
                             d.samples['treats'] = [{'id':s.id, 'unique_id':s.unique_id, 'fastq_file_url':s.fastq_file_url} for s in d.treats.all() if s]
                             d.samples['conts'] = [{'id':s.id, 'unique_id':s.unique_id, 'fastq_file_url':s.fastq_file_url} for s in d.conts.all() if s]
                             d._meta._virtualfields.append('samples')
+
+                            #CHECK if the files exist and are non-zero
+                            for f_fld in _fileFlds:
+                                f_path = os.path.join(_data_dir, 
+                                                      str(getattr(d, f_fld)))
+                                #IF the file DNE OR it is empty
+                                if not os.path.exists(f_path) or \
+                                        not os.path.getsize(f_path):
+                                    setattr(d, f_fld, None)
+
 
                             allDsets.append(d.id)
                             if d.factor not in fnames:
