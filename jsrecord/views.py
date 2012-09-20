@@ -63,8 +63,11 @@ def All(request, model):
 
 @cache_page(_timeout)
 def Get(request, model, id):
-    m = model.objects.get(pk=id)
-    return HttpResponse(jsonify(m))
+    try:
+        m = model.objects.get(pk=id)
+        return HttpResponse(jsonify(m))
+    except: #not found
+        return HttpResponse("null")
 
 @cache_page(_timeout)
 def Find(request, model, options):
