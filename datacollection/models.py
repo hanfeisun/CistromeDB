@@ -150,14 +150,15 @@ class Papers(DCModel):
 
     #NOTE: these are killing the initial cache!!! AND we're only using one
     # of these--species.  For efficiency sake, commenting the rest out!
-    # factors = property(_sampleAggregator('factor'))
+    #NOTE: factors, cell_lines, cts, cps, tts is also needed for search
+    factors = property(_sampleAggregator('factor'))
     # platforms = property(_sampleAggregator('platform'))
     species = property(_sampleAggregator('species'))
     # assemblies = property(_sampleAggregator('assembly'))
-    # cell_types = property(_sampleAggregator('cell_type'))
-    # cell_lines = property(_sampleAggregator('cell_line'))
-    # cell_pops = property(_sampleAggregator('cell_pop'))
-    # tissue_types = property(_sampleAggregator('tissue_type'))
+    cell_types = property(_sampleAggregator('cell_type'))
+    cell_lines = property(_sampleAggregator('cell_line'))
+    cell_pops = property(_sampleAggregator('cell_pop'))
+    tissue_types = property(_sampleAggregator('tissue_type'))
     # strains = property(_sampleAggregator('strain'))
     # conditions = property(_sampleAggregator('condition'))
     # disease_states = property(_sampleAggregator('disease_state'))
@@ -193,6 +194,8 @@ Papers._meta._virtualfields = [#'lab', 'factors', 'platforms', 'species',
                                #'conditions', 'disease_states', 
                                'species',
                                'sample_unique_ids',
+                               'factors', 'cell_types', 'cell_lines', 
+                               'cell_pops', 'tissue_types'
                                ]
 
 
