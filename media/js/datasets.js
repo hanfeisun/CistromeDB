@@ -159,13 +159,31 @@ function createDataset() {
 	var dset = new Datasets({id:null});
 	//NOTE: WE NEED to set the new id to null so that jsrecords will know
 	//that we're trying to create/save a new obj!
-	dset.id = IsNumeric($('dset_id').value)?$('dset_id').value:"null";
-	//NOTE: NO ERROR CHECKING?!?!
-	dset.treats = $('treats').value.split(",");
-	dset.conts = $('conts').value.split(",");
-	//NOTE: status can't be null--so we need to set it here
-	dset.status = "new";
-	dset.save(cb);
+	//IS the id input valid?
+	var canProceed = false;
+	if (IsNumeric($('dset_id').value)) {
+	    dset.id = $('dset_id').value;
+	    //IS this overriding an existing id?
+	    var foo = Datasets.get(dset.id);
+	    if (foo) {
+		//object exists!
+		canProceed = confirm("The dataset id already exists, are you sure you want to over-write it?");
+	    } else {
+		canProceed = true;
+	    }
+	} else {
+	    dset.id = "null";
+	    canProceed = true;
+	}
+
+	if (canProceed) { //Either id is new/null or user over-ride!
+	    //NOTE: NO ERROR CHECKING?!?!
+	    dset.treats = $('treats').value.split(",");
+	    dset.conts = $('conts').value.split(",");
+	    //NOTE: status can't be null--so we need to set it here
+	    dset.status = "new";
+	    dset.save(cb);
+	}
     }
     p.appendChild(save);
     dialogue.appendChild(p);
