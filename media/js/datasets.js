@@ -146,10 +146,18 @@ function createDataset() {
     p.appendChild(cancel);
     var save = $D('input', {type:'button',value:'save',className:'diagBtn'});
     save.onclick = function() {
+	var cb2 = function(req) { console.log(req.responseText);}
 	var cb = function(req) {
 	    console.log(req.responseText);
 	    var resp = eval("("+req.responseText+")");
 	    if (resp.success) {
+		//ajax call to push meta info
+		//***KEY NOTE: need to block on this!!
+		var pushMeta = 
+		    new Ajax.Request(SUB_SITE+"push_meta/"+resp.obj.id+"/",
+	    			     {method:"get", onComplete: cb2, 
+				     asynchronous:false});
+
 		//go to the last page
 		window.location = SUB_SITE+"datasets/?id="+resp.obj.id;
 	    } else {
