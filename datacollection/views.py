@@ -1627,3 +1627,36 @@ def cells_view(request):
                  json.dumps(ret))
         return HttpResponse(resp)
     return HttpResponse("[]")
+
+@admin_only
+def push_meta(request, dataset_id):
+    """
+    This view pushes the dataset meta information to the tongji server.
+    It first creates a temporary file w/ the following info:
+    column 1: treatment sample IDs
+    column 2: control sample IDs
+    column 3: Species of the ChIP sample
+    column 4: Factor name of the ChIP sample
+
+    And then it tries to scp the temp file to tongji
+    """
+    _TEMP_DIR = "/tmp"
+    _login_info = "len@compbio2.tongji.edu.cn"
+    _dump_path = "/mnt/Storage/DC_meta_temp/"
+
+    d = models.Datasets.objects.get(pk=dataset_id)
+    if d:
+        fpath = os.path.join(_TEMP_DIR, "%s.txt" % d.id)
+        f = open(fpath, "w")
+        treats = [str(s.id) for s in d.treats.all()]
+        conts = [str(s.id) for s in d.conts.all()]
+        f.write("%s\t%s\t%s\t%s\n" % (",".join(treats), ",".join(conts),d.species,d.factor))
+        f.close()
+        # scp the file
+        # note: requires the public key to be an authorized key
+        proc = subprocess.Popen(["scp", "%s.txt" % d.id, "%s:%s" % (_login_info, _dump_path)], cwd=_TEMP_DIR)
+
+        return HttpResponse('{\"success\":true}')
+    else:
+        return HttpResponse('{\"success\":false}')
+
