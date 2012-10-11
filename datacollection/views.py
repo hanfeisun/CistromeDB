@@ -54,7 +54,8 @@ _sidebarPages = ['home', 'paper_submission', 'dcstats', 'help', 'contact']
 _sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help", 'Contact Us']
 
 _adminSidebar = [('datasets', 'Datasets'), 
-                 #('samples', 'Samples'), ('papers', 'Papers'), 
+                 ('samples', 'Samples'), 
+                 ('papers', 'Papers'), 
                  ('factors', 'Factors'),
                  ('celllines', 'Cell Lines'), ('cellpops', 'Cell Pops'),
                  ('celltypes', 'Cell Types'), ('tissuetypes', 'Tissue Types'),
@@ -410,6 +411,10 @@ def samples(request):
     sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
     currpage = "samples"
 
+    fields = ['id', 'unique_id', 'fastq_file', 'bam_file']
+    fileFields = [f.name for f in models.Datasets._meta.fields \
+                      if f.__class__== FileField]
+
     samples = models.Samples.objects.all()
 
     #note: we have to keep track of these URL params so that we can feed them
@@ -482,7 +487,7 @@ def samples(request):
         rest += "&lab=%s" % request.GET['lab']
     
     #here is where we order things by paper and then gsmid for the admins
-    samples = samples.order_by("paper", "gsmid")
+    #samples = samples.order_by("paper", "gsmid")
 
     #HACK: get singleton
     if 'id' in request.GET:
@@ -497,9 +502,9 @@ def samples(request):
     except ValueError:
         page = 1
     try:
-        samples = paginator.page(page)
+        pg = paginator.page(page)
     except (EmptyPage, InvalidPage):
-        samples = paginator.page(paginator.num_pages)
+        pg = paginator.page(paginator.num_pages)
         
     return render_to_response('datacollection/samples.html', locals(),
                               context_instance=RequestContext(request))
