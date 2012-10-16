@@ -85,6 +85,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admin',
     'datacollection', 'jsrecord', 'entrezutils',
     'haystack', 'south',
+    'swami',
 )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'

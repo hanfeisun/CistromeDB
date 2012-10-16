@@ -1,6 +1,7 @@
 import datetime
 from optparse import make_option
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import AppCommand, CommandError
 from django.db import reset_queries
 from django.utils.encoding import smart_str
@@ -9,10 +10,6 @@ try:
     from django.utils import importlib
 except ImportError:
     from haystack.utils import importlib
-try:
-    set
-except NameError:
-    from sets import Set as set
 
 
 DEFAULT_BATCH_SIZE = getattr(settings, 'HAYSTACK_BATCH_SIZE', 1000)
@@ -112,9 +109,12 @@ class Command(AppCommand):
                     if self.verbosity >= 2:
                         print "No updated date field found for '%s' - not restricting by age." % model.__name__
             
+            if not hasattr(index.index_queryset(), 'filter'):
+                raise ImproperlyConfigured("The '%r' class must return a 'QuerySet' in the 'get_queryset' method." % index)
+            
             # `.select_related()` seems like a good idea here but can fail on
             # nullable `ForeignKey` as well as what seems like other cases.
-            qs = index.get_queryset().filter(**extra_lookup_kwargs).order_by(model._meta.pk.name)
+            qs = index.index_queryset().filter(**extra_lookup_kwargs).order_by(model._meta.pk.name)
             total = qs.count()
             
             if self.verbosity >= 1:
@@ -146,7 +146,7 @@ class Command(AppCommand):
                     # They're using a reduced set, which may not incorporate
                     # all pks. Rebuild the list with everything.
                     pks_seen = set()
-                    qs = index.get_queryset().values_list('pk', flat=True)
+                    qs = index.index_queryset().values_list('pk', flat=True)
                     total = qs.count()
                     
                     for pk in qs:
@@ -168,4 +168,4 @@ class Command(AppCommand):
                             if self.verbosity >= 2:
                                 print "  removing %s." % result.pk
                             
-                            index.backend.remove(".".join([result.app_label, result.model_name, result.pk]))
+                            index.backend.remove(".".join([result.app_label, result.model_name, str(result.pk)]))
