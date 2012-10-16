@@ -3,15 +3,11 @@ import sys
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.loading import get_model
-from haystack.backends import BaseSearchBackend, BaseSearchQuery, log_query
+from haystack.backends import BaseSearchBackend, BaseSearchQuery, log_query, EmptyResults
 from haystack.constants import ID, DJANGO_CT, DJANGO_ID
 from haystack.exceptions import MissingDependency, MoreLikeThisError
 from haystack.models import SearchResult
 from haystack.utils import get_identifier
-try:
-    set
-except NameError:
-    from sets import Set as set
 try:
     from django.db.models.sql.query import get_proxied_model
 except ImportError:
@@ -24,11 +20,6 @@ except ImportError:
 
 
 BACKEND_NAME = 'solr'
-
-
-class EmptyResults(object):
-    hits = 0
-    docs = []
 
 
 class SearchBackend(BaseSearchBackend):
@@ -109,7 +100,7 @@ class SearchBackend(BaseSearchBackend):
     def search(self, query_string, sort_by=None, start_offset=0, end_offset=None,
                fields='', highlight=False, facets=None, date_facets=None, query_facets=None,
                narrow_queries=None, spelling_query=None,
-               limit_to_registered_models=None, **kwargs):
+               limit_to_registered_models=None, result_class=None, **kwargs):
         if len(query_string) == 0:
             return {
                 'results': [],
@@ -191,11 +182,11 @@ class SearchBackend(BaseSearchBackend):
             self.log.error("Failed to query Solr using '%s': %s", query_string, e)
             raw_results = EmptyResults()
         
-        return self._process_results(raw_results, highlight=highlight)
+        return self._process_results(raw_results, highlight=highlight, result_class=result_class)
     
     def more_like_this(self, model_instance, additional_query_string=None,
                        start_offset=0, end_offset=None,
-                       limit_to_registered_models=None, **kwargs):
+                       limit_to_registered_models=None, result_class=None, **kwargs):
         # Handle deferred models.
         if get_proxied_model and hasattr(model_instance, '_deferred') and model_instance._deferred:
             model_klass = get_proxied_model(model_instance._meta)
@@ -244,14 +235,21 @@ class SearchBackend(BaseSearchBackend):
             self.log.error("Failed to fetch More Like This from Solr for document '%s': %s", query, e)
             raw_results = EmptyResults()
         
-        return self._process_results(raw_results)
+        return self._process_results(raw_results, result_class=result_class)
     
-    def _process_results(self, raw_results, highlight=False):
-        from haystack import site
+    def _process_results(self, raw_results, highlight=False, result_class=None):
+        if not self.site:
+            from haystack import site
+        else:
+            site = self.site
+        
         results = []
         hits = raw_results.hits
         facets = {}
         spelling_suggestion = None
+        
+        if result_class is None:
+            result_class = SearchResult
         
         if hasattr(raw_results, 'facets'):
             facets = {
@@ -297,7 +295,7 @@ class SearchBackend(BaseSearchBackend):
                 if raw_result[ID] in getattr(raw_results, 'highlighting', {}):
                     additional_fields['highlighted'] = raw_results.highlighting[raw_result[ID]]
                 
-                result = SearchResult(app_label, model_name, raw_result[DJANGO_ID], raw_result['score'], **additional_fields)
+                result = result_class(app_label, model_name, raw_result[DJANGO_ID], raw_result['score'], searchsite=self.site, **additional_fields)
                 results.append(result)
             else:
                 hits -= 1
@@ -336,6 +334,10 @@ class SearchBackend(BaseSearchBackend):
                 field_data['type'] = 'sfloat'
             elif field_class.field_type == 'boolean':
                 field_data['type'] = 'boolean'
+            elif field_class.field_type == 'ngram':
+                field_data['type'] = 'ngram'
+            elif field_class.field_type == 'edge_ngram':
+                field_data['type'] = 'edge_ngram'
             
             if field_class.is_multivalued:
                 field_data['multi_valued'] = 'true'
@@ -365,7 +367,7 @@ class SearchBackend(BaseSearchBackend):
 
 class SearchQuery(BaseSearchQuery):
     def __init__(self, site=None, backend=None):
-        super(SearchQuery, self).__init__(backend=backend)
+        super(SearchQuery, self).__init__(site, backend)
         
         if backend is not None:
             self.backend = backend
@@ -377,6 +379,10 @@ class SearchQuery(BaseSearchQuery):
 
     def build_query_fragment(self, field, filter_type, value):
         result = ''
+        
+        # Handle when we've got a ``ValuesListQuerySet``...
+        if hasattr(value, 'values_list'):
+            value = list(value)
         
         if not isinstance(value, (list, tuple)):
             # Convert whatever we find to what pysolr wants.
@@ -423,6 +429,7 @@ class SearchQuery(BaseSearchQuery):
         final_query = self.build_query()
         kwargs = {
             'start_offset': self.start_offset,
+            'result_class': self.result_class,
         }
         
         if self.order_by:
@@ -471,6 +478,7 @@ class SearchQuery(BaseSearchQuery):
         additional_query_string = self.build_query()
         kwargs = {
             'start_offset': self.start_offset,
+            'result_class': self.result_class,
         }
         
         if self.end_offset is not None:

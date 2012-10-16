@@ -10,14 +10,9 @@ from django.utils.datetime_safe import datetime
 from django.utils.encoding import force_unicode
 from haystack.backends import BaseSearchBackend, BaseSearchQuery, log_query
 from haystack.constants import ID, DJANGO_CT, DJANGO_ID
-from haystack.fields import DateField, DateTimeField, IntegerField, FloatField, BooleanField, MultiValueField
 from haystack.exceptions import MissingDependency, SearchBackendError
 from haystack.models import SearchResult
 from haystack.utils import get_identifier
-try:
-    set
-except NameError:
-    from sets import Set as set
 try:
     import json
 except ImportError:
@@ -33,7 +28,7 @@ except ImportError:
 
 # Bubble up the correct error.
 from whoosh.analysis import StemmingAnalyzer
-from whoosh.fields import Schema, IDLIST, STORED, TEXT, KEYWORD, NUMERIC, BOOLEAN, DATETIME
+from whoosh.fields import Schema, IDLIST, STORED, TEXT, KEYWORD, NUMERIC, BOOLEAN, DATETIME, NGRAM, NGRAMWORDS
 from whoosh.fields import ID as WHOOSH_ID
 from whoosh import index
 from whoosh.qparser import QueryParser
@@ -43,8 +38,8 @@ from whoosh.spelling import SpellChecker
 from whoosh.writing import AsyncWriter
 
 # Handle minimum requirement.
-if not hasattr(whoosh, '__version__') or whoosh.__version__ < (1, 1, 1):
-    raise MissingDependency("The 'whoosh' backend requires version 1.1.1 or greater.")
+if not hasattr(whoosh, '__version__') or whoosh.__version__ < (1, 8, 1):
+    raise MissingDependency("The 'whoosh' backend requires version 1.8.1 or greater.")
 
 
 DATETIME_REGEX = re.compile('^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})T(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.\d{3,6}Z?)?$')
@@ -132,19 +127,24 @@ class SearchBackend(BaseSearchBackend):
         for field_name, field_class in fields.items():
             if field_class.is_multivalued:
                 if field_class.indexed is False:
-                    schema_fields[field_class.index_fieldname] = IDLIST(stored=True)
+                    schema_fields[field_class.index_fieldname] = IDLIST(stored=True, field_boost=field_class.boost)
                 else:
-                    schema_fields[field_class.index_fieldname] = KEYWORD(stored=True, commas=True, scorable=True)
+                    schema_fields[field_class.index_fieldname] = KEYWORD(stored=True, commas=True, scorable=True, field_boost=field_class.boost)
             elif field_class.field_type in ['date', 'datetime']:
                 schema_fields[field_class.index_fieldname] = DATETIME(stored=field_class.stored)
             elif field_class.field_type == 'integer':
-                schema_fields[field_class.index_fieldname] = NUMERIC(stored=field_class.stored, type=int)
+                schema_fields[field_class.index_fieldname] = NUMERIC(stored=field_class.stored, type=int, field_boost=field_class.boost)
             elif field_class.field_type == 'float':
-                schema_fields[field_class.index_fieldname] = NUMERIC(stored=field_class.stored, type=float)
+                schema_fields[field_class.index_fieldname] = NUMERIC(stored=field_class.stored, type=float, field_boost=field_class.boost)
             elif field_class.field_type == 'boolean':
+                # Field boost isn't supported on BOOLEAN as of 1.8.2.
                 schema_fields[field_class.index_fieldname] = BOOLEAN(stored=field_class.stored)
+            elif field_class.field_type == 'ngram':
+                schema_fields[field_class.index_fieldname] = NGRAM(minsize=3, maxsize=15, stored=field_class.stored, field_boost=field_class.boost)
+            elif field_class.field_type == 'edge_ngram':
+                schema_fields[field_class.index_fieldname] = NGRAMWORDS(minsize=2, maxsize=15, stored=field_class.stored, field_boost=field_class.boost)
             else:
-                schema_fields[field_class.index_fieldname] = TEXT(stored=True, analyzer=StemmingAnalyzer())
+                schema_fields[field_class.index_fieldname] = TEXT(stored=True, analyzer=StemmingAnalyzer(), field_boost=field_class.boost)
             
             if field_class.document is True:
                 content_field_name = field_class.index_fieldname
@@ -228,7 +228,7 @@ class SearchBackend(BaseSearchBackend):
     def search(self, query_string, sort_by=None, start_offset=0, end_offset=None,
                fields='', highlight=False, facets=None, date_facets=None, query_facets=None,
                narrow_queries=None, spelling_query=None,
-               limit_to_registered_models=None, **kwargs):
+               limit_to_registered_models=None, result_class=None, **kwargs):
         if not self.setup_complete:
             self.setup()
         
@@ -305,6 +305,8 @@ class SearchBackend(BaseSearchBackend):
             if len(registered_models) > 0:
                 narrow_queries.add('%s:(%s)' % (DJANGO_CT, ' OR '.join(registered_models)))
         
+        narrow_searcher = None
+        
         if narrow_queries is not None:
             # Potentially expensive? I don't see another way to do it in Whoosh...
             narrow_searcher = self.index.searcher()
@@ -367,7 +369,13 @@ class SearchBackend(BaseSearchBackend):
                     'spelling_suggestion': None,
                 }
             
-            return self._process_results(raw_page, highlight=highlight, query_string=query_string, spelling_query=spelling_query)
+            results = self._process_results(raw_page, highlight=highlight, query_string=query_string, spelling_query=spelling_query, result_class=result_class)
+            searcher.close()
+            
+            if hasattr(narrow_searcher, 'close'):
+                narrow_searcher.close()
+            
+            return results
         else:
             if getattr(settings, 'HAYSTACK_INCLUDE_SPELLING', False):
                 if spelling_query:
@@ -385,20 +393,27 @@ class SearchBackend(BaseSearchBackend):
     
     def more_like_this(self, model_instance, additional_query_string=None,
                        start_offset=0, end_offset=None,
-                       limit_to_registered_models=None, **kwargs):
+                       limit_to_registered_models=None, result_class=None, **kwargs):
         warnings.warn("Whoosh does not handle More Like This.", Warning, stacklevel=2)
         return {
             'results': [],
             'hits': 0,
         }
     
-    def _process_results(self, raw_page, highlight=False, query_string='', spelling_query=None):
-        from haystack import site
+    def _process_results(self, raw_page, highlight=False, query_string='', spelling_query=None, result_class=None):
+        if not self.site:
+            from haystack import site
+        else:
+            site = self.site
+        
         results = []
         
         # It's important to grab the hits first before slicing. Otherwise, this
         # can cause pagination failures.
         hits = len(raw_page)
+        
+        if result_class is None:
+            result_class = SearchResult
         
         facets = {}
         spelling_suggestion = None
@@ -417,7 +432,7 @@ class SearchBackend(BaseSearchBackend):
                     
                     if string_key in index.fields and hasattr(index.fields[string_key], 'convert'):
                         # Special-cased due to the nature of KEYWORD fields.
-                        if isinstance(index.fields[string_key], MultiValueField):
+                        if index.fields[string_key].is_multivalued:
                             if value is None or len(value) is 0:
                                 additional_fields[string_key] = []
                             else:
@@ -440,7 +455,7 @@ class SearchBackend(BaseSearchBackend):
                         self.content_field_name: [highlight(additional_fields.get(self.content_field_name), terms, sa, ContextFragmenter(terms), UppercaseFormatter())],
                     }
                 
-                result = SearchResult(app_label, model_name, raw_result[DJANGO_ID], score, **additional_fields)
+                result = result_class(app_label, model_name, raw_result[DJANGO_ID], score, searchsite=self.site, **additional_fields)
                 results.append(result)
             else:
                 hits -= 1
@@ -497,9 +512,9 @@ class SearchBackend(BaseSearchBackend):
                 value = datetime(value.year, value.month, value.day, 0, 0, 0)
         elif isinstance(value, bool):
             if value:
-                value = True
+                value = 'true'
             else:
-                value = False
+                value = 'false'
         elif isinstance(value, (list, tuple)):
             value = u','.join([force_unicode(v) for v in value])
         elif isinstance(value, (int, long, float)):
@@ -548,7 +563,7 @@ class SearchBackend(BaseSearchBackend):
 
 class SearchQuery(BaseSearchQuery):
     def __init__(self, site=None, backend=None):
-        super(SearchQuery, self).__init__(backend=backend)
+        super(SearchQuery, self).__init__(site, backend)
         
         if backend is not None:
             self.backend = backend
@@ -557,9 +572,9 @@ class SearchQuery(BaseSearchQuery):
     
     def _convert_datetime(self, date):
         if hasattr(date, 'hour'):
-            return force_unicode(date.strftime('%Y%m%dT%H%M%S'))
+            return force_unicode(date.strftime('%Y%m%d%H%M%S'))
         else:
-            return force_unicode(date.strftime('%Y%m%dT000000'))
+            return force_unicode(date.strftime('%Y%m%d000000'))
     
     def clean(self, query_fragment):
         """
@@ -590,6 +605,10 @@ class SearchQuery(BaseSearchQuery):
         result = ''
         is_datetime = False
         
+        # Handle when we've got a ``ValuesListQuerySet``...
+        if hasattr(value, 'values_list'):
+            value = list(value)
+        
         if hasattr(value, 'strftime'):
             is_datetime = True
         
@@ -612,10 +631,10 @@ class SearchQuery(BaseSearchQuery):
         else:
             filter_types = {
                 'exact': "%s:%s",
-                'gt': "%s:{%s TO}",
-                'gte': "%s:[%s TO]",
-                'lt': "%s:{TO %s}",
-                'lte': "%s:[TO %s]",
+                'gt': "%s:{%s to}",
+                'gte': "%s:[%s to]",
+                'lt': "%s:{to %s}",
+                'lte': "%s:[to %s]",
                 'startswith': "%s:%s*",
             }
             
@@ -646,7 +665,7 @@ class SearchQuery(BaseSearchQuery):
                 if hasattr(value[1], 'strftime'):
                     end = self._convert_datetime(end)
                 
-                return "%s:[%s TO %s]" % (index_fieldname, start, end)
+                return "%s:[%s to %s]" % (index_fieldname, start, end)
             else:
                 if is_datetime is True:
                     value = self._convert_datetime(value)
