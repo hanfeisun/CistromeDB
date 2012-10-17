@@ -29,7 +29,7 @@ except ImportError:
 #views factory
 def views_factory(model_class):
     def generic_view(request):
-        print model_class
+        #print model_class
         tmp = []
         if 'q' in request.GET:
             res = SearchQuerySet().autocomplete(content_auto=request.GET['q'])

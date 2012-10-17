@@ -379,8 +379,8 @@ function editDialogue(id) {
 	    var resp = eval("("+req.responseText+")");
 	    if (resp.success) {
 		//refresh the page
-		//window.location = window.location.href;
-		console.log(req.responseText);
+		window.location = window.location.href;
+		//console.log(req.responseText);
 	    } else {
 		console.log(resp.err);
 	    }
