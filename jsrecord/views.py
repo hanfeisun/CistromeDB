@@ -8,7 +8,8 @@ from django.core import serializers
 from django.db.models.base import ModelBase
 from django.forms import ModelForm
 from django.db import models
-from django.views.decorators.cache import cache_page
+#from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 
 from new import classobj
 from datetime import date, datetime
@@ -56,20 +57,33 @@ for m in dir(MODELS):
                        {'Meta': classobj('Meta',(),{'model':model})})
         _MODELFORMS[model] = tmp
 
-@cache_page(_timeout)
+#@cache_page(_timeout)
 def All(request, model):
-    tmp = [jsonify(o) for o in model.objects.all()]    
+    key = "##JSRECORD_ALL:%s" % model.__class__.__name__
+
+    if cache.get(key):
+        tmp = cache.get(key)
+    else:
+        tmp = [jsonify(o) for o in model.objects.all()]
+        cache.set(key, tmp)
+
     return HttpResponse("[%s]" % ",".join(tmp))
 
-@cache_page(_timeout)
+#@cache_page(_timeout)
 def Get(request, model, id):
-    try:
-        m = model.objects.get(pk=id)
+    key = "##JSRECORD_GET:%s_%s" % (model.__class__.__name__, id)
+    if cache.get(key):
+        m = cache.get(key)
         return HttpResponse(jsonify(m))
-    except: #not found
-        return HttpResponse("null")
+    else:        
+        try:
+            m = model.objects.get(pk=id)
+            cache.set(key, m)
+            return HttpResponse(jsonify(m))
+        except: #not found
+            return HttpResponse("null")
 
-@cache_page(_timeout)
+#@cache_page(_timeout)
 def Find(request, model, options):
     #we need to do this b/c request.GET is an invalid dict to pass in
     opts = dict([(str(x),request.GET[x]) for x in request.GET.keys()])
@@ -89,6 +103,13 @@ def Save(request, model):
         form = _MODELFORMS[model](request.POST, instance=s)
         if form.is_valid():
             new_m = form.save()
+            #is the object cached?
+            if (cache.get("##JSRECORD_ALL:%s" % model.__class__.__name__)):
+                cache.delete("##JSRECORD_ALL:%s" % model.__class__.__name__)
+            if (cache.get("##JSRECORD_GET:%s_%s" % (model.__class__.__name__, 
+                                                    new_m.id))):
+                cache.delete("##JSRECORD_GET:%s_%s" % (model.__class__.__name__, new_m.id))
+
             return HttpResponse('{\"success\":true, \"obj\":'+jsonify(new_m)+'}')
         else:
             return HttpResponse('{\"success\":false, \"err\":\"%s\"}' % form.errors) 
