@@ -216,6 +216,8 @@ function JSRecordFactory(className, fields) {
 			}
 		    }
 		    json += outer.fields[0]+":"+val;
+		} else {
+		    json += outer.fields[0]+":null";
 		}
 	    }
 	    for (i = 1; i < outer.fields.length; i++) {
