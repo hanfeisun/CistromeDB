@@ -421,8 +421,18 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('span', {innerHTML:'treatment files:',className:'label'}));	
 		for (var tt = 0; tt < dset.samples.treats.length; tt++) {
 		    var span = $D('span', {className:'value2'});
-                    var newA = $D('a',{innerHTML:dset.samples.treats[tt].unique_id+" ", href:dset.samples.treats[tt].fastq_file_url, target:"_blank"});
-                    span.appendChild(newA);
+		    var newA;
+		    //IS this a GEO GSMID?, then GSMXXXXX (download)
+		    if (dset.samples.treats[tt].unique_id.match(/GSM.*/)) {
+			newA = $D('a',{innerHTML:dset.samples.treats[tt].unique_id, href:"http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="+dset.samples.treats[tt].unique_id, target:"_blank"});
+			span.appendChild(newA);
+			span.appendChild($D('span', {innerHTML:'&nbsp;'}));
+			newA = $D('a',{innerHTML:"(download)", href:dset.samples.treats[tt].fastq_file_url, target:"_blank"});
+			span.appendChild(newA);
+		    } else {
+			newA = $D('a',{innerHTML:"("+dset.samples.treats[tt].unique_id+")", href:dset.samples.treats[tt].fastq_file_url, target:"_blank"});
+			span.appendChild(newA);
+		    }
 		    td1.appendChild(span)
 		}
 		td1.appendChild($D('br'));
@@ -432,8 +442,18 @@ function FactorInfoView(container, model) {
 		td1.appendChild($D('span', {innerHTML:'control files:',className:'label'}));	
 		for (var cc = 0; cc < dset.samples.conts.length; cc++) {
 		    var span = $D('span', {className:'value2'});
-                    var newA = $D('a',{innerHTML:dset.samples.conts[cc].unique_id+" ", href:dset.samples.conts[cc].fastq_file_url, target:"_blank"});
-                    span.appendChild(newA);
+		    var newA;
+		    //IS this a GEO GSMID?, then GSMXXXXX (download)
+		    if (dset.samples.conts[cc].unique_id.match(/GSM.*/)) {
+			newA = $D('a',{innerHTML:dset.samples.conts[cc].unique_id, href:"http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="+dset.samples.conts[cc].unique_id, target:"_blank"});
+			span.appendChild(newA);
+			span.appendChild($D('span', {innerHTML:'&nbsp;'}));
+			newA = $D('a',{innerHTML:"(download)", href:dset.samples.conts[cc].fastq_file_url, target:"_blank"});
+			span.appendChild(newA);
+		    } else {
+			newA = $D('a',{innerHTML:"("+dset.samples.conts[cc].unique_id+")", href:dset.samples.conts[cc].fastq_file_url, target:"_blank"});
+			span.appendChild(newA);
+		    }
 		    td1.appendChild(span)
 		}
 		td1.appendChild($D('br'));
