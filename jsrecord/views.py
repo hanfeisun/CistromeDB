@@ -112,7 +112,7 @@ def Save(request, model):
 
             return HttpResponse('{\"success\":true, \"obj\":'+jsonify(new_m)+'}')
         else:
-            return HttpResponse('{\"success\":false, \"err\":\"%s\"}' % form.errors) 
+            return HttpResponse('{\"success\":false, \"err\":\"%s\"}' % form.errors.as_text().replace("\n", "")) 
 
 def Delete(request, _model, id):
     """Given a django model and an id, tries to delete the record from the db

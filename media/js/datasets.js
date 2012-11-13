@@ -162,6 +162,7 @@ function createDataset() {
 		window.location = SUB_SITE+"datasets/?id="+resp.obj.id;
 	    } else {
 		console.log(resp.err);
+		alert(resp.err);
 	    }
 	}
 	var dset = new Datasets({id:null});
@@ -416,6 +417,7 @@ function editDialogue(id) {
 		window.location = window.location.href;
 	    } else {
 		console.log(resp.err);
+		alert(resp.err);
 	    }
 	}
 	//NOTE: NO ERROR CHECKING?!?!
