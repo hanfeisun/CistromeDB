@@ -286,7 +286,7 @@ class Datasets(DCModel):
     paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
 
     treats = models.ManyToManyField('Samples', related_name="treatments")
-    conts = models.ManyToManyField('Samples', related_name="controls")
+    conts = models.ManyToManyField('Samples', related_name="controls", null=True, blank=True, default=None)
 
     treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
                                                    blank=True)
