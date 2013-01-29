@@ -287,6 +287,28 @@ function showInfo(id) {
 	    dialogue.appendChild(p);
 	}
     }
+
+    //ADD the file fields which are editable
+    var ffields = ['peak_file', 'peak_xls_file', 'summit_file', 
+		   'treat_bw_file','cont_bw_file',
+		   'rep_treat_peaks', 'rep_treat_summits','rep_cont_bw',
+		   'conservation_file', 'conservation_r_file',
+		   'ceas_file','ceas_r_file', 'ceas_xls_file',
+		   'venn_file','seqpos_file','rep_treat_bw',
+		   'cor_pdf_file','cor_r_file', 'dhs_file',
+		   'conf_file','log_file', 'summary_file'];
+    for (var i = 0; i < ffields.length; i++) {
+	var fld = ffields[i];
+	var name = fld.replace(/_/g, " ");
+
+	if (dset[fld]){
+	    p.appendChild($D('span', {innerHTML:name+":", className:'label'}));
+	    p.appendChild($D('span', {innerHTML:dset[fld], className:'value'}));
+	    p.appendChild($D('br'));
+	    dialogue.appendChild(p);
+	}
+    }
+
     //add buttons
     p = $D('p');
     //a spacer to move the buttons to the right
@@ -398,6 +420,29 @@ function editDialogue(id) {
 	}
     }
 
+    //ADD the file fields which are editable
+    var ffields = ['peak_file', 'peak_xls_file', 'summit_file', 
+		   'treat_bw_file','cont_bw_file',
+		   'rep_treat_peaks', 'rep_treat_summits','rep_cont_bw',
+		   'conservation_file', 'conservation_r_file',
+		   'ceas_file','ceas_r_file', 'ceas_xls_file',
+		   'venn_file','seqpos_file','rep_treat_bw',
+		   'cor_pdf_file','cor_r_file', 'dhs_file',
+		   'conf_file','log_file', 'summary_file'];
+    for (var i = 0; i < ffields.length; i++) {
+	var fld = ffields[i];
+	var name = fld.replace(/_/g, " ");
+
+	p.appendChild($D('span', {innerHTML:name+":", className:'label'}));
+	var tmpIn = $D('input', {type:'text', id:fld, className:'textInput2'});
+	p.appendChild(tmpIn);
+	if (dset[fld]){
+	    tmpIn.value = dset[fld];
+	}
+	p.appendChild($D('br'));
+	dialogue.appendChild(p);
+    }
+
     //add buttons
     p = $D('p');
     //a spacer to move the buttons to the right
@@ -423,6 +468,16 @@ function editDialogue(id) {
 	//NOTE: NO ERROR CHECKING?!?!
 	dset.treats = $('treats').value.split(",");
 	dset.conts = $('conts').value.split(",");
+	
+	//SAVE the file fields
+	for (var i=0; i < ffields.length; i++) {
+	    var fld = ffields[i];
+	    var val = $(fld).value.replace(/\s/g, '');
+	    if (val) {
+		dset[fld] = val;
+	    }
+	}
+	
 	dset.save(cb);
     }
     p.appendChild(save);

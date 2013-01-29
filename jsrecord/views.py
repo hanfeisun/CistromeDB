@@ -13,7 +13,7 @@ from django.core.cache import cache
 
 from new import classobj
 from datetime import date, datetime
-from django.db.models.fields.files import FieldFile
+from django.db.models.fields.files import FieldFile, FileField
 from django.db.models.fields.related import ManyToManyField
 import django.db.models.fields.related as related
 #import django.db.models.fields.related.ManyRelatedManager as ManyRelatedManager
@@ -99,6 +99,13 @@ def Save(request, model):
             s = model(id=request.POST['id'])
         else:
             s = None
+
+        #2013-01-30 HACK for the file fields to work
+        #PROBLEM: it wasn't saving the filefield values
+        for f in s._meta.fields:
+            if f.__class__ == FileField:
+                if f.name in request.POST and request.POST[f.name]:
+                    setattr(s, f.name, request.POST[f.name])
 
         form = _MODELFORMS[model](request.POST, instance=s)
         if form.is_valid():
