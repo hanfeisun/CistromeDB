@@ -2,22 +2,33 @@
 
 #LEN-DEFINED values
 #where newdc is deployed
-DEPLOY_DIR="/data1/newdc/"
+DEPLOY_DIR="/home/lentaing/envs/newdc1.4/src/"
 #DEFINES sub-site prefix
-SUB_SITE="newdc/"
+SUB_SITE=""
 
 from settings_common import *
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-DATABASE_ENGINE = 'mysql'
-DATABASE_NAME = 'newdc'
-DATABASE_USER = 'root'
-DATABASE_PASSWORD = 'newdaisy'
-DATABASE_HOST = ''
-DATABASE_PORT = ''
+#OBSOLETE:
+# DATABASE_ENGINE = 'mysql'
+# DATABASE_NAME = 'newdc'
+# DATABASE_USER = 'newdc'
+# DATABASE_PASSWORD = 'helamcf7'
+# DATABASE_HOST = ''
+# DATABASE_PORT = ''
 
-LOGIN_URL='/newdc/accounts/login/'
-LOGIN_REDIRECT_URL='/newdc/'
+DATABASES = {
+   'default': {
+        'ENGINE': 'django.db.backends.mysql', 
+        'NAME': 'newdc',
+        'USER': 'newdc',                      
+        'PASSWORD': 'helamcf7',                  
+        'HOST': '',                      
+        'PORT': '',                      
+    }
+}
 
+LOGIN_URL='/accounts/login/'
+LOGIN_REDIRECT_URL='/'

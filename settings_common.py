@@ -51,9 +51,9 @@ SECRET_KEY = '@y7n)31q3q=*0v!kvbg5rq_hhkt$(!#o2u88cr_xshhn=3ij=6'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',                    
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+#     'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_DIRS = (
@@ -85,7 +85,6 @@ INSTALLED_APPS = (
     # 'django.contrib.admin',
     'datacollection', 'jsrecord', 'entrezutils',
     'haystack', 'south',
-    'swami',
 )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
@@ -96,3 +95,8 @@ CACHE_BACKEND = 'db://newdc_cache'
 HAYSTACK_SITECONF = 'search_sites'
 HAYSTACK_SEARCH_ENGINE = 'whoosh'
 HAYSTACK_WHOOSH_PATH = os.path.join(MEDIA_ROOT, 'whoosh_index')
+
+
+SOUTH_DATABASE_ADAPTERS = {
+    'default': "south.db.mysql"
+}

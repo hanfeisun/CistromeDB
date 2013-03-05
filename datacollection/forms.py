@@ -94,11 +94,11 @@ class UploadDatasetForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
         #NOTE: for some reason fields isn't working, try exclude instead
-        fields = ('raw_file', 'treatment_file', 'peak_file', 'wig_file',
-                  'bw_file',
-                  )
-        exclude = tuple([f.name for f in model._meta.fields \
-                         if f.name not in fields])
+        #fields = ('raw_file', 'treatment_file', 'peak_file', 'wig_file',
+        #          'bw_file',
+        #          )
+        #exclude = tuple([f.name for f in model._meta.fields \
+        #                 if f.name not in fields])
         #exclude = ('gsmid', 'name', 'chip_page', 'control_gsmid',
         #           'control_page', 'date_collected', 'raw_file_url',
         #           'raw_file_type', 'user', 'paper', 'factor', 'platform',
@@ -137,22 +137,22 @@ class UpdateDatasetForm(forms.ModelForm):
 class UpdateSampleForm(forms.ModelForm):
     class Meta:
         model = models.Samples
-        fields = ('user', 'paper', 'treatments', 'controls', 
-                  'uploader', 'upload_date',
-                  'status', 'comments')
-        exclude = tuple([f.name for f in model._meta.fields \
-                         if f.name not in fields])
+        # fields = ('user', 'paper', 'treatments', 'controls', 
+        #           'uploader', 'upload_date',
+        #           'status', 'comments')
+        # exclude = tuple([f.name for f in model._meta.fields \
+        #                  if f.name not in fields])
 
 class BatchUpdateDatasetsForm(forms.ModelForm):
     class Meta:
         model = models.Datasets
-        fields = ('paper', 'factor', 'platform', 'species', 'assembly', 
-                  'cell_type', 'cell_line',
-                  'cell_pop', 'strain', 'condition', 'disease_state',
-                  'status', 'comments',
-                  'user', 'uploader', 'curator', 'description',)
-        exclude = tuple([f.name for f in model._meta.fields \
-                         if f.name not in fields])
+        # fields = ('paper', 'factor', 'platform', 'species', 'assembly', 
+        #           'cell_type', 'cell_line',
+        #           'cell_pop', 'strain', 'condition', 'disease_state',
+        #           'status', 'comments',
+        #           'user', 'uploader', 'curator', 'description',)
+        # exclude = tuple([f.name for f in model._meta.fields \
+        #                  if f.name not in fields])
 
 #realized that this doesn't have much usefulness
 # class BatchUpdatePapersForm(forms.ModelForm):
