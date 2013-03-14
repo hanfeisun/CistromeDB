@@ -190,7 +190,7 @@ class ModelEncoder(json.JSONEncoder):
         #_meta._virtualfield; i hope that isn't confusing
         if '_virtualfields' in dir(modelObj._meta):
             for f in modelObj._meta._virtualfields:
-                if f and getattr(modelObj, f):
+                if f and hasattr(modelObj, f) and getattr(modelObj, f):
                     #check to see if it's a ManyToMany Field:
                     val = getattr(modelObj, f)
                     if val.__class__.__name__ == "ManyRelatedManager":
