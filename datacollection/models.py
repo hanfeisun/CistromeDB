@@ -285,13 +285,13 @@ class Datasets(DCModel):
     user = models.ForeignKey(User, null=True, blank=True, default=None)
     paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
 
-    treats = models.ManyToManyField('Samples', related_name="treatments")
-    conts = models.ManyToManyField('Samples', related_name="controls", null=True, blank=True, default=None)
+    treats = models.ManyToManyField('Samples', related_name="TREATS")
+    conts = models.ManyToManyField('Samples', related_name="CONTS", null=True, blank=True, default=None)
 
-    treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
-                                                   blank=True)
-    controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
-                                                 blank=True)
+    #treatments = models.CommaSeparatedIntegerField(max_length=255, null=True,
+    #                                               blank=True)
+    #controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
+    #                                             blank=True)
 
     #Virtual fields:
     factor = property(_sampleAggregator('factor'))
