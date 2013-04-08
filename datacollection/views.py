@@ -405,6 +405,10 @@ def samples(request):
     cell type, cell pop, strain, condition]
     IF url param uploader is sent, we use uploader instead of user
     """
+    _numbersOnly = re.compile("^\d+$")
+    _textAndNums = re.compile("^[\w|\-|\.|\d| ]+$")
+    _null = re.compile("^\s*$")
+
     #unzip _adminSidebar
     adminSidebar, adminSidebarNames = zip(*_adminSidebar)
     sidebarURLs = [reverse(p) for p in adminSidebar]
@@ -421,78 +425,122 @@ def samples(request):
     #into the paginator, e.g. if we click on platform=1, then when we paginate
     #we want the platform param to be carried through
     rest = ""
-    if 'species' in request.GET:
-        #dict = {'hs':'Homo sapiens', 'mm':'Mus Musculus'}
-        #if request.GET['species'] in dict:
-        #    datasets = datasets.filter(species__name=\
-        #                               dict[request.GET['species']])
-        samples = samples.filter(species=request.GET['species'])
-        rest += "&species=%s" % request.GET['species']
-        
-    if 'ftype' in request.GET:
-        samples = samples.filter(factor__type=request.GET['ftype'])
-        rest += "&ftype=%s" % request.GET['ftype']
+
+    #ESOTERIC NOTE: The way we are doing this is backwards, we are checking 
+    #or certain search fields:vals in the query, instead we should be going 
+    #through the query and trying to understand each term.  BUT again, this
+    #is an esoteric note!
+    searchFlds = ['factor', 'antibody', 'cell_type', 'cell_line', 'cell_pop',
+                  'tissue_type', 'disease_state', 'strain', 'assembly', 
+                  #others!
+                  ]
+    for f in searchFlds:
+        if f in request.GET:
+            val = request.GET[f]
+            rest += "&%s=%s" % (f, val)
+            if _numbersOnly.match(val):
+                params = {"%s__id" % f:val}
+                samples = samples.filter(**params)
+            elif _textAndNums.match(val):
+                params = {"%s__name__icontains" % f:val}
+                samples = samples.filter(**params)
+            elif _null.match(val):
+                params = {"%s__isnull" % f:True}
+                samples = samples.filter(**params)
+            else:
+                #BAD apple ruins the search (bunch)
+                samples = []
+
+    #special searches
+    if 'id' in request.GET:
+        if _numbersOnly.match(request.GET['id']):
+            #ID
+            samples = [samples.get(id=request.GET['id'])]
+        elif _textAndNums.match(request.GET['id']):
+            #UNIQUE ID
+            samples = samples.filter(unique_id__iexact=request.GET['id'])
+        else:
+            #WHERE UNIQUE ID is null
+            samples = samples.filter(unique_id__isnull=True)
+        rest += "&id=%s" % request.GET['id']
 
     if 'paper' in request.GET:
-        samples = samples.filter(paper=request.GET['paper'])
-        rest += "&paper=%s" % request.GET['paper']
+        val = request.GET['paper']
+        if _numbersOnly.match(val):
+            #IS it a pmid or a index?--PMIDs > 10000000 (first: 17512414)
+            val = int(val)
+            if val < 10000000: #ID
+                samples = samples.filter(paper__id=val)
+            else:
+                samples = samples.filter(paper__pmid=val)
+        elif _null.match(val):
+            samples = samples.filter(paper__isnull=True)
+        rest += "&%s=%s" % ('paper', val)
 
-    if 'factor' in request.GET:
-        factor = models.Factors.objects.get(pk=request.GET['factor'])
-        samples = samples.filter(factor__name=factor.name)
-        rest += "&factor=%s" % request.GET['factor']
+    if 'dataset' in request.GET:
+        val = request.GET['dataset']
+        if _numbersOnly.match(val):
+            d = models.Datasets.objects.get(pk=int(val))
+            #DROP THIS!!! see below!
+            #samples = [s for s in d.treats.all()]
+            #samples.extend(d.conts.all())
+            ###NOTE: this is a really cool way to concatenate QuerySets:
+            #ref: https://groups.google.com/forum/?hl=en&fromgroups=#!topic/django-users/0i6KjzeM8OI
+            samples = d.treats.all() | d.conts.all()
+        elif _null.match(val):
+            #samples = models.Samples.objects.filter(Q(myTreatments__isnull=True), Q(myControls__isnull=True))
+            samples = samples.filter(TREATS__isnull=True, CONTS__isnull=True)
+        rest += "&%s=%s" % ('dataset', val)
 
-    if 'antibody' in request.GET:
-        factor = models.Factors.objects.get(pk=request.GET['antibody'])
-        samples = samples.filter(factor__antibody=factor.antibody)
-        rest += "&antibody=%s" % request.GET['antibody']
+    if 'fastq_file' in request.GET:
+        val = request.GET['fastq_file']
+        if _null.match(val):
+            samples = samples.filter(fastq_file__isnull=True)|samples.filter(fastq_file__exact='')
+        rest += "&%s=%s" % ('fastq_file', val)
 
-    if 'platform' in request.GET:
-        samples = samples.filter(platform=request.GET['platform'])
-        rest += "&platform=%s" % request.GET['platform']
+    if 'bam_file' in request.GET:
+        val = request.GET['bam_file']
+        if _null.match(val):
+            samples = samples.filter(bam_file__isnull=True)|samples.filter(bam_file__exact='')
+        rest += "&%s=%s" % ('fastq_file', val)
+
+
+    if 'species' in request.GET:
+        val = request.GET['species']
+        if _numbersOnly.match(val): 
+            #Species id, 1-hs, 2=mm
+            samples = samples.filter(species__id=val)
+        elif _textAndNums.match(val): 
+            #text, e.g. hs--note we ignore 'Homo sapiens'
+            _sMap = {'HS':1, 'MM':2}
+            val = _sMap[val.upper()] if val.upper() in _sMap else ""
+            samples = samples.filter(species__id=val)
+        elif _null.match(val):
+            samples = samples.filter(species__isnull=True)
+        else:
+            samples = []
+        rest += "&species=%s" % request.GET['species']
         
-    if 'celltype' in request.GET:
-        celltype = models.CellTypes.objects.get(pk=request.GET['celltype'])
-        samples = samples.filter(cell_type__name=celltype.name)
-        rest += "&celltype=%s" % request.GET['celltype']
+    # if 'ftype' in request.GET:
+    #     samples = samples.filter(factor__type=request.GET['ftype'])
+    #     rest += "&ftype=%s" % request.GET['ftype']
 
-    if 'tissuetype' in request.GET:
-        celltype = models.CellTypes.objects.get(pk=request.GET['tissuetype'])
-        samples = samples.filter(cell_type__tissue_type=celltype.tissue_type)
-        rest += "&tissuetype=%s" % request.GET['tissuetype']
+    # if 'platform' in request.GET:
+    #     samples = samples.filter(platform=request.GET['platform'])
+    #     rest += "&platform=%s" % request.GET['platform']
+        
+    #DROP!!!!
+    # if 'condition' in request.GET:
+    #     samples = samples.filter(condition=request.GET['condition'])
+    #     rest += "&condition=%s" % request.GET['condition']
 
-    if 'cellline' in request.GET:
-        samples = samples.filter(cell_line=request.GET['cellline'])
-        rest += "&cellline=%s" % request.GET['cellline']
-
-    if 'cellpop' in request.GET:
-        samples = samples.filter(cell_pop=request.GET['cellpop'])
-        rest += "&cellpop=%s" % request.GET['cellpop']
-                
-    if 'strain' in request.GET:
-        samples = samples.filter(strain=request.GET['strain'])
-        rest += "&strain=%s" % request.GET['strain']
-
-    if 'condition' in request.GET:
-        samples = samples.filter(condition=request.GET['condition'])
-        rest += "&condition=%s" % request.GET['condition']
-
-    if 'disease_state' in request.GET:
-        samples = samples.filter(disease_state=request.GET['disease_state'])
-        rest += "&disease_state=%s" % request.GET['disease_state']
-
-    if 'lab' in request.GET:
-        samples = [s for s in samples \
-                    if smart_str(s.paper.lab) == smart_str(request.GET['lab'])]
-        rest += "&lab=%s" % request.GET['lab']
+    # if 'lab' in request.GET:
+    #     samples = [s for s in samples \
+    #                 if smart_str(s.paper.lab) == smart_str(request.GET['lab'])]
+    #     rest += "&lab=%s" % request.GET['lab']
     
     #here is where we order things by paper and then gsmid for the admins
     #samples = samples.order_by("paper", "gsmid")
-
-    #HACK: get singleton
-    if 'id' in request.GET:
-        samples = [samples.get(id=request.GET['id'])]
-        rest += "&id=%s" % request.GET['id']
 
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
