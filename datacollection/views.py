@@ -426,6 +426,11 @@ def samples(request):
     #we want the platform param to be carried through
     rest = ""
 
+    #this is the tring the user inputted in the search box, we preserve that
+    if "search" in request.GET:
+        search = request.GET['search']
+        rest = "&search=%s" % search
+
     #ESOTERIC NOTE: The way we are doing this is backwards, we are checking 
     #or certain search fields:vals in the query, instead we should be going 
     #through the query and trying to understand each term.  BUT again, this
