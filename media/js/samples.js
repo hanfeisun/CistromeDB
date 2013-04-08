@@ -80,6 +80,29 @@ function init() {
     //HIDE the overlay:
     $('overlay').style.display="none";
 
+    var searchFld = $('searchFld');
+    var searchBtn = $('searchBtn');
+    var cancelBtn = $('cancelBtn');
+    var searchView = new SamplesSearchView(searchFld, searchBtn, cancelBtn, 
+					   "Search Samples");
+    /*
+    //searchFld.onkeyup = function(event) {
+	//enable the search button only when the query is valid
+    searchBtn.onclick = function(event) {
+	//NOTE: the query must be in the form of FIELD:VALUE where value can
+	//be the empty string, and FIELD is the field's abbrev.
+	map = {'i':'id','f':'factor','a':'antibody', 'ct':'cell_type',
+	       'cl':'cell_line','cp':'cell_pop','tt':'tissue_type',
+	       'ds':'disease_state', 'sn':'strain', 's':'species', 
+	       'as':'assembly', 'ff':'fastq_file', 'bf':'bam_file',
+	       'd':'dataset', 'p':'paper'}
+	if (searchFld.value.indexOf(":") != -1) {
+	    var tmp = searchFld.value.split(":");
+	    var fld = map[tmp[0]] ? map[tmp[0]] : "UNKOWN";	
+	    window.location = SUB_SITE+"samples/?"+fld+"="+tmp[1];
+	}
+    }
+    */
 }
 
 /* OBSOLETE
@@ -396,5 +419,43 @@ function editDialogue(id) {
     p.appendChild(save);
 
     dialogue.appendChild(p);
+
+}
+
+//DIRECTLY ripped from home.js and modified
+function SamplesSearchView(searchFld, searchBtn, cancelBtn, msg) {
+    this.searchFld = searchFld;
+    this.searchBtn = searchBtn;
+    this.cancelBtn = cancelBtn;
+    this.msg = msg;
+    var outer = this;
+    
+    //handle the searchBtn interactions
+    this.searchBtn.onclick = function(event) {
+	if (outer.searchFld.value != outer.msg) {
+	    //NOTE: the query must be in the form of FIELD:VALUE where value 
+	    //can be the empty string, and FIELD is the field's abbrev.
+	    map = {'i':'id','f':'factor','a':'antibody', 'ct':'cell_type',
+		   'cl':'cell_line','cp':'cell_pop','tt':'tissue_type',
+		   'ds':'disease_state', 'sn':'strain', 's':'species', 
+		   'as':'assembly', 'ff':'fastq_file', 'bf':'bam_file',
+		   'd':'dataset', 'p':'paper'}
+	    if (searchFld.value.indexOf(":") != -1) {
+		var tmp = searchFld.value.split(":");
+		var fld = map[tmp[0]] ? map[tmp[0]] : "UNKOWN";	
+		window.location = SUB_SITE+"samples/?search="+searchFld.value+"&"+fld+"="+tmp[1];
+	    }
+	}
+    }
+
+    //Enter key invokes search --NOTE: this might not work across browsers
+    this.searchFld.onkeydown = function(event) {
+	if (event.keyCode == 13) {
+	    outer.searchBtn.onclick()
+	}
+    }
+    this.cancelBtn.onclick = function(event) {
+	window.location = SUB_SITE+"samples/";
+    }
 
 }

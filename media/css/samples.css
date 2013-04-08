@@ -1,53 +1,9 @@
-/* NOTE: THIS FILE MAY BE OBSOLETE!!! */
-table {
-    width:100%;
-    border: 2px solid #626cac;
-    border-collapse: collapse;
-    margin-bottom:20px;
-    font-size:8pt;
-    color:#093955;
-}
 
-td, th {
-    border: 1px dotted #000;
+.searchWait {
+    color:#807f80;
+    width:30%;
 }
-
-.new_row {
-    /*background-color:#00cc00;*/
-    background-color:#ffff00;
-}
-
-.checked_row {
-    background-color:#ff9900;
-}
-
-.running_row {
-    background-color:#ff5500;
-}
-
-.complete_row {
-    background-color:#00cc00;
-}
-
-.error_row {
-    background-color:red;
-}
-
-/* override the base.css def */
-body { 
-    width:1024px;     
-}
-
-/* override the base.css def */
-/*
-section#main{
-    float:left;
-    width:100%;
-    
-    padding-left:0%;
-}
-*/
-
-.pagination {
-    padding-left:75%;
+.searchIn {
+    color:#000;
+    width:30%;
 }

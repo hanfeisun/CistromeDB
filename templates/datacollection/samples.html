@@ -6,12 +6,13 @@
 <link href="{% url static_url %}css/admin_base.css" rel="stylesheet" type="text/css"/>
 <link href="{% url static_url %}css/generic_table.css" rel="stylesheet" type="text/css"/>
 <!--NOTE: we use generic_table.css to do most of the styling but dataset specific stuff in datasets.css-->
-<!--<link href="{% url static_url %}css/datasets.css" rel="stylesheet" type="text/css"/>-->
+<link href="{% url static_url %}css/samples.css" rel="stylesheet" type="text/css"/>
 <script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/Utils.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/Models.js" type="text/javascript"></script>
 <script src="{% url static_url %}js/samples.js" type="text/javascript"></script>
+<!--<script src="{% url static_url %}js/cookie.js" type="text/javascript"></script>-->
 <script src="http://yui.yahooapis.com/3.7.2/build/yui/yui-min.js"></script>
 {% endblock %}
 
@@ -25,6 +26,21 @@ onload="init();" class="yui3-skin-sam"
       <!--<input type="button" id="batchEdit" value="batch edit"/>-->
       <input type="button" id="createBtn" value="create"/>
       <input type="button" id="deleteBtn" value="delete"/>
+      <span class="searchSpan">
+	{% if search %}
+	<input type="text" id="searchFld" value="{{search}}" class="searchWait" disabled="true"></input>
+	<input type="button" value="Search" id="searchBtn" disabled="true" />
+	<input type="button" value="Clear Search" id="cancelBtn"/>
+	{% else %}
+	<input type="text" id="searchFld" value="" class="searchIn"></input>
+	<input type="button" value="Search" id="searchBtn"/>
+	<input type="button" value="Clear Search" id="cancelBtn" style="display:none"/>
+	{% endif %}
+      </span>
+      <!--
+      <input type="text" id="searchFld" />
+      <input type="button" id="searchBtn" value="search"/>
+      -->
       {% endif %}
       {% if pg.paginator.num_pages %}
       <div class="pagination">
