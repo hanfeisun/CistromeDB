@@ -50,6 +50,27 @@ def get_fname(s):
     return s.split("/")[-1]
 
 @register.filter
+def get_treatsConts(o):
+    """expects a SAMPLE model object
+    returns all of the associated dataset ids
+    """
+    tmp = o.TREATS.all() | o.CONTS.all()
+
+    return ",".join([str(d.id) for d in tmp])
+
+@register.filter
+def get_id(o,fld):
+    """expects a SAMPLE model object
+    returns all of the associated dataset ids
+    """
+    tmp = getattr(o, fld)
+    if tmp:
+        return tmp.id
+    else:
+        return None
+
+
+@register.filter
 def getFldInLst(lst, fld):
     """given a list of objects: returns: [o.fld for o in lst]
     """
