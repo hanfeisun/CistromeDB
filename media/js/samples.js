@@ -41,7 +41,7 @@ var rowSelects;
 var sampleModel;
 var Y;
 
-function init() { 
+function init(sampleFields) { 
     Y = YUI();
     sampleModel = new model();
     rowSelects = $$('input.rowSelect');
@@ -85,24 +85,83 @@ function init() {
     var cancelBtn = $('cancelBtn');
     var searchView = new SamplesSearchView(searchFld, searchBtn, cancelBtn, 
 					   "Search Samples");
-    /*
-    //searchFld.onkeyup = function(event) {
-	//enable the search button only when the query is valid
-    searchBtn.onclick = function(event) {
-	//NOTE: the query must be in the form of FIELD:VALUE where value can
-	//be the empty string, and FIELD is the field's abbrev.
-	map = {'i':'id','f':'factor','a':'antibody', 'ct':'cell_type',
-	       'cl':'cell_line','cp':'cell_pop','tt':'tissue_type',
-	       'ds':'disease_state', 'sn':'strain', 's':'species', 
-	       'as':'assembly', 'ff':'fastq_file', 'bf':'bam_file',
-	       'd':'dataset', 'p':'paper'}
-	if (searchFld.value.indexOf(":") != -1) {
-	    var tmp = searchFld.value.split(":");
-	    var fld = map[tmp[0]] ? map[tmp[0]] : "UNKOWN";	
-	    window.location = SUB_SITE+"samples/?"+fld+"="+tmp[1];
+
+    //SET the column toggles
+    Cookie.init({name: 'samplesPage', expires: 90}); 
+
+    //Set the samples CSS
+    var samplesCSS = getStyleSheet("samples.css");
+    //initialize all of the rules to display:none
+    sampleFields.each(function(f) {
+	if ((f != 'id') && (f != 'unique_id')) {
+	    samplesCSS.insertRule("."+f+" { display:none; }", 
+				  samplesCSS.cssRules.length);
+	}
+    });
+
+    //NOW set the checkboxes and the cols
+    sampleFields.each(function(f) { 
+	var tmp = $(f);
+	if ((f == 'id') || (f == 'unique_id')) {
+	    //Special case:
+	    tmp.checked = "true";
+	    tmp.disabled = "true";
+	} else {
+	    //check cookie value
+	    var cookieVal = Cookie.getData(f+"_checkbox");
+	    if (cookieVal) {
+		tmp.checked = "true";
+		//show col -- get the rule
+		rule = getStyleRule(samplesCSS, "."+f);
+		rule.style.display="table-cell";
+	    } else {
+		tmp.checked = "";
+		//hide col-- unnecessary
+		//rule = getStyleRule(samplesCSS, "."+f);
+		//rule.style.display="none";
+	    }
+
+	    tmp.onclick = function(field) {
+		return function(event) {
+		    if (tmp.checked) {
+			Cookie.setData(field+"_checkbox", true);
+			//show col -- get the rule
+			rule = getStyleRule(samplesCSS, "."+f);
+			rule.style.display="table-cell";
+
+			} else {
+			    Cookie.setData(field+"_checkbox", false);
+			    //hide col -- get the rule
+			    rule = getStyleRule(samplesCSS, "."+f);
+			    rule.style.display="none";
+			}
+		}
+	    } (f);
+	}
+    });
+}
+
+//Given a css file name, e.g. samples.css, tries to find it in the styleSheets
+//otherwise returns null
+//ref: http://www.quirksmode.org/dom/changess.html
+function getStyleSheet(cssName) {
+    var ret = null;
+    for (var i=0; i < document.styleSheets.length; i++) {
+	if (document.styleSheets[i].href.indexOf(cssName) != -1) {
+	    ret = document.styleSheets[i];
 	}
     }
-    */
+    return ret;
+}
+//ref: home.js
+function getStyleRule(css, selector) {
+    var rules = css.cssRules ? css.cssRules: css.rules;
+    for (var i = 0; i < rules.length; i++){
+	if(rules[i].selectorText == selector) { 
+	    return rules[i];
+	}
+    }
+    return null;
 }
 
 /* OBSOLETE

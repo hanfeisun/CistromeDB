@@ -415,7 +415,21 @@ def samples(request):
     sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
     currpage = "samples"
 
-    fields = ['id', 'unique_id', 'fastq_file', 'bam_file']
+    fieldsAbbrev = [('id', 'i'), ('unique_id', 'i'), ('factor', 'f'),
+                    ('antibody', 'a'), ('cell_line', 'cl'), 
+                    ('cell_type', 'ct'), ('cell_pop', 'cp'), 
+                    ('tissue_type', 'tt'), ('disease_state', 'ds'),
+                    ('strain', 'sn'), ('species', 's'), ('assembly', 'as'),
+                    ('fastq_file', 'ff'), ('bam_file', 'bf'),
+                    #('TREATS', 't'), ('CONTS', 'c'), 
+                    ('dataset', 'd'), ('paper','p'),
+                    ('condition', ''), ('description', '')]
+    #fields = ['id', 'unique_id', 'fastq_file', 'bam_file']
+    fields, abbrev = zip(*fieldsAbbrev)
+    fields = list(fields)
+    abbrev = list(abbrev)
+
+    #idFields = ["TREATS", "CONTS", "paper"]
     fileFields = [f.name for f in models.Datasets._meta.fields \
                       if f.__class__== FileField]
 
