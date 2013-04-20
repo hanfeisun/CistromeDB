@@ -15,3 +15,13 @@
     border:1px dotted #000;
 
 }
+
+/*style the admin bar*/
+#adminBar h3 {
+    display:inline;
+}
+
+#adminBar select {
+    margin-right:25%;
+    font-size:24pt;    
+}

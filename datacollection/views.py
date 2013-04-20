@@ -20,6 +20,10 @@ from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from django.utils.http import urlquote
+#unquote
+#ref: http://stackoverflow.com/questions/5229054/django-urldecode-in-template-file
+from urllib import unquote
+
 from django.conf import settings as conf_settings
 from django.db.models.fields.files import FileField
 
@@ -395,9 +399,43 @@ def datasets(request):
     return render_to_response('datacollection/datasets.html', locals(),
                               context_instance=RequestContext(request))
 
-#NOTE: i sould cache these!!
 @admin_only
 def samples(request):
+    """Routing based on the status--which is through a cookie
+    NOTE: saving the status is done in js-land!
+    """
+    #get the js cookie object: samplesPage, convert to python object
+    tmp = None
+    
+    if "samplesPage" in request.COOKIES and request.COOKIES['samplesPage']:
+        #unquote b/c the object is stored as HTTP string 
+        tmp = json.loads(unquote(request.COOKIES['samplesPage']))
+
+    if tmp and "status" in tmp and tmp["status"]:
+        status = tmp["status"]
+    else:
+        status = "imported"
+
+    print status
+
+    if status == "all":
+        samples = models.Samples.objects.all()
+    else:
+        samples = models.Samples.objects.filter(status=status)
+
+    return samples_meta(request, samples, status) 
+                        #"datacollection/samples_%s.html" % status)
+
+    #route based on status
+    #return getattr(_this_mod, "samples_%s" % status)(request)
+
+    #return render_to_response('datacollection/foo.html', locals(),
+    #                          context_instance=RequestContext(request))
+
+
+#NOTE: i sould cache these!!
+@admin_only
+def samples_meta(request, samples, status):
     """View all of the samples in an excel like table
     IF given species, factor_type, and/or paper url params, then we further
     filter the results accordingly;
@@ -405,6 +443,7 @@ def samples(request):
     cell type, cell pop, strain, condition]
     IF url param uploader is sent, we use uploader instead of user
     """
+    statuses = ['imported', 'new', 'all', 'ignored']
     _numbersOnly = re.compile("^\d+$")
     _textAndNums = re.compile("^[\w|\-|\.|\d| ]+$")
     _null = re.compile("^\s*$")
@@ -423,7 +462,8 @@ def samples(request):
                     ('fastq_file', 'ff'), ('bam_file', 'bf'),
                     #('TREATS', 't'), ('CONTS', 'c'), 
                     ('dataset', 'd'), ('paper','p'),
-                    ('condition', ''), ('description', '')]
+                    ('condition', ''), ('description', ''),
+                    ('status', '')]
     #fields = ['id', 'unique_id', 'fastq_file', 'bam_file']
     fields, abbrev = zip(*fieldsAbbrev)
     fields = list(fields)
@@ -433,7 +473,7 @@ def samples(request):
     fileFields = [f.name for f in models.Datasets._meta.fields \
                       if f.__class__== FileField]
 
-    samples = models.Samples.objects.all()
+    #samples = models.Samples.objects.all()
 
     #note: we have to keep track of these URL params so that we can feed them
     #into the paginator, e.g. if we click on platform=1, then when we paginate
@@ -572,9 +612,14 @@ def samples(request):
         pg = paginator.page(page)
     except (EmptyPage, InvalidPage):
         pg = paginator.page(paginator.num_pages)
-        
-    return render_to_response('datacollection/samples.html', locals(),
+
+    print 'datacollection/samples_%s.html' % status
+    return render_to_response('datacollection/samples_%s.html' % status, 
+                              locals(),
                               context_instance=RequestContext(request))
+    #return render_to_response(template, locals(),
+    #                          context_instance=RequestContext(request))
+
 #END: The main views
 #------------------------------------------------------------------------------
 
