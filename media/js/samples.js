@@ -139,6 +139,15 @@ function init(sampleFields) {
 	    } (f);
 	}
     });
+
+    //add functionality to samplesStatus select
+    var samplesStatus = $('samplesStatus');
+    samplesStatus.onchange = function(e) {
+	//Set the cookie
+	Cookie.setData("status", this.value);
+	//reload page:
+	document.location.reload();
+    }
 }
 
 //Given a css file name, e.g. samples.css, tries to find it in the styleSheets

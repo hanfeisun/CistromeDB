@@ -1,0 +1,155 @@
+{% extends "datacollection/admin_base.html" %}
+{% load dc_extras %}
+
+{% block title %}CistromeDC - Samples{% endblock %}
+{% block include %}
+<link href="{% url static_url %}css/admin_base.css" rel="stylesheet" type="text/css"/>
+<link href="{% url static_url %}css/generic_table.css" rel="stylesheet" type="text/css"/>
+<!--NOTE: we use generic_table.css to do most of the styling but dataset specific stuff in datasets.css-->
+<link href="{% url static_url %}css/samples.css" rel="stylesheet" type="text/css"/>
+<script src="{% url static_url %}js/prototype.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/settings.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/Utils.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/Models.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/samples.js" type="text/javascript"></script>
+<script src="{% url static_url %}js/cookie.js" type="text/javascript"></script>
+<script src="http://yui.yahooapis.com/3.7.2/build/yui/yui-min.js"></script>
+{% endblock %}
+
+{% block onload %}
+{% comment %}
+onload="init([{% for f in fields %} {{f}},{% endfor %}]);" class="yui3-skin-sam"
+{% endcomment %}
+onload="init({{fields|safe}});" class="yui3-skin-sam"
+{% endblock %}
+
+{% block content %}
+<!-- NOTE: the content is created in javascript -->
+      {% if user.is_authenticated %}
+      <div id="adminBar">
+	  <h3>Samples:</h3>
+          <select id="samplesStatus">
+	      {% for s in statuses %}
+	      {% if s == status %}
+	      <option value="{{s}}" selected="true">{{s}}</option>
+	      {% else %}
+	      <option value="{{s}}">{{s}}</option>
+	      {% endif %}
+	      {% endfor %}
+          </select>
+          <span class="searchSpan">
+	      {% if search %}
+	      <input type="text" id="searchFld" value="{{search}}" class="searchWait" disabled="true"></input>
+	      <input type="button" value="Search" id="searchBtn" disabled="true" />
+	      <input type="button" value="Clear Search" id="cancelBtn"/>
+	      {% else %}
+	      <input type="text" id="searchFld" value="" class="searchIn"></input>
+	      <input type="button" value="Search" id="searchBtn"/>
+	      <input type="button" value="Clear Search" id="cancelBtn" style="display:none"/>
+	      {% endif %}
+	  </span>
+	  <br/>
+          <!--<input type="button" id="batchEdit" value="batch edit"/>-->
+	  <input type="button" id="createBtn" value="create"/>
+          <input type="button" id="deleteBtn" value="delete"/>
+      </div>
+      {% endif %}
+      <!--make checkboxes-->
+      <div class="colSpan">
+	{% for f, a in fieldsAbbrev %}
+	{% if a %}      
+	<span><input type="checkbox" id="{{f}}" />{{f}} ({{a}})</span>
+	{% else %}
+	<span><input type="checkbox" id="{{f}}" />{{f}}</span>
+	{% endif %}
+
+	{% if forloop.counter|divisibleby:8 %}
+	<br/>
+	{% endif%}
+
+	{% endfor %}
+      </div>
+
+      {% if pg.paginator.num_pages %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if pg.has_previous %}
+	      {% ifnotequal pg.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
+              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+
+              {% if pg.has_next %}
+              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
+	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
+              {% endif %}
+          </span>
+      </div>
+      {% endif %}
+      <table class="datatable" id="data_table">
+         <tr class="tableHeader">
+	   {% if user.is_authenticated %}
+	   <th><input type="checkbox" id="masterCheckbox"/></th>
+	   {% endif %}
+	   {% for f in fields %}
+	   <th class="{{f}}">{{f}}</th>
+	   {% endfor %}
+	 </tr>
+	 {% for o in pg.object_list %}
+	 <tr>
+	     {% if user.is_authenticated %}
+	     <td><input type="checkbox" class="rowSelect" id="{{o.id}}"/>
+	     </td>
+	     {% endif %}
+	     {% for f in fields %}
+	     {% ifequal f "id" %}
+	     <td class="fakeLink" onclick="showInfo({{ o|get_attr:f }});">{{ o|get_attr:f }}</td>
+	     {% else %}
+	        {% ifequal f "unique_id" %}
+	            <td class="unique_id"><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{o|get_attr:f}}" target="_blank">{{o|get_attr:f}}</a></td>
+		{% else %}
+	        {% if f|is_in:fileFields %}
+	     <td class="{{f}}"><a href="{% url static_url %}data/{{ o|get_attr:f }}">{{ o|get_attr:f|get_fname}}</a></td>
+	        {% else %}
+	        {% if f == "dataset" %}
+	     <td class="{{f}}">{{ o|get_treatsConts }}</td>
+	        {% else %}
+	        {% if f == "paper" %}
+	     <td class="{{f}}">{{ o|get_id:f }}</td>
+	        {% else %}
+	     <td class="{{f}}">{{ o|get_attr:f }}</td>
+	        {% endif %} {% endif %} {% endif %}
+             {% endifequal %}{% endifequal %}
+	     {% endfor %}
+	 </tr>
+	 {% endfor %}
+      </table>
+      {% if pg.paginator.num_pages %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if pg.has_previous %}
+	      {% ifnotequal pg.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
+              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+
+              {% if pg.has_next %}
+              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
+	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
+              {% endif %}
+          </span>
+      </div>
+      {% endif %}
+      <div id="overlay"></div>
+{% endblock %}
+

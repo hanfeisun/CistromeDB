@@ -45,11 +45,11 @@ DATASET_STATUS = (
     )
 
 SAMPLE_STATUS = (
-    (u'new', u'sample created, awaiting check for raw files'),
-    (u'checked', u'raw files checked, awaiting run'),
+    (u'new', u'sample created'),
+    (u'imported', u'sample imported'),
     (u'running', u'analysis is running, awaiting completion'),
     (u'complete', u'analysis complete'),
-    (u'error', u'error/hold- see comments'),
+    (u'ignore', u'ignore'),
     )
 
 TEAMS = (
@@ -462,7 +462,7 @@ class Samples(DCModel):
                                 related_name="curator")
     
     status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
-                              null=True, blank=True, default="imported")
+                              null=True, blank=True, default="new")
     comments = models.TextField(null=True, blank=True, default="")
     
     upload_date = models.DateTimeField(blank=True, null=True, default=None)
