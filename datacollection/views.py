@@ -416,7 +416,7 @@ def samples(request):
     else:
         status = "imported"
 
-    print status
+    #print status
 
     if status == "all":
         samples = models.Samples.objects.all()
@@ -613,7 +613,7 @@ def samples_meta(request, samples, status):
     except (EmptyPage, InvalidPage):
         pg = paginator.page(paginator.num_pages)
 
-    print 'datacollection/samples_%s.html' % status
+    #print 'datacollection/samples_%s.html' % status
     return render_to_response('datacollection/samples_%s.html' % status, 
                               locals(),
                               context_instance=RequestContext(request))
@@ -621,6 +621,20 @@ def samples_meta(request, samples, status):
     #                          context_instance=RequestContext(request))
 
 #END: The main views
+
+def change_samples_status(request):
+    """Given http params, samples (list of ids) and status (a string),
+    we set the status of the samples and reload the page"""
+    if 'samples' in request.GET and 'status' in request.GET:
+        tmp = [models.Samples.objects.get(pk=i) \
+                   for i in request.GET['samples'].split(',')]
+        status = request.GET['status'].strip()
+        #print request.GET['redirect']
+        for s in tmp:
+            s.status = status
+            s.save()
+    return HttpResponseRedirect(reverse('samples')+request.GET['redirect'])
+
 #------------------------------------------------------------------------------
 
 def get_datasets(request, paper_id):

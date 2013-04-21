@@ -49,7 +49,7 @@ SAMPLE_STATUS = (
     (u'imported', u'sample imported'),
     (u'running', u'analysis is running, awaiting completion'),
     (u'complete', u'analysis complete'),
-    (u'ignore', u'ignore'),
+    (u'ignored', u'ignored'),
     )
 
 TEAMS = (

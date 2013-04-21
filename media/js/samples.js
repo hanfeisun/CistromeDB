@@ -60,16 +60,38 @@ function init(sampleFields) {
     }
 
     var createBtn = $('createBtn');
-    createBtn.onclick = function(event) {
-	createDataset();
+    if (createBtn) {
+	createBtn.onclick = function(event) {
+	    createDataset();
+	}
     }
 
     var deleteBtn = $('deleteBtn');
-    deleteBtn.onclick = function(event) {
-	//confirm
-	var resp = confirm("Are you sure you want to DELETE these papers?");
-	if (resp && sampleModel.samples.length > 0) {
-	    window.location = SUB_SITE+"delete_samples/?samples="+sampleModel.samples;
+    if (deleteBtn) {
+	deleteBtn.onclick = function(event) {
+	    //confirm
+	    var resp = confirm("Are you sure you want to DELETE these samples?");
+	    if (resp && sampleModel.samples.length > 0) {
+		window.location = SUB_SITE+"delete_samples/?samples="+sampleModel.samples;
+	    }
+	}
+    }
+
+    var importBtn = $('importBtn');
+    if (importBtn) {
+	importBtn.onclick = function(event) {
+	    if (sampleModel.samples.length > 0) {
+		window.location = SUB_SITE+"change_samples_status/?samples="+sampleModel.samples+"&status=imported&redirect="+encodeURIComponent(window.location.search);
+	    }
+	}
+    }
+
+    var ignoreBtn = $('ignoreBtn');
+    if (ignoreBtn) {
+	ignoreBtn.onclick = function(event) {
+	    if (sampleModel.samples.length > 0) {
+		window.location = SUB_SITE+"change_samples_status/?samples="+sampleModel.samples+"&status=ignored&redirect="+encodeURIComponent(window.location.search);
+	    }
 	}
     }
 
@@ -146,7 +168,8 @@ function init(sampleFields) {
 	//Set the cookie
 	Cookie.setData("status", this.value);
 	//reload page:
-	document.location.reload();
+	window.location = SUB_SITE+"samples/";
+	//document.location.reload();
     }
 }
 
