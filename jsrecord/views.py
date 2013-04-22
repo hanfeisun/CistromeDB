@@ -93,7 +93,7 @@ def Find(request, model, options):
     
 def Save(request, model):
     if request.method == 'POST':
-#        print request.POST
+        #print request.POST
         if request.POST['id'] and request.POST['id'] != "null":
             #s = model.objects.get(pk=request.POST['id'])
             s = model(id=request.POST['id'])
@@ -102,10 +102,11 @@ def Save(request, model):
 
         #2013-01-30 HACK for the file fields to work
         #PROBLEM: it wasn't saving the filefield values
-        for f in s._meta.fields:
-            if f.__class__ == FileField:
-                if f.name in request.POST and request.POST[f.name]:
-                    setattr(s, f.name, request.POST[f.name])
+        if hasattr(s, "_meta"):
+            for f in s._meta.fields:
+                if f.__class__ == FileField:
+                    if f.name in request.POST and request.POST[f.name]:
+                        setattr(s, f.name, request.POST[f.name])
 
         form = _MODELFORMS[model](request.POST, instance=s)
         if form.is_valid():
