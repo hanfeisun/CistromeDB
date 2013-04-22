@@ -62,7 +62,17 @@ function init(sampleFields) {
     var createBtn = $('createBtn');
     if (createBtn) {
 	createBtn.onclick = function(event) {
-	    createDataset();
+	    //createDataset();
+	    var cb = function(req) {
+		var resp = eval("("+req.responseText+")");
+		if (resp.success) {
+		    window.location = SUB_SITE+"samples/?page=-1"
+		}
+	    }
+	    var s = new Samples({id:null});
+	    //s.id = "null";
+	    s.status = "imported";
+	    s.save(cb);
 	}
     }
 
@@ -207,6 +217,8 @@ function runAnalysis(sampleId, pg) {
 */
 
 //draws and handles the create new dataset dialogue
+
+//2013-04-21: THIS is obsolete!
 function createDataset() {
     //show the overlay:
     var overlay = $('overlay');
