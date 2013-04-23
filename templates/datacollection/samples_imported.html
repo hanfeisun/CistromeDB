@@ -109,7 +109,7 @@ onload="init({{fields|safe}});" class="yui3-skin-sam"
 	     {% endif %}
 	     {% for f in fields %}
 	     {% ifequal f "id" %}
-	     <td class="fakeLink" onclick="showInfo({{ o|get_attr:f }});">{{ o|get_attr:f }}</td>
+	     <td>{{ o|get_attr:f }}</td>
 	     {% else %}
 	        {% ifequal f "unique_id" %}
 	            <td class="unique_id"><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{o|get_attr:f}}" target="_blank">{{o|get_attr:f}}</a></td>
@@ -123,7 +123,7 @@ onload="init({{fields|safe}});" class="yui3-skin-sam"
 	        {% if f == "paper" %}
 	     <td class="{{f}}">{{ o|get_id:f }}</td>
 	        {% else %}
-	     <td class="{{f}}">{{ o|get_attr:f }}</td>
+	     <td class="{{f}}">{{ o|print_attr:f }}</td>
 	        {% endif %} {% endif %} {% endif %}
              {% endifequal %}{% endifequal %}
 	     {% endfor %}
