@@ -76,6 +76,43 @@ function init(sampleFields) {
 	}
     }
 
+    var cloneBtn = $('cloneBtn');
+    if (cloneBtn) {
+	cloneBtn.onclick = function(event) {
+	    //createDataset();
+	    var cb = function(req) {
+		var resp = eval("("+req.responseText+")");
+		if (resp.success) {
+		    window.location = SUB_SITE+"samples/?page=-1"
+		}
+	    }
+	    //NOTE: only allow clone to work on 1 sample at a time!!!
+	    if (sampleModel.samples.length == 1) {
+		//get the sample
+		var tmp = Samples.get(sampleModel.samples[0]);
+		//alert(tmp.toJSON());
+		//clone the samples
+		var s = new Samples({id:null});
+		//NOTE: copying all of the fields, except id and unique_id!
+		for (var i = 0; i < sampleFields.length; i++) {
+		    var fld = sampleFields[i];
+
+		    //alert(fld + ":"+tmp[fld]);
+		    if (fld != "id" && fld != "unique_id" && tmp[fld] !=null) {
+			s[fld] = tmp[fld];
+		    }
+		}
+		//alert(s.toJSON());
+		//s.id = "null";
+		//s.status = "imported";
+		s.save(cb);
+	    } else {
+		alert('Must choose one (and only one) sample');
+	    }
+	}
+    }
+
+
     var deleteBtn = $('deleteBtn');
     if (deleteBtn) {
 	deleteBtn.onclick = function(event) {
