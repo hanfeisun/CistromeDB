@@ -32,6 +32,11 @@ def get_attr(obj, attr):
     return getattr(obj, attr)
 
 @register.filter
+def print_attr(obj, attr):
+    tmp = getattr(obj, attr)
+    return tmp if tmp else ""
+
+@register.filter
 @stringfilter
 def my_reverse(view_name, args):
     return reverse(view_name, args=[args])
