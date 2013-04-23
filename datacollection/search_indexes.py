@@ -1,7 +1,7 @@
 #import datetime
 from haystack.indexes import *
 from haystack import site
-from models import Papers, Datasets
+from models import Papers, Samples
 
 
 class PapersIndex(SearchIndex):
@@ -9,8 +9,8 @@ class PapersIndex(SearchIndex):
     #define a template to pull out the relevant search fields
     text = CharField(document=True, use_template=True)    
 
-class DatasetsIndex(SearchIndex):
+class SamplesIndex(SearchIndex):
     text = CharField(document=True, use_template=True)    
 
 site.register(Papers, PapersIndex)
-site.register(Datasets, DatasetsIndex)
+site.register(Samples, SamplesIndex)
