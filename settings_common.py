@@ -84,7 +84,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     'datacollection', 'jsrecord', 'entrezutils',
-    'haystack', 'south',
+    'haystack', 'south', 'swami',
 )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
