@@ -1,6 +1,16 @@
 //jscript to handle the checkbox UI
 var Samples = loadJSRecord('Samples');
 
+//Meta fields
+var Factors = loadJSRecord('Factors');
+var Antibodies = loadJSRecord('Antibodies');
+var CellLines = loadJSRecord('CellLines');
+var CellTypes = loadJSRecord('CellTypes');
+var CellPops = loadJSRecord('CellPops');
+var TissueTypes = loadJSRecord('TissueTypes');
+var DiseaseStates = loadJSRecord('DiseaseStates');
+var Strains = loadJSRecord('Strains');
+
 function model() {
     //tracks the checkboxes (and corresponding samples) which the user selects
     this.samples = [];
@@ -165,6 +175,10 @@ function init(sampleFields) {
 	if ((f != 'id') && (f != 'unique_id')) {
 	    samplesCSS.insertRule("."+f+" { display:none; }", 
 				  samplesCSS.cssRules.length);
+	    //on hover, show cursor
+	    samplesCSS.insertRule("."+f+":hover { cursor:pointer; }", 
+				  samplesCSS.cssRules.length);
+
 	}
     });
 
@@ -525,7 +539,6 @@ function editDialogue(id) {
     cancel.onclick = function(){destroyOverlay();}
     p.appendChild(cancel);
 
-    p.appendChild(cancel);
     var save = $D('input', {type:'button',value:'save',className:'diagBtn'});
     save.onclick = function() {
 	//check for change/new value
@@ -598,4 +611,123 @@ function SamplesSearchView(searchFld, searchBtn, cancelBtn, msg) {
 	window.location = SUB_SITE+"samples/";
     }
 
+}
+
+function easyInput(elm, sampleId) {
+    //NOTE: this is an event handler, and the event object is passed MAGICALLY!
+    //console.log(event.clientX+":"+event.clientY);
+    //console.log(event.screenX+":"+event.screenY);
+    //console.log(document.body.scrollTop);
+
+    //build an overlay with a simple dialogue
+    
+    //map field name and classname:
+    var map = {'factor':['Factors', Factors], 
+	       'antibody':['Antibodies', Antibodies],
+	       'cell_line':['CellLines', CellLines],
+	       'cell_type':['CellTypes', CellTypes],
+	       'cell_pop': ['CellPops', CellPops],
+	       'tissue_type': ['TissueTypes', TissueTypes],
+	       'disease_state':['DiseaseStates', DiseaseStates],
+	       'strain':['Strains', Strains]}
+
+    //HACK: rely on the fact that we're storing the field as the CSS class
+    var fld = elm.className;
+    var klassName = map[fld][0]
+    var klass = map[fld][1]
+    var val = elm.innerHTML;
+    //alert(elm.className+":"+value);
+
+    var overlay = $('overlay');
+    overlay.style.display="block";
+    
+    //clear the overlay
+    overlay.innerHTML = "";
+    
+    //create the dialogue:
+    var dialogue = $D('div', {id:'overlayDialogue'});
+    dialogue.style.position="absolute";
+    dialogue.style.top = (document.body.scrollTop+event.clientY)+"px";
+    dialogue.style.left = event.clientX+"px";
+    overlay.appendChild(dialogue);
+    
+    //build header
+    var p = $D('p');
+    var sp = $D('span', {innerHTML:fld+":",className:'label2'});
+    p.appendChild(sp);
+    p.style.paddingTop="10px";
+    p.style.paddingBottom="5px";
+
+    input = $D('input', {type:'text', id:"autoin", value:val, className:'textInput'});
+    sp = $D('span', {className:'value2'});
+    sp.appendChild(input);
+    p.appendChild(sp);
+    dialogue.appendChild(p);
+
+    Y.use("autocomplete", "autocomplete-highlighters", function(YY) {
+	YY.one(input).plug(YY.Plugin.AutoComplete, {
+	    resultHighlighter: 'phraseMatch',
+	    resultTextLocator: 'name',
+	    source:SUB_SITE+"swami/"+klassName+"/?q={query}&maxResults=10",
+	});
+    });
+
+    //add buttons
+    p = $D('p');
+    //a spacer to move the buttons to the right
+    p.appendChild($D('span', {className:'diagBtnSpacer'}));
+    var cancel = $D('input', {type:'button',value:'cancel',className:'diagBtn'});
+    cancel.onclick = function(){destroyOverlay();}
+    p.appendChild(cancel);
+
+    var save = $D('input', {type:'button',value:'save',className:'diagBtn'});
+    save.onclick = function(e) {
+	var cb = function(req) {
+	    var resp = eval("("+req.responseText+")");
+	    //alert(req.responseText);
+	    if (resp.success) {
+		//set the td value
+		elm.innerHTML = input.value;
+		//breakdown the overlay
+		destroyOverlay();
+	    } else {
+		alert('Error: Saving sample failed!');
+		destroyOverlay();
+	    }
+	}
+
+	var s = Samples.get(sampleId);
+	//alert(s.toJSON());
+	//Try to find the associated item
+	var tmp = klass.find({"name": input.value});
+	if (tmp.length > 0) { //existing
+	    //returns a list, take the first elm
+	    tmp = tmp[0];
+	    //set the jsrecord
+	    s['set'+upperCase1stLtr(fld)](tmp.id);
+	    s.save(cb);
+	} else {
+	    //It's a new record!
+	    var tmpCb = function(req) {
+		var resp = eval("("+req.responseText+")");
+		if (resp.success) {
+		    s['set'+upperCase1stLtr(fld)](resp.obj.id);
+		    s.save(cb);
+		} else {
+		    alert('Error: Saving new record');
+		    destroyOverlay();
+		}
+	    }
+
+	    //Create a new record--special case factor
+	    if (fld == "factor") {
+		tmp = new klass({id:null, 'name': input.value,'type':'other'});
+	    } else {
+		tmp = new klass({id:null, 'name': input.value});
+	    }
+	    tmp.save(tmpCb);
+	}
+    }
+    p.appendChild(save);
+    dialogue.appendChild(p);
 }

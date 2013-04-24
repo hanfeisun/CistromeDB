@@ -1,3 +1,14 @@
+/* overwrite what is in generic_tables.css */
+#overlayDialogue {
+    border-radius:10px;
+    margin-left:0%;
+    margin-right:0%;
+    background-color:#fff;
+}
+
+.diagBtnSpacer {
+    margin-left:40%;
+}
 
 .searchWait {
     color:#807f80;
@@ -25,3 +36,4 @@
     margin-right:25%;
     font-size:24pt;    
 }
+
