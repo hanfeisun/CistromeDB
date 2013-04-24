@@ -122,7 +122,7 @@ onload="init({{fields|safe}});" class="yui3-skin-sam"
 	        {% if f == "paper" %}
 	     <td class="{{f}}">{{ o|get_id:f }}</td>
 	        {% else %}
-	     <td class="{{f}}">{{ o|print_attr:f }}</td>
+	     <td class="{{f}}" onclick="easyInput(this, {{o.id}});">{{ o|print_attr:f }}</td>
 	        {% endif %} {% endif %} {% endif %}
              {% endifequal %}{% endifequal %}
 	     {% endfor %}
