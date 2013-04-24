@@ -711,6 +711,8 @@ function easyInput(elm, sampleId) {
 	    var tmpCb = function(req) {
 		var resp = eval("("+req.responseText+")");
 		if (resp.success) {
+		    //update the search index
+		    var updateSearchIndex = new Ajax.Request(SUB_SITE+"swami/update_search_index/?model="+klassName+"&id="+resp.obj.id, {method:'get', onSucess: null});
 		    s['set'+upperCase1stLtr(fld)](resp.obj.id);
 		    s.save(cb);
 		} else {
