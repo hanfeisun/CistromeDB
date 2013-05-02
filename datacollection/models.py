@@ -417,7 +417,9 @@ class Samples(DCModel):
     paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
     
     unique_id = models.CharField(max_length=255, null=True, blank=True, default="")
-     #Name comes from "title" in the geo sample information
+    #comma sep list of other identifiers
+    #other_ids = models.CharField(max_length=255, null=True, blank=True, default="")
+    #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
     
@@ -425,8 +427,9 @@ class Samples(DCModel):
      #DELETE fastq when bam is generated
     fastq_file = models.FileField(upload_to=upload_factory("fastq"),
                                   null=True, blank=True, max_length=1024)
-    fastq_file_url = models.URLField(max_length=255,
-                                     null=True, blank=True)
+    fastq_file_url = models.CharField(max_length=255,
+                                      null=True, blank=True)
+    #fastq_file_size = models.CharField(max_length=255, null=True, blank=True, default="")
     bam_file = models.FileField(upload_to=upload_factory("bam"),
                                 null=True, blank=True, max_length=1024)
 
