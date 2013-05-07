@@ -599,7 +599,9 @@ def samples_meta(request, samples, status):
     #     rest += "&lab=%s" % request.GET['lab']
     
     #here is where we order things by ID
-    samples = samples.order_by("id")
+    #NOTE: sometimes samples is just a list, so we have to check
+    if hasattr(samples, "order_by"):
+        samples = samples.order_by("id")
 
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
