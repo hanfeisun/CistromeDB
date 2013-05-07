@@ -598,8 +598,8 @@ def samples_meta(request, samples, status):
     #                 if smart_str(s.paper.lab) == smart_str(request.GET['lab'])]
     #     rest += "&lab=%s" % request.GET['lab']
     
-    #here is where we order things by paper and then gsmid for the admins
-    #samples = samples.order_by("paper", "gsmid")
+    #here is where we order things by ID
+    samples = samples.order_by("id")
 
     #control things w/ paginator
     #ref: http://docs.djangoproject.com/en/1.1/topics/pagination/
