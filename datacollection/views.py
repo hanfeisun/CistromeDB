@@ -447,6 +447,7 @@ def samples_meta(request, samples, status):
     _numbersOnly = re.compile("^\d+$")
     _textAndNums = re.compile("^[\w|\-|\.|\d| ]+$")
     _null = re.compile("^\s*$")
+    boxesPerLine=7
 
     #unzip _adminSidebar
     adminSidebar, adminSidebarNames = zip(*_adminSidebar)
@@ -454,7 +455,8 @@ def samples_meta(request, samples, status):
     sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
     currpage = "samples"
 
-    fieldsAbbrev = [('id', 'i'), ('unique_id', 'i'), ('factor', 'f'),
+    fieldsAbbrev = [('id', 'i'), ('unique_id', 'i'), 
+                    ('name', ''), ('factor', 'f'),
                     ('antibody', 'a'), ('cell_line', 'cl'), 
                     ('cell_type', 'ct'), ('cell_pop', 'cp'), 
                     ('tissue_type', 'tt'), ('disease_state', 'ds'),
