@@ -113,7 +113,7 @@ class Papers(DCModel):
     abstract = models.TextField(null=True, blank=True, default="")
     pub_date = models.DateField(null=True, blank=True, default=None)
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
-    authors = models.CharField(max_length=255, null=True,blank=True,default="")
+    authors = models.CharField(max_length=1000, null=True,blank=True,default="")
     last_auth_email = models.EmailField(null=True, blank=True, default=None)
         
     journal = models.ForeignKey('Journals',
@@ -418,7 +418,7 @@ class Samples(DCModel):
     
     unique_id = models.CharField(max_length=255, null=True, blank=True, default="")
     #comma sep list of other identifiers
-    #other_ids = models.CharField(max_length=255, null=True, blank=True, default="")
+    other_ids = models.CharField(max_length=255, null=True, blank=True, default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
