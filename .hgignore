@@ -3,3 +3,23 @@ syntax: glob
 
 *.pyc
 .emacs_bak/*
+attic/*
+
+ncbiAdapter/attic/*
+ncbiAdapter/geo/*
+ncbiAdapter/geoPost/*
+ncbiAdapter/sra/*
+ncbiAdapter/GSE_PUB/*
+ncbiAdapter/GSM_GSE/*
+ncbiAdapter/GSM_SRA/*
+ncbiAdapter/pubmed/*
+
+classifiers/cell_line/*
+classifiers/cell_pop/*
+classifiers/cell_type/*
+classifiers/disease_state/*
+classifiers/factor/*
+classifiers/strain/*
+classifiers/tissue_type/*
+
+media/whoosh_index/*
