@@ -100,6 +100,9 @@ for v in views.generic_model_list:
                                     name=view_name),)
 urlpatterns += patterns('', url(r'assemblies', views.assemblies, 
                                 name="assemblies"),)
+urlpatterns += patterns('', url(r'fieldsView', views.fieldsView, 
+                                name="fieldsView"),)
+
 
 if settings.DEBUG:
     urlpatterns += patterns('',

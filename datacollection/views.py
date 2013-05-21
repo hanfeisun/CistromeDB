@@ -60,11 +60,9 @@ _sidebarNames = ["Home", 'Submit a Paper', "Collection Stats", "Help", 'Contact 
 _adminSidebar = [('datasets', 'Datasets'), 
                  ('samples', 'Samples'), 
                  ('papers', 'Papers'), 
-                 ('factors', 'Factors'),
-                 ('celllines', 'Cell Lines'), ('cellpops', 'Cell Pops'),
-                 ('celltypes', 'Cell Types'), ('tissuetypes', 'Tissue Types'),
-                 ('strains', 'Strains'), ('diseasestates', 'Diseas States')]
-#_adminSidebarNames = [n[0].upper() + n[1:] for n in _adminSidebar]
+                 ('fieldsView', 'Fields'),
+                 ]
+
 
 def admin_only(function=None):
     """
@@ -1336,6 +1334,57 @@ for name in generic_model_list:
             modelPagesFactory(name, base_name))
 
 assemblies = modelPagesFactory(models.Assemblies, "assembly")
+
+def fieldsView(request):
+    """view for fields tab"""
+    fieldTypes = ["Factors", "Antibodies", "CellLines", "CellTypes", 
+                  "CellPops", "TissueTypes", "DiseaseStates", "Strains", 
+                  "Species"]
+
+    tmp=None
+    if "fieldsView" in request.COOKIES and request.COOKIES['fieldsView']:
+        #unquote b/c the object is stored as HTTP string 
+        tmp = json.loads(unquote(request.COOKIES['fieldsView']))
+
+    if tmp and "fieldType" in tmp and tmp["fieldType"]:
+        fieldType = tmp["fieldType"]
+    else:
+        fieldType = "Factors"
+
+    #unzip _adminSidebar
+    adminSidebar, adminSidebarNames = zip(*_adminSidebar)
+    sidebarURLs = [reverse(p) for p in adminSidebar]
+    sidebar = zip(adminSidebar, sidebarURLs, adminSidebarNames)
+    currpage = "fieldsView"
+
+    modelNm = fieldType
+    model = getattr(models, modelNm)
+
+    #model fields
+    fields = [f.name for f in model._meta.fields]
+    
+    title = "Fields: %s" % fieldType
+        
+    objs = model.objects.all().order_by("name")
+    current_path = request.get_full_path()
+    paginator = Paginator(objs, _items_per_page)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        pg = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        pg = paginator.page(paginator.num_pages)
+        
+    #HACK we want to add the number of associated samples
+    fields.append("samples")
+    for o in pg.object_list:
+        setattr(o, "samples", o.samples_set.count())
+
+    return render_to_response('datacollection/generic_table.html', 
+                              locals(),
+                              context_instance=RequestContext(request))
 
 #------------------------------------------------------------------------------
 # search page
