@@ -58,6 +58,17 @@ function init(mdl, this_pg) {
     overlay.style.height = document.height+"px";
     //HIDE the overlay:
     $('overlay').style.display="none";
+
+    //Cookie enabled drop-down:
+    Cookie.init({name: 'fieldsView', expires: 0});
+    //add functionality to fieldTypes select
+    var fieldType = $('fieldType');
+    fieldType.onchange = function(e) {
+	//Set the cookie
+	Cookie.setData("fieldType", this.value);
+	//reload page:
+	window.location = SUB_SITE+"fieldsView/";
+    }
 }
 
 function showInfo(id) {
