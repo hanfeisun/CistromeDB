@@ -48,6 +48,28 @@ onload="init('{{modelNm}}', '{{current_path}}');"
           <input type="button" id="mergeBtn" value="merge"/>
       </div>
       {% endif %}
+      {% if pg.paginator.num_pages %}
+      <div class="pagination">
+          <span class="step-links">
+              {% if pg.has_previous %}
+	      {% ifnotequal pg.previous_page_number 1 %}
+	      <a href="?page=1{{rest}}">first</a>
+	      {% endifnotequal %}
+              <a href="?page={{pg.previous_page_number}}{{rest}}">previous</a>
+              {% endif %}
+
+              <span class="current">Page {{ pg.number }} of {{ pg.paginator.num_pages }}.</span>
+
+              {% if pg.has_next %}
+              <a href="?page={{ pg.next_page_number }}{{rest}}">next</a>
+	      {% ifnotequal pg.next_page_number pg.paginator.num_pages %}
+	      <a href="?page={{pg.paginator.num_pages}}{{rest}}">last</a>
+	      {% endifnotequal %}
+              {% endif %}
+          </span>
+      </div>
+      {% endif %}
+
       <table class="datatable" id="data_table">
          <tr class="tableHeader">
 	     {% if user.is_authenticated %}
