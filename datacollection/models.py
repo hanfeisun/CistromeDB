@@ -452,7 +452,7 @@ class Samples(DCModel):
     strain = models.ForeignKey('Strains',
                                null=True, blank=True, default=None)
     condition = models.ForeignKey('Conditions',
-                                  null=True, blank=True, default=None)    
+                                  null=True, blank=True, default=None)
     disease_state = models.ForeignKey('DiseaseStates',
                                       null=True, blank=True, default=None)
     tissue_type = models.ForeignKey('TissueTypes', null=True, blank=True, 
@@ -500,17 +500,17 @@ class Platforms(DCModel):
 
 class Factors(DCModel):
      """The factors applied to the sample, e.g. PolII, H3K36me3, etc."""
-     name = models.CharField(max_length=255)
+     name = models.CharField(max_length=255, null=True, blank=True, default="")
      #antibody = models.CharField(max_length=255, blank=True)
      type = models.CharField(max_length=255, choices=FACTOR_TYPES,
-                             default="other")
+                             null=True, blank=True, default="")
      def __str__(self):
          return smart_str(self.name)
 
 class CellTypes(DCModel):
      """Sample's tissue/cell type, e.g. embryonic stem cell, b lymphocytes, etc.
      """
-     name = models.CharField(max_length=255)
+     name = models.CharField(max_length=255, null=True, blank=True, default="")
      #tissue_type = models.CharField(max_length=255, blank=True)
      def __str__(self):
          return smart_str(self.name)
@@ -520,7 +520,7 @@ class CellLines(DCModel):
      cell lines from cell populations or strains and mutations, but i'm going
      to create the tables just to be inclusive
      """
-     name = models.CharField(max_length=255)
+     name = models.CharField(max_length=255, null=True, blank=True, default="")
      def __str__(self):
          return smart_str(self.name)
 
@@ -540,12 +540,12 @@ class Qc(DCModel):
         return smart_str(self.name)
 
 class CellPops(DCModel):
-     name = models.CharField(max_length=255)
+     name = models.CharField(max_length=255, null=True, blank=True, default="")
      def __str__(self):
          return smart_str(self.name)
 
 class Strains(DCModel):
-     name = models.CharField(max_length=255)
+     name = models.CharField(max_length=255, null=True, blank=True, default="")
      def __str__(self):
          return smart_str(self.name)
 
@@ -557,9 +557,9 @@ class Conditions(DCModel):
 
 class Journals(DCModel):
      """Journals that the papers are published in"""
-     name = models.CharField(max_length=255)
-     issn = models.CharField(max_length=9)
-     impact_factor = models.FloatField(default=0.0)
+     name = models.CharField(max_length=255, null=True, blank=True, default="")
+     issn = models.CharField(max_length=9, null=True, blank=True, default="")
+     impact_factor = models.FloatField(default=0.0, null=True)
      def __str__(self):
          return smart_str(self.name)
 
@@ -588,12 +588,12 @@ class PaperSubmissions(DCModel):
 PaperSubmissions._meta._donotSerialize = ['user']
 
 class Species(DCModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
     def __str__(self):
         return smart_str(self.name)
     
 class Assemblies(DCModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
     pub_date = models.DateField(blank=True)
     def __str__(self):
         return smart_str(self.name)
@@ -614,19 +614,19 @@ class UserProfiles(DCModel):
     
 class DiseaseStates(DCModel):
     """Information field for datasets"""
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
     def __str__(self):
         return smart_str(str(self.name))
 
 class Antibodies(DCModel):
     """Antibodies"""
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
     def __str__(self):
         return smart_str(self.name)
 
 class TissueTypes(DCModel):
     """Tissue Types"""
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
     def __str__(self):
         return smart_str(self.name)
 
