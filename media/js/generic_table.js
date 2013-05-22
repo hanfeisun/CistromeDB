@@ -48,6 +48,28 @@ function init(mdl, this_pg) {
 	    }
 	}
     }
+
+    var mergeBtn = $('mergeBtn');
+    mergeBtn.onclick = function(event) {
+	//confirm
+	var resp = confirm("Are you sure you want to MERGE these "+mdl+"?");
+	if (resp) {
+	    var tmp = [];
+	    for (var i = 0; i < rowSelects.length; i++) {
+		if (rowSelects[i].checked) {
+		    tmp.push(rowSelects[i].id);
+		}
+	    }
+	    var m = mdl;
+	    if (mdl == "Assembly") {
+		m = "Assemblies";
+	    }
+	    
+	    if (tmp.length > 0) { //CHECK for the empty list
+		window.location = SUB_SITE+"generic_merge/"+m+"/?objects="+tmp+"&next="+next;
+	    }
+	}
+    }
     
     //SET the overlay height and width:
     var overlay = $('overlay');

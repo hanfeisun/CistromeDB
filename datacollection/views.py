@@ -905,7 +905,39 @@ def generic_delete(request, model_name):
         for o in tmp:
             o.delete()
     return HttpResponseRedirect(next)
-    
+
+@admin_only
+def generic_merge(request, model_name):
+    """This function helps support the fieldsView mergeBtn:
+    It takes a set of meta-field objects, e.g. Factors and associated the 
+    samples with the object (i.e. factor) that has the highest id, and 
+    deletes the others.
+    """
+    _map = {'Factors':'factor', 'Antibodies':'antibody', 
+            'CellLines':'cell_line', 'CellTypes':'cell_type', 
+            'CellPops':'cell_pop', 'TissueTypes':'tissue_type',
+            'DiseaseStates':'disease_state', 'Strains':'strain', 
+            'Species':'species'}
+    model = getattr(models, model_name)
+
+    next = 'fieldsView'
+    if 'next' in request.GET:
+        next = request.GET['next']
+
+    if 'objects' in request.GET:
+        tmp = [model.objects.get(pk=i) \
+                   for i in request.GET['objects'].split(',')]
+        if tmp:
+            first = tmp[0]
+            
+            #re-route all samples to be associated with first
+            for o in tmp[1:]:
+                for s in o.samples_set.all():
+                    #set them
+                    setattr(s, _map[model_name], first)
+                    s.save()
+                o.delete()
+    return HttpResponseRedirect(next)
 
 #cache it for a hour
 #@cache_page(60 * 60 * 1)
