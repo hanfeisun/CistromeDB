@@ -1,6 +1,14 @@
+
 var rowSelects;
 var model = null;
 var next = null;
+
+function masterHandler(masterChkBox) {
+    for (var i = 0; i < rowSelects.length; i++) {
+	rowSelects[i].checked = masterChkBox.checked;
+	//rowSelects[i].onclick();
+    }
+}
 
 function init(mdl, this_pg) {
     model = loadJSRecord(mdl);
@@ -15,20 +23,23 @@ function init(mdl, this_pg) {
 	masterHandler(tmp);
     }
     var createBtn = $('createBtn');
-    createBtn.disabled = "true";
     /*
-    //CHANGE THIS BELOW!
     createBtn.onclick = function(event) {
-	//model = Factors
-	//we want to redirect to new_factor_form
-	var tmp = mdl.toLowerCase();
-	if (tmp != "species" && tmp != "assembly") {
-	    tmp = tmp.substring(0, tmp.length-1);
+	var cb = function(req) {
+	    alert(req.responseText);
+	    var resp = eval("("+req.responseText+")");
+	    if (resp.success) {
+		window.location = SUB_SITE+"fieldsView/?page=-1"
+	    }
 	}
-	//alert(SUB_SITE+"new_"+tmp+"_form/?next="+this_pg);
-	window.location = SUB_SITE+"new_"+tmp+"_form/?next="+this_pg;
+	//Load the model
+	var obj = new model({id:null});
+	obj.save(cb);
     }
     */
+    createBtn.onclick = function(event) {
+	createEditDialogue(null);
+    }
 
     var deleteBtn = $('deleteBtn');
     deleteBtn.onclick = function(event) {
@@ -71,10 +82,12 @@ function init(mdl, this_pg) {
     }
 }
 
-function showInfo(id) {
+//Creates the dialogue--if id is not null then tries to edit
+//Only allows setting the name
+function createEditDialogue(id) {
     //NOTE: in CHROME, for some reason my global vars aren't global! so models
     //is null!!
-    var obj = model.get(id);
+    var obj = (id == null)? new model({id:null}) : model.get(id);
     
     //show the overlay:
     var overlay = $('overlay');
@@ -88,6 +101,7 @@ function showInfo(id) {
     //NEED to create the dialogue in the current window frame--50px from top
     dialogue.style.position="relative";
     dialogue.style.top = (window.pageYOffset+ 50)+"px";
+    dialogue.style.left = "100px";
     overlay.appendChild(dialogue);
     
     //build header
@@ -101,30 +115,39 @@ function showInfo(id) {
     //add a spacer
     p = $D('p', {innerHTML:'&nbsp;'});
     dialogue.appendChild(p);
-    
-    //build the info:
-    for (var i=0; i < obj.fields.length; i++) {
-	p = $D('p');
-	if (obj.fields[i] != "id") {
-	    p.appendChild($D('span', {innerHTML:obj.fields[i]+":", className:'label'}));
-	    p.appendChild($D('span', {innerHTML:obj[obj.fields[i]], className:'value'}));
-	} 
-	dialogue.appendChild(p);
-	
+
+    p = $D('p');
+    p.appendChild($D('span', {innerHTML:"name:", className:'label'}));
+    var inp = $D('input', {type:'text', className:'value'});
+    if (obj.id != null) {
+	inp.value = obj.name;
     }
-    
+    p.appendChild(inp);
+    dialogue.appendChild(p);
+
     //add buttons
     p = $D('p');
     //a spacer to move the buttons to the right
     p.appendChild($D('span', {className:'diagBtnSpacer'}));
-    var edit = $D('input', {type:'button', value:'edit', className:'diagBtn'});
-    edit.disabled = "true";
-    p.appendChild(edit);
-    var close = $D('input', {type:'button', value:'close', className:'diagBtn'});
-    close.onclick = function(){destroyOverlay();}
-    p.appendChild(close);
-    dialogue.appendChild(p);
+    var cancel = $D('input', {type:'button', value:'cancel', className:'diagBtn'});
+    cancel.onclick = function(){destroyOverlay();}
+    p.appendChild(cancel);
 
+    var save = $D('input', {type:'button', value:'save', className:'diagBtn'});
+    save.onclick = function(event) {
+	var cb = function(req) {
+	    var resp = eval("("+req.responseText+")");
+	    if (resp.success) {
+		window.location = SUB_SITE+"fieldsView/?page=-1"
+	    }
+	}
+	//Load the model
+	obj.name = inp.value
+	obj.save(cb);
+    }
+    p.appendChild(save);
+
+    dialogue.appendChild(p);
 }
 
 function destroyOverlay() {

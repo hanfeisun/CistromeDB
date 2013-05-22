@@ -86,7 +86,11 @@ onload="init('{{modelNm}}', '{{current_path}}');"
 	     </td>
 	     {% endif %}
 	     {% for f in fields %}
+	     {% ifequal f "id" %}
+	     <td class="fakeLink" onclick="createEditDialogue({{ o|get_attr:f }});">{{ o|get_attr:f }}</td>
+	     {% else %}
 	     <td>{{ o|get_attr:f }}</td>
+             {% endifequal %}
 	     {% endfor %}
 	 </tr>
 	 {% endfor %}

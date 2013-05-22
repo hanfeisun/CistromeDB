@@ -1365,7 +1365,7 @@ def fieldsView(request):
     
     title = "Fields: %s" % fieldType
         
-    objs = model.objects.all().order_by("name")
+    objs = model.objects.all()#.order_by("name")
     current_path = request.get_full_path()
     paginator = Paginator(objs, _items_per_page)
     try:
