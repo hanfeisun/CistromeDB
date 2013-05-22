@@ -1340,6 +1340,11 @@ def fieldsView(request):
     fieldTypes = ["Factors", "Antibodies", "CellLines", "CellTypes", 
                   "CellPops", "TissueTypes", "DiseaseStates", "Strains", 
                   "Species"]
+    rest = ""
+    search = None
+    if "search" in request.GET:
+        search = request.GET['search']
+        rest = "&search=%s" % search
 
     tmp=None
     if "fieldsView" in request.COOKIES and request.COOKIES['fieldsView']:
@@ -1364,8 +1369,12 @@ def fieldsView(request):
     fields = [f.name for f in model._meta.fields]
     
     title = "Fields: %s" % fieldType
-        
-    objs = model.objects.all()#.order_by("name")
+
+    if search:
+        objs = model.objects.filter(name__icontains=search)
+    else:
+        objs = model.objects.all()#.order_by("name")
+
     current_path = request.get_full_path()
     paginator = Paginator(objs, _items_per_page)
     try:

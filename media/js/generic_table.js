@@ -23,20 +23,6 @@ function init(mdl, this_pg) {
 	masterHandler(tmp);
     }
     var createBtn = $('createBtn');
-    /*
-    createBtn.onclick = function(event) {
-	var cb = function(req) {
-	    alert(req.responseText);
-	    var resp = eval("("+req.responseText+")");
-	    if (resp.success) {
-		window.location = SUB_SITE+"fieldsView/?page=-1"
-	    }
-	}
-	//Load the model
-	var obj = new model({id:null});
-	obj.save(cb);
-    }
-    */
     createBtn.onclick = function(event) {
 	createEditDialogue(null);
     }
@@ -80,6 +66,14 @@ function init(mdl, this_pg) {
 	//reload page:
 	window.location = SUB_SITE+"fieldsView/";
     }
+
+    //Search
+    var searchFld = $('searchFld');
+    var searchBtn = $('searchBtn');
+    var cancelBtn = $('cancelBtn');
+    var searchView = new SearchView(searchFld, searchBtn, cancelBtn, 
+				    "Search by name");
+
 }
 
 //Creates the dialogue--if id is not null then tries to edit
@@ -154,4 +148,31 @@ function destroyOverlay() {
     //show the overlay:
     var overlay = $('overlay');
     overlay.style.display="none";    
+}
+
+//DIRECTLY ripped from samples.js and home.js and modified
+function SearchView(searchFld, searchBtn, cancelBtn, msg) {
+    this.searchFld = searchFld;
+    this.searchBtn = searchBtn;
+    this.cancelBtn = cancelBtn;
+    this.msg = msg;
+    var outer = this;
+    
+    //handle the searchBtn interactions
+    this.searchBtn.onclick = function(event) {
+	if (outer.searchFld.value != outer.msg) {
+	    window.location = SUB_SITE+"fieldsView/?search="+searchFld.value;
+	}
+    }
+
+    //Enter key invokes search --NOTE: this might not work across browsers
+    this.searchFld.onkeydown = function(event) {
+	if (event.keyCode == 13) {
+	    outer.searchBtn.onclick()
+	}
+    }
+    this.cancelBtn.onclick = function(event) {
+	window.location = SUB_SITE+"fieldsView/";
+    }
+
 }
