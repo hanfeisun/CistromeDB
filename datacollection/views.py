@@ -346,8 +346,6 @@ def datasets(request):
                    #the following are buggy so we're not displaying them 
                    "rep_treat_bw", "rep_treat_peaks", "rep_treat_summits",
                    "rep_cont_bw", 
-                   #these are obsolete char fields!
-                   "treatments", "controls"
                    ]
     for r in _removeList: fields.remove(r);
 
