@@ -103,6 +103,8 @@ class Papers(DCModel):
     #def __init__(self, *args):
     #    super(Papers, self).__init__(*args)
     #    self._meta._donotSerialize = ['user']
+    class Meta:
+        verbose_name_plural = 'papers'
 
     pmid = models.IntegerField(null=True, blank=True, default=None)
     #NOTE: papers can have multiple unique_ids attached--if so, comma-sep them
@@ -188,7 +190,7 @@ Papers._meta._donotSerialize = ['user']
 
 #Dataset fields which we will aggregate and make into virtual paper fields
 #NOTE: the only ones used by jscript is species and sample_unique_ids!!
-Papers._meta._virtualfields = [#'lab', 'factors', 'platforms', 'species', 
+Papers._meta._virtualfields = [#'lab', 'factors', 'platforms', 'species',
                                #'assemblies', 'cell_types', 'cell_lines', 
                                #'cell_pops', 'tissue_types', 'strains', 
                                #'conditions', 'disease_states', 
@@ -216,6 +218,8 @@ class Datasets(DCModel):
     peak_wig
     ...etc..
     """
+    class Meta:
+        verbose_name_plural = 'datasets'
 
     #MIG_NOTE: CAN'T depend on GSMIDS
     def upload_factory(sub_dir):
@@ -379,6 +383,27 @@ class Datasets(DCModel):
                           for d in self.controls.split(',')]
          return "%s::%s" % (",".join(treat), ",".join(control))
 
+    # For admin interface
+    def treat_ids(self):
+        return ", ".join([obj.unique_id for obj in self.treats.all()])
+    def control_ids(self):
+        return ", ".join([obj.unique_id for obj in self.conts.all()])
+
+    def journal_name(self):
+        return self.paper.journal.name
+
+    journal_name.admin_order_field = 'paper__journal__name'
+
+    def journal_impact_factor(self):
+        return self.paper.journal.impact_factor
+
+    def paper_pmid(self):
+        return self.paper.pmid
+
+    journal_impact_factor.admin_order_field = 'paper__journal__impact_factor'
+
+
+
 Datasets._meta._donotSerialize = ['user']
 Datasets._meta._virtualfields = ['factor', 'platform', 'species', 
                                  'assembly', 'cell_type', 'cell_line', 
@@ -394,6 +419,9 @@ class Samples(DCModel):
     """a table to store all of the sample information: a sample is a
     set of one or more datasets; it is associated with a paper (one paper to
     many samples)"""
+
+    class Meta:
+        verbose_name_plural = 'samples'
     
      #MIG_NOTE: can't rely on GSE!
     def upload_factory(sub_dir):
@@ -557,6 +585,8 @@ class Conditions(DCModel):
 
 class Journals(DCModel):
      """Journals that the papers are published in"""
+     class Meta:
+        verbose_name_plural = 'journals'
      name = models.CharField(max_length=255, null=True, blank=True, default="")
      issn = models.CharField(max_length=9, null=True, blank=True, default="")
      impact_factor = models.FloatField(default=0.0, null=True)
