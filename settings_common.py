@@ -44,7 +44,7 @@ MEDIA_URL = '/static/'
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-STATIC_URL = '/static2/'
+STATIC_URL = '/dc_statics/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '@y7n)31q3q=*0v!kvbg5rq_hhkt$(!#o2u88cr_xshhn=3ij=6'
