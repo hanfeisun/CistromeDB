@@ -2,6 +2,11 @@ from django.conf.urls.defaults import *
 from datacollection import views
 from django.contrib.auth.views import login, logout
 import settings
+from django.contrib import admin
+
+
+
+admin.autodiscover()
 
 urlpatterns = patterns('',
               url(r'^$', views.home, name="home"),
@@ -72,7 +77,7 @@ urlpatterns = patterns('',
               url(r'^push_meta/(\d+)/$', views.push_meta, name="push_meta"),
               url(r'^change_samples_status/$', views.change_samples_status, 
                   name="change_samples_status"),
-                       
+              url(r'^new_admin/',include(admin.site.urls)),
               #url(r'^search/', include('haystack.urls')),
               #(r'^static/(?P<path>.*)$', 
               # 'django.views.static.serve',
