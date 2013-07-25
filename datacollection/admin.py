@@ -83,9 +83,10 @@ class DatasetAdmin(admin.ModelAdmin):
 class SampleAdmin(admin.ModelAdmin):
     list_display = ['id', 'unique_id', 'factor', 'species', 'cell_type', 'cell_line', 'cell_pop', 'strain', 'condition',
                     'disease_state', 'tissue_type', 'antibody']
-    search_fields = ['id', 'unique_id', 'factor', 'species', 'cell_type', 'cell_line', 'cell_pop', 'strain',
-                     'condition',
-                     'disease_state', 'tissue_type', 'antibody']
+    search_fields = ['id', 'unique_id', 'factor__name', 'species__name', 'cell_type__name', 'cell_line__name',
+                     'cell_pop__name', 'strain__name',
+                     'condition__name',
+                     'disease_state__name', 'tissue_type__name', 'antibody__name']
     list_filter = ['factor__name', 'factor__type']
     list_per_page = 50
 
