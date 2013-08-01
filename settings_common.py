@@ -81,6 +81,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'django.contrib.databrowse',
     #'django.contrib.messages',
     # Uncomment the next line to enable the admin:
     'suit',
