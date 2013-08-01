@@ -30,7 +30,7 @@ function fetch(pmid) {
 //                $(attr).innerHTML = tmp[attr];
 //            });
 //
-//            $("dataset-form").insert("<p>youmotherisabigfucker</p>")
+//            $("fetch-form").insert("<p>youmotherisabigfucker</p>")
 //            $("fetchBtn").val("Fetch sucessfully!")
 //            $("fetchBtn").removeClassName("btn-primary").addClassName("btn-success")
 //            $("fetched").show()
@@ -61,12 +61,15 @@ function fetch(pmid) {
                 $("#fetchBtn").val("Fetch sucessfully!")
                 $("#fetchBtn").removeClass("btn-primary").addClass("btn-success")
                 $("#fetched").show()
+                $(".fetch-form").remove()
+
 
                 $.each(data.geo, function (i, field) {
-
-                        var da = $('<div class="col-lg-10"><dl id="dataset-form"></dl>' +
+                        var da = $("<label class='col-lg-2 control-label fetch-form'>Series <a href='http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=" +
+                            field.gseid + "'>" + field.gseid + "</a></label>"+
+                            '<div class="col-lg-10 fetch-form"><dl id="fetch-form"></dl>' +
                             '<input type="button" class="btn btn-block btn-primary" value="Import"><hr></div>')
-                        var dl = da.find("#dataset-form")
+                        var dl = da.find("#fetch-form")
                         dl.append("<dt>Title:</dt><dd id='gsetitle' class='value'>" + field.gsetitle + "</dd>")
                         dl.append("<dt>Species:</dt><dd id='species' class='value'>" + field.species + "</dd>")
                         dl.append("<dt>Series:</dt><dd id='gseid' class='value'><a href='http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=" + field.gseid + "'>" + field.gseid + "</a></dd>")
@@ -78,10 +81,7 @@ function fetch(pmid) {
                                     + inner_field.gsmid + "</a></td><td>" + inner_field.gsmtitle + "</td></tr>")
                             }
                         )
-
                         dl.append(gsm_dt)
-                        $("#dataset-big-form").append("<label class='col-lg-2 control-label'>Series <a href='http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=" +
-                            field.gseid + "'>" + field.gseid + "</a></label>")
                         $("#dataset-big-form").append(da);
 
 
