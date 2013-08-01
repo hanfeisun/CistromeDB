@@ -399,6 +399,10 @@ class Datasets(DCModel):
 
     def paper_pmid(self):
         return self.paper.pmid
+    def __str__(self):
+        return smart_str(self.id)+"_"+smart_str(self.paper)
+
+
 
     journal_impact_factor.admin_order_field = 'paper__journal__impact_factor'
 
@@ -501,7 +505,8 @@ class Samples(DCModel):
     
     def __str__(self):
          #return self._printInfo()
-        return smart_str(str(self.id))
+
+        return smart_str("_".join([str(self.id), self.unique_id, self.name, self.species.name if self.species else "NA"]))
     
 Samples._meta._donotSerialize = ['user', 'curator']
     

@@ -3,14 +3,16 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
    <title>{% block title %}{% endblock %}</title>
-   <link href="{% url static_url %}css/base.css" rel="stylesheet" type="text/css"/>
+   {% block base_css %}<link href="{% url static_url %}css/base.css" rel="stylesheet" type="text/css"/>{% endblock %}
    {% block include %}{% endblock %}
 </head>
 <body {% block onload %}{% endblock %}>
    <header id="page_header">
       <!--<a href="{% url home %}"><img src="{% url static_url %}img/cistromeMap_logo.png" id="logo"/></a>-->
       <h1>CistromeDC</h1>
+
       <!--{% block login_form %}{% endblock %}-->
+
    </header>
    <p class="notification">Notification: To view this site, please use a browser that is HTML5 compatible, e.g. <a href="http://www.apple.com/safari/">Safari</a>, <a href="http://www.google.com/chrome/">Chrome</a>, or <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home">IE9</a>.  Some versions of Internet Explorer and Firefox may not render this site correctly.</p>
    <section id="main">
@@ -22,7 +24,7 @@
    <footer id="page_footer">
       <p>CistromeDC is part of the <a href="http://liulab.dfci.harvard.edu/">Shirley Liu Lab</a> and is still under active development</p>
       <nav>
-         <ul> 
+         <ul>
 	    {% for pg, url, name in sidebar  %}
 	    {% ifequal currpage pg %}
 	    <li>{{name}}</li>
@@ -30,7 +32,7 @@
 	    <li><a href="{{url}}">{{name}}</a></li>
 	    {% endifequal %}
 	    {% endfor %}
-	 </ul> 
+	 </ul>
       </nav>
    </footer>
 </body>
