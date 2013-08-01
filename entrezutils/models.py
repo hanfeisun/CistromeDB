@@ -65,7 +65,6 @@ def EntrezQuery(tool, params):
 
     URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/%s.fcgi?%s" %\
           (tool, URLparams)
-    print URL
     return pq(URL)
     #print tmp.root
 
