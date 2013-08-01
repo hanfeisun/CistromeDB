@@ -28,6 +28,7 @@ def GeoQuery(accession):
 
     f = urllib.urlopen(URL)
     #print f.read()
+    #print f.read()
     dom = parseString(f.read())
     f.close()
     tmp = XMLWrapper(dom.documentElement)
@@ -121,38 +122,31 @@ class PubmedArticle:
         self.abstract = pubmed_d("AbstractText").text()
 
 
-        #NOTE: geo is a list of geos
-        gseid = pubmed_d("AccessionNumber")
-        if gseid:
-            self.geo = gseid.map(lambda i, el: {"gseid": el.text})
+        #try to get the geo from geo
+        elink_param = {'dbfrom': 'pubmed', 'db': 'gds', 'id': pmid}
+        elink_d = EntrezQuery("elink", elink_param)
 
-        else:
+        gdsid = elink_d("LinkSetDb DbTo:contains('gds') ~ Link Id")
 
-            #try to get the geo from geo
-            elink_param = {'dbfrom': 'pubmed', 'db': 'gds', 'id': pmid}
-            elink_d = EntrezQuery("elink", elink_param)
+        if gdsid:
+            for a_gdsid in gdsid:
+                # TODO: extend for all gdsid
+                esum_param = {'db': 'gds', 'id': a_gdsid.text}
+                gds_d = EntrezQuery('esummary', esum_param)
+                gseid = gds_d("Item[Name=GSE]")
+                if gseid:
+                    new_gse = {"gseid": "GSE" + gseid.text(),
+                               "gsetitle":gds_d("DocSum Item[Name=title]").text(),
+                               "gsm": [],
+                               "species": gds_d("Item[Name=taxon]").text(),
+                               "type":gds_d("Item[Name=gdsType]").text()}
+                    self.geo.append(new_gse)
 
-            gdsid = elink_d("LinkSetDb DbTo:contains('gds') ~ Link Id")
-
-            if gdsid:
-                for a_gdsid in gdsid:
-                    # TODO: extend for all gdsid
-                    esum_param = {'db': 'gds', 'id': a_gdsid.text}
-                    gds_d = EntrezQuery('esummary', esum_param)
-                    gseid = gds_d("Item[Name=GSE]")
-                    if gseid:
-                        new_gse = {"gseid": "GSE" + gseid.text(),
-                                   "gsetitle":gds_d("DocSum Item[Name=title]").text(),
-                                   "gsm": [],
-                                   "species": gds_d("Item[Name=taxon]").text(),
-                                   "type":gds_d("Item[Name=gdsType]").text()}
-                        self.geo.append(new_gse)
-
-                        samples =  gds_d("Item[Type='Structure'][Name='Sample']")
-                        samples = sorted(list(samples),key=lambda s:pq(s)("[Name='Accession']").text())
-                        for g in samples:
-                            new_gse['gsm'].append({'gsmid': pq(g)("[Name='Accession']").text(),
-                                                   'gsmtitle': pq(g)("[Name='Title']").text()})
+                    samples =  gds_d("Item[Type='Structure'][Name='Sample']")
+                    samples = sorted(list(samples),key=lambda s:pq(s)("[Name='Accession']").text())
+                    for g in samples:
+                        new_gse['gsm'].append({'gsmid': pq(g)("[Name='Accession']").text(),
+                                               'gsmtitle': pq(g)("[Name='Title']").text()})
 
 
 
