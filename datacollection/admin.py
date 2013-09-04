@@ -81,14 +81,19 @@ class DatasetAdmin(admin.ModelAdmin):
 #            return {'class': css_class, 'data': obj.name}
 
 class SampleAdmin(admin.ModelAdmin):
-    list_display = ['id', 'unique_id', 'factor', 'species', 'cell_type', 'cell_line', 'cell_pop', 'strain', 'condition',
-                    'disease_state', 'tissue_type', 'antibody']
+    list_display = ['id', 'unique_id_url','factor', 'species', 'cell_type', 'cell_line', 'cell_pop', 'strain', 'condition',
+                    'disease_state', 'tissue_type', 'antibody','status']
     search_fields = ['id', 'unique_id', 'factor__name', 'species__name', 'cell_type__name', 'cell_line__name',
                      'cell_pop__name', 'strain__name',
                      'condition__name',
                      'disease_state__name', 'tissue_type__name', 'antibody__name']
-    list_filter = ['factor__name', 'factor__type']
+    list_filter = ['species__name','factor__name', 'factor__type','status']
     list_per_page = 50
+
+    def unique_id_url(self,obj):
+        return '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=%s" target="_blank">%s</a>' % (obj.unique_id, obj.unique_id)
+    unique_id_url.short_description = 'Data Source'
+    unique_id_url.allow_tags = True
 
 
 class JournalAdmin(admin.ModelAdmin):
