@@ -776,6 +776,21 @@ def auto_paper_import(request):
     return render_to_response('datacollection/auto_paper_import.html',
                               locals(),
                               context_instance=RequestContext(request))
+@admin_only
+def gsm_parser_demo(request):
+    """View of auto_paper importer where curators can try to fetch GEO
+    information using pubmed ids"""
+    if request.method == "POST":
+        #the user is trying to autoimport a paper
+        if request.POST['pmid']:
+            tmp = _import_paper(request.POST['pmid'], request.user)
+    else:
+        pass
+
+    return render_to_response('datacollection/gsm_parser_demo.html',
+        locals(),
+        context_instance=RequestContext(request))
+
 
 @admin_only
 def paper_profile(request, paper_id):
