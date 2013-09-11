@@ -8,7 +8,11 @@ import traceback
 import datetime
 import time
 
-import xml.etree.ElementTree as ET
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
 from xml.dom.minidom import parseString
 
 #AUTO-load classifiers
@@ -683,6 +687,7 @@ def createSample(gsmid):
     s.unique_id = gsmid
 
     #add the other ids-
+    idList = ["%s:%s" % i for i in [('sra',sraId),('gse',gseId),('pmid',pmid)] if i[1]]
     idList = ["%s:%s" % i for i in [('sra',sraId),('gse',gseId),('pmid',pmid)] if i[1]]
     s.other_ids = ",".join(idList)#"sra:%s" % sraId
 
