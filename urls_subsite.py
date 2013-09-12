@@ -11,8 +11,7 @@ from datacollection.models import Papers, Datasets, Samples, Journals, CellLines
 
 admin.autodiscover()
 
-databrowse.site.register(Papers, Datasets, Samples, Journals, CellLines, CellPops, CellTypes, Conditions,
-     TissueTypes, Antibodies, DiseaseStates, Platforms)
+
 
 urlpatterns = patterns('',
     url(r'^$', views.home, name="home"),
