@@ -1,3 +1,4 @@
+
 """Library to interface with the GEO (GDS- GEO DataSets) repository"""
 
 import os
@@ -7,7 +8,7 @@ import urllib
 import traceback
 import datetime
 import time
-
+from classifiers import *
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
@@ -16,7 +17,7 @@ except ImportError:
 from xml.dom.minidom import parseString
 
 #AUTO-load classifiers
-#a trick to get the current module 
+#a trick to get the current module
 _modname = globals()['__name__']
 _this_mod = sys.modules[_modname]
 
@@ -70,7 +71,7 @@ def readGeoXML(path, docString=None):
     """
     Input: a file path or a string--default is to use the path
 
-    Tries to read in the geo xml record, 
+    Tries to read in the geo xml record,
     **KEY: REMOVES the xmlns line
     Returns the xml record text WITHOUT the xmlns line!!!
     """
@@ -86,7 +87,7 @@ def readGeoXML(path, docString=None):
 
     if not docString:
         f.close()
-    
+
     return "".join(tmp)
 
 ### GDS interface
@@ -126,7 +127,7 @@ def getGDSSamples():
             #Get the IDList
             tmp = root.findall("IdList/Id")
             ret = [i.text for i in tmp]
-            
+
             #write to disk
             f = open(path, "w")
             for l in ret:
@@ -144,7 +145,7 @@ def getGDSSamples():
 def gsm_idToAcc(gdsId):
     """Given a GDS id, e.g. 300982523, tries to give a GDS accession, e.g.
     GSM982523
-    
+
     NOTE: there is an algorithm: acc = "GSM"+gdsId[1:] (strip leading 0s)
     """
     #Cut = dropping of the "3" (which indicates sample) and removal of leading
@@ -155,7 +156,7 @@ def gsm_idToAcc(gdsId):
 def gse_idToAcc(gdsId):
     """Given a GDS id, e.g. 200030833, tries to give a GDS accession, e.g.
     GSE30833
-    
+
     NOTE: there is an algorithm: acc = "GSE"+gdsId[1:] (strip leading 0s)
     """
     #Cut = dropping of the "2" (which indicates series) and removal of leading
@@ -165,12 +166,12 @@ def gse_idToAcc(gdsId):
 
 ### Librarian fns
 def gsmToGse(gsmid):
-    """Given a gsmid, will try to get the geo series id (GSE) that the 
+    """Given a gsmid, will try to get the geo series id (GSE) that the
     sample is associated with; if it is associated with several GSEs, then
     returns the first.
 
     STORES the GSE ID, e.g. 200030833 in the file
-    NOTE: if we want GSEs then we need to translate IDs to GSEXXXXX just 
+    NOTE: if we want GSEs then we need to translate IDs to GSEXXXXX just
           like we do for GSMs above
 
     uses this query:
@@ -189,7 +190,7 @@ def gsmToGse(gsmid):
         ret = f.read().strip()
         f.close()
     else:
-        #This URL is slow! 
+        #This URL is slow!
         #NOTE: for every ncbi query, try to find the eutils equivalent!
         #--it's faster
         #URL = "http://www.ncbi.nlm.nih.gov/gds/?term=gse[Entry Type] AND %s[GEO Accession]&report=docsum&format=text" % gsmid
@@ -226,7 +227,7 @@ def gsmToGse(gsmid):
     return ret
 
 def gseToPubmed(gseid):
-    """Given a gseid, will try to get the pubmed id 
+    """Given a gseid, will try to get the pubmed id
     """
     ret = None
     path = os.path.join(_ppath, "GSE_PUB")
@@ -266,7 +267,7 @@ def gseToPubmed(gseid):
 def gsmToSra(gsmid):
     """Given a gsm id, will try to get an SRA id, using this query:
     http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&term=GSM530220 to get the SRA id
-    
+
     Returns the SRA id corresponding to the GSM, None otherwise
     """
     ret = None
@@ -338,7 +339,7 @@ def getGeoXML(accession):
             else:
                 print "ERROR: accession is NOT xml"
                 return None
-            
+
         except:
             print "Exception in user code:"
             print '-'*60
@@ -400,7 +401,7 @@ def postProcessGeo(accession, docString=None):
         for c in channels:
             for child in c:
                 category = ""
- 
+
                 if child.tag in ignore:
                     continue
 
@@ -429,7 +430,7 @@ def postProcessGeo(accession, docString=None):
         f = open(path, "w")
         f.write("%s" % smart_str("\n".join(tmp)))
         f.close()
-        
+
         return "\n".join(tmp)
 
 ### Syncing fns
@@ -439,7 +440,7 @@ def syncGeo_GeoPost():
     """
     ret = []
     p = os.path.join(_ppath, "geo")
-    for root, dirs, files in os.walk(p): 
+    for root, dirs, files in os.walk(p):
         for fname in files:
             path = os.path.join(root, fname)
             acc = fname.split(".")[0]
@@ -476,7 +477,7 @@ def syncGeo_SRA():
 
 def syncSRA_Geo():
     """
-    NOTE: this fn is NOT as important as syncGeo_SRA b/c Geo is our 
+    NOTE: this fn is NOT as important as syncGeo_SRA b/c Geo is our
     primary model!!!
 
     will try to ensure that there is one Geo record for every SRA record
@@ -531,7 +532,7 @@ def syncGSM_GSE():
     for root, dirs, files in os.walk(p):
         for fname in files:
             path = os.path.join(root, fname)
-            acc = fname.split(".")[0]       
+            acc = fname.split(".")[0]
             if acc:
                 dest = os.path.join(_ppath, "GSM_GSE", acc[:7], "%s.txt" % acc)
                 if not os.path.exists(dest):
@@ -563,8 +564,8 @@ def getGeoSamples_byType(ddir="geo", ttype="ChIP-Seq", refresh=False):
     """A filter for our Geo model; searches our db for the specific sample
     type.
     NOTE: hones in on Library-Strategy tag
-    
-    Returns a list of samples fitting the specified 
+
+    Returns a list of samples fitting the specified
 
     NOTE: building this up takes time, around 10 secs almost 1 minute!
     TRY: caching the result, reading from a cached file takes only 1 minute
@@ -615,7 +616,7 @@ def getGeoSamples_byType(ddir="geo", ttype="ChIP-Seq", refresh=False):
 def parseAntibody(geoPost):
     """Given a geoPost, will 1. try to parse out the antibody information
     2. create the new antibody if necessary with the name as:
-    VENDOR Catalog# (TARGET) OR 
+    VENDOR Catalog# (TARGET) OR
     VENDOR Catalog# --if there is no target OR
     TARGET --if there is no vendor info
 
@@ -625,9 +626,9 @@ def parseAntibody(geoPost):
     """
     targetFlds = ["CHIP_ANTIBODY", "ANTIBODY"]
     vendorFlds = ["ANTIBODY_VENDORNAME", "CHIP_ANTIBODY_PROVIDER",
-                  "ANTIBODY_VENDOR", "ANTIBODY_MANUFACTURER", 
+                  "ANTIBODY_VENDOR", "ANTIBODY_MANUFACTURER",
                   "CHIP_ANTIBODY_VENDOR", "CHIP_ANTIBODY_MANUFACTURER"]
-    catalogFlds = ["ANTIBODY_VENDORID", "CHIP_ANTIBODY_CATALOG", 
+    catalogFlds = ["ANTIBODY_VENDORID", "CHIP_ANTIBODY_CATALOG",
                    "ANTIBODY_CATALOG_NUMBER"]
 
     #1. try to get the values
@@ -660,21 +661,22 @@ def parseAntibody(geoPost):
         return None
 
 def createSample(gsmid):
-    """Given a gsmid, tries to create a new sample--auto-filling in the 
+    """Given a gsmid, tries to create a new sample--auto-filling in the
     meta fields
-    
+
     NOTE: will try to save the sample!!
 
     Returns newly created sample
     """
     #dynamically load classifiers
+    # print "ninmahao"
+
     if not hasattr(_this_mod, "classifiers"):
         classifiers = __import__("classifiers", globals(), locals(), ["*"], -1)
         setattr(_this_mod, "classifiers", classifiers)
     else:
         classifiers = getattr(_this_mod, "classifiers")
-
-    #pull relevant info
+     #pull relevant info
     sraId = gsmToSra(gsmid)
     sraXML = sra.getSraXML(sraId) if sraId else None
     geoPost = postProcessGeo(gsmid)
@@ -709,10 +711,10 @@ def createSample(gsmid):
     #FACTOR, platform, species--HERE are the rest of them!
     fields = ['factor', 'cell_type', 'cell_line', 'cell_pop', 'strain',
               'disease_state', 'tissue_type']
-    _map = {'factor':models.Factors, 'cell_type':models.CellTypes, 
+    _map = {'factor':models.Factors, 'cell_type':models.CellTypes,
             'cell_line':models.CellLines,
-            'cell_pop':models.CellPops, 'strain':models.Strains, 
-            'disease_state':models.DiseaseStates, 
+            'cell_pop':models.CellPops, 'strain':models.Strains,
+            'disease_state':models.DiseaseStates,
             'tissue_type':models.TissueTypes}
 
     for f in fields:
@@ -753,7 +755,7 @@ def updateSamples():
     #"2. get the chip-seq samples"
     samples = getGeoSamples_byType("geo", "ChIP-Seq", refresh=True)
     #samples = getGeoSamples_byType()
-    
+
     #3. try to create new samples
     #ct = 0
     ret = []
@@ -766,4 +768,3 @@ def updateSamples():
         #if ct == 10:
         #    sys.exit()
     return ret
-
