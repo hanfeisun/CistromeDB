@@ -23,7 +23,7 @@ SITE_ID = 1
 # to load the internationalization machinery.
 USE_I18N = True
 
-#NOTE: this is for django1.2; since daisy only has django1.1, we need to 
+#NOTE: this is for django1.2; since daisy only has django1.1, we need to
 #comment this out.
 # List of callables that know how to import templates from various sources.
 # TEMPLATE_LOADERS = (
@@ -45,7 +45,7 @@ MEDIA_URL = '/static/'
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
 STATIC_URL = '/dc_statics/'
-
+ADMIN_MEDIA_PREFIX = '/dc_statics/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '@y7n)31q3q=*0v!kvbg5rq_hhkt$(!#o2u88cr_xshhn=3ij=6'
 
@@ -82,18 +82,31 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django.contrib.databrowse',
-    #'django.contrib.messages',
     # Uncomment the next line to enable the admin:
-    'suit',
+     'suit',
+
+    'massadmin',
+    'adminactions',
     'django.contrib.admin',
+    'django.contrib.messages',
     'datacollection', 'jsrecord', 'entrezutils',
     #    'haystack',
-    'south', 'swami',
+    'south',
+#    'swami',
     )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
 
 CACHE_BACKEND = 'db://newdc_cache'
+
+#AJAX_SELECT_BOOTSTRAP = True
+#AJAX_SELECT_INLINES = 'inline'
+#
+#AJAX_LOOKUP_CHANNELS = {
+#    #   pass a dict with the model and the field to search against
+#    'factor'  : {'model':'datacollection.Factors', 'search_field':'name'},
+#    'cell_type' : {'model': 'datacollection.CellTypes', 'search_field': 'name'},
+#}
 
 #haystack specific
 HAYSTACK_SITECONF = 'search_sites'
@@ -119,3 +132,13 @@ SUIT_CONFIG = {
         {'app':'datacollection','label':'DataCollection'}
         )
 }
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+)
+# GRAPPELLI_AUTOCOMPLETE_SEARCH_FIELDS = {
+#     "datacollection": {
+#         "factors": ("id__iexact", "name__icontains",)
+#     }
+# }

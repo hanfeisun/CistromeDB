@@ -1,4 +1,3 @@
-
 """Library to interface with the GEO (GDS- GEO DataSets) repository"""
 
 import os
@@ -8,7 +7,9 @@ import urllib
 import traceback
 import datetime
 import time
+import enchant
 from classifiers import *
+
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
@@ -23,6 +24,8 @@ _this_mod = sys.modules[_modname]
 
 _ppath = "/".join(_this_mod.__file__.split("/")[:-1])
 
+d = enchant.Dict("en_US")
+import json
 # #CAN drop this if this is an app!
 # DEPLOY_DIR="/home/lentaing/envs/newdc1.4/src"
 # sys.path.insert(0, DEPLOY_DIR)
@@ -50,14 +53,16 @@ def getFromPost(geoPost, cat):
     else:
         return ""
 
+
 def cleanCategory(s):
     """Given a string, replaces ' ' with '_'
     '/', '&', '.', '(', ')'with ''
     """
     tmp = s.replace(" ", "_")
-    for bad in ['/','&','.','(',')', ',']:
+    for bad in ['/', '&', '.', '(', ')', ',']:
         tmp = tmp.replace(bad, "")
     return tmp
+
 
 def isXML(doc):
     """TEST if it is a valid geo XML record
@@ -66,6 +71,7 @@ def isXML(doc):
     """
     f = doc.split("\n")
     return f[0].strip() == """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
+
 
 def readGeoXML(path, docString=None):
     """
@@ -82,7 +88,7 @@ def readGeoXML(path, docString=None):
 
     tmp = []
     for l in f:
-        if l.find("xmlns=\"http://www.ncbi.nlm.nih.gov/geo/info/MINiML\"")==-1:
+        if l.find("xmlns=\"http://www.ncbi.nlm.nih.gov/geo/info/MINiML\"") == -1:
             tmp.append(l)
 
     if not docString:
@@ -98,7 +104,7 @@ def getGDSSamples():
     """
     #expireDate = now - 90 days in seconds
     #ref: http://stackoverflow.com/questions/7430928/python-comparing-date-check-for-old-file
-    _expireDate = time.time() - 60*60*24*90
+    _expireDate = time.time() - 60 * 60 * 24 * 90
 
     ret = []
 
@@ -135,9 +141,9 @@ def getGDSSamples():
             f.close()
         except:
             print "Exception in user code:"
-            print '-'*60
+            print '-' * 60
             traceback.print_exc(file=sys.stdout)
-            print '-'*60
+            print '-' * 60
 
     return ret
 
@@ -152,6 +158,7 @@ def gsm_idToAcc(gdsId):
     #leading 0s
     cut = gdsId[1:].lstrip("0")
     return "GSM%s" % cut
+
 
 def gse_idToAcc(gdsId):
     """Given a GDS id, e.g. 200030833, tries to give a GDS accession, e.g.
@@ -210,21 +217,23 @@ def gsmToGse(gsmid):
                 f.write(ret)
                 f.close()
 
-            #FIRST URL
-            # m = re.search("ID:\ (\d+)", urlf.read())
-            # urlf.close()
-            # if m:
-            #     ret = m.group(1).strip()
-            #     f = open(path, "w")
-            #     f.write(ret)
-            #     f.close()
+                #FIRST URL
+                # m = re.search("ID:\ (\d+)", urlf.read())
+                # urlf.close()
+                # if m:
+                #     ret = m.group(1).strip()
+                #     f = open(path, "w")
+                #     f.write(ret)
+                #     f.close()
         except:
             print "gsmToGse"
-            print '-'*60
+            print "URL is" + URL
+            print '-' * 60
             traceback.print_exc(file=sys.stdout)
-            print '-'*60
+            print '-' * 60
 
     return ret
+
 
 def gseToPubmed(gseid):
     """Given a gseid, will try to get the pubmed id
@@ -258,9 +267,9 @@ def gseToPubmed(gseid):
                 f.close()
         except:
             print "gsmToGse"
-            print '-'*60
+            print '-' * 60
             traceback.print_exc(file=sys.stdout)
-            print '-'*60
+            print '-' * 60
     return ret
 
 
@@ -299,10 +308,11 @@ def gsmToSra(gsmid):
                 f.write(ret)
                 f.close()
         except:
-            print '-'*60
+            print '-' * 60
             traceback.print_exc(file=sys.stdout)
-            print '-'*60
+            print '-' * 60
     return ret
+
 
 def getGeoXML(accession):
     """HANDLES GEO XML records--i.e. our GEO XML librarian!
@@ -342,11 +352,23 @@ def getGeoXML(accession):
 
         except:
             print "Exception in user code:"
-            print '-'*60
+            print '-' * 60
             traceback.print_exc(file=sys.stdout)
-            print '-'*60
+            print '-' * 60
             docString = None
     return docString
+
+
+def parseGeoInfo(accession):
+    """parse necessary information (detailed description from the Geo XML file"""
+    xmlString = readGeoXML(None, getGeoXML(accession))
+    tree = ET.fromstring(xmlString)
+    ret = {}
+    for node in tree.findall("Sample/Channel/Characteristics"):
+        ret[node.get("tag")] = node.text.strip()
+    ret["source name"] = tree.find("Sample/Channel/Source").text.strip()
+    return ret
+
 
 def postProcessGeo(accession, docString=None):
     """post processes the GEO record to feed into the classifiers
@@ -374,16 +396,16 @@ def postProcessGeo(accession, docString=None):
         if not docString:
             #read the document from geo
             docString = getGeoXML(accession)
-        #process the string
+            #process the string
         text = readGeoXML(None, docString=docString)
 
         try:
             root = ET.fromstring(text)
         except:
             print "Could not parse: %s" % fname
-            print '-'*60
+            print '-' * 60
             traceback.print_exc(file=sys.stdout)
-            print '-'*60
+            print '-' * 60
             return None
 
         #3. collect all of the information under Sample/Channel
@@ -451,6 +473,7 @@ def syncGeo_GeoPost():
                     ret.append(acc)
     return ret
 
+
 def syncGeo_SRA():
     """will try to ensure that there is one SRA record for every geo record
     KEY: use this to query the SRA db- see gsmToSra
@@ -474,6 +497,7 @@ def syncGeo_SRA():
                     if tmp:
                         ret.append(sraId)
     return ret
+
 
 def syncSRA_Geo():
     """
@@ -523,6 +547,7 @@ def syncSRA_Geo():
                         ret.append(gsm)
     return ret
 
+
 def syncGSM_GSE():
     """will ensure that the records in geo have a gse id
     Returns a list of newly created records
@@ -540,6 +565,7 @@ def syncGSM_GSE():
                     if gsmToGse(acc):
                         ret.append(acc)
     return ret
+
 
 def syncGSE_PUB():
     """will ensure that every gse record have a pubmed id
@@ -559,6 +585,7 @@ def syncGSE_PUB():
                 if gseToPubmed(acc):
                     ret.append(acc)
     return ret
+
 
 def getGeoSamples_byType(ddir="geo", ttype="ChIP-Seq", refresh=False):
     """A filter for our Geo model; searches our db for the specific sample
@@ -613,6 +640,7 @@ def getGeoSamples_byType(ddir="geo", ttype="ChIP-Seq", refresh=False):
         f.close()
     return ret
 
+
 def parseAntibody(geoPost):
     """Given a geoPost, will 1. try to parse out the antibody information
     2. create the new antibody if necessary with the name as:
@@ -625,15 +653,16 @@ def parseAntibody(geoPost):
     Returns the sample's antibody, None otherwise
     """
     targetFlds = ["CHIP_ANTIBODY", "ANTIBODY"]
+    targetDetailFlds = ["ANTIBODY_SOURCE"]
     vendorFlds = ["ANTIBODY_VENDORNAME", "CHIP_ANTIBODY_PROVIDER",
                   "ANTIBODY_VENDOR", "ANTIBODY_MANUFACTURER",
                   "CHIP_ANTIBODY_VENDOR", "CHIP_ANTIBODY_MANUFACTURER"]
     catalogFlds = ["ANTIBODY_VENDORID", "CHIP_ANTIBODY_CATALOG",
-                   "ANTIBODY_CATALOG_NUMBER"]
+                   "ANTIBODY_CATALOG_NUMBER","CHIP_ANTIBODY_CAT_#","CHIP_ANTIBODY_LOT_#"]
 
     #1. try to get the values
-    vals = [None, None, None]
-    for (i, ls) in enumerate([targetFlds, vendorFlds, catalogFlds]):
+    vals = [None, None, None, None]
+    for (i, ls) in enumerate([targetFlds, targetDetailFlds, vendorFlds, catalogFlds]):
         for f in ls:
             tmp = getFromPost(geoPost, f)
             if tmp:
@@ -641,17 +670,26 @@ def parseAntibody(geoPost):
                 break;
 
     #2. compose the antibody name
-    (target, vendor, cat) = tuple(vals)
+    (target, detail, vendor, cat) = tuple(vals)
     name = ""
+    if target and "input" in target.lower():
+        ret, created = models.Antibodies.objects.get_or_create(name="input")
+        return ret
+
+    name = ""
+
+    if detail:
+        name += "%s" % detail
+
+    if cat:
+        name += " %s" % cat
+
+    if target:
+        name += " (%s)"%target
+
+
     if vendor:
-        name = vendor
-        if cat:
-            name += " %s" % cat
-        if target:
-            name += " (%s)" % target
-    else:
-        if target:
-            name += "%s" % target
+        name += " %s"%vendor
 
     #3. try to get the antibody
     if name:
@@ -660,9 +698,52 @@ def parseAntibody(geoPost):
     else:
         return None
 
-def createSample(gsmid):
+
+def parseFactorByAntibody(geoPost):
+    targetFlds = ["CHIP_ANTIBODY", "ANTIBODY", "CHIP", "ANTIBODY_SOURCE", "ANTIBODY_ANTIBODYDESCRIPTION",
+                  "ANTIBODY_TARGETDESCRIPTION"]
+    #1. try to get the values
+    for t in targetFlds:
+        tmp = getFromPost(geoPost, t).strip()
+        if not tmp:
+            continue
+        tmp = tmp.upper().replace("ANTI-", " ").replace("ANTI", " ").strip()
+        if len(tmp) < 10 and tmp != "":
+            print "CON!",tmp
+            return models.Factors.objects.get_or_create(name=tmp)[0]
+
+        splited = re.findall(r"[\w-]+", tmp)
+        for s in splited:
+            print repr(s)
+            if re.match(r"^[\d-]+$", s):
+                continue
+            print "yi"
+            if d.check(s):
+                continue
+            print "er"
+
+            if s.startswith("POL2") and len(s) < 10:
+                print "CON!",s
+                return models.Factors.objects.get_or_create(name=tmp)[0]
+            print "san"
+
+            if models.Factors.objects.filter(name__iexact=s):
+                print "CON!",s
+                return models.Factors.objects.get(name__iexact=s)
+        if "INPUT" in splited:
+            return models.Factors.objects.get_or_create(name="Input")[0]
+        if ("POLYMERASE" in splited) or ("POL" in splited):
+            return models.Factors.objects.get_or_create(name="POL2")[0]
+    print "I don't know.."
+    return None
+
+
+def createSample(gsmid, overwrite=False):
     """Given a gsmid, tries to create a new sample--auto-filling in the
     meta fields
+
+
+    If overwrite is True and there is the sample that has the same gsmid, this function will overwrite that sample
 
     NOTE: will try to save the sample!!
 
@@ -676,7 +757,7 @@ def createSample(gsmid):
         setattr(_this_mod, "classifiers", classifiers)
     else:
         classifiers = getattr(_this_mod, "classifiers")
-     #pull relevant info
+        #pull relevant info
     sraId = gsmToSra(gsmid)
     sraXML = sra.getSraXML(sraId) if sraId else None
     geoPost = postProcessGeo(gsmid)
@@ -684,14 +765,18 @@ def createSample(gsmid):
     pmid = gseToPubmed(gseId) if gseId else None
     #print geoPost
 
-    s = models.Samples()
-    s.status = "new"
-    s.unique_id = gsmid
+    if not overwrite:
+        s = models.Samples()
+        s.status = "new"
+        s.unique_id = gsmid
+    else:
+        s, created = models.Samples.objects.get_or_create(unique_id=gsmid)
+        if created:
+            s.status = "new"
 
     #add the other ids-
-    idList = ["%s:%s" % i for i in [('sra',sraId),('gse',gseId),('pmid',pmid)] if i[1]]
-    idList = ["%s:%s" % i for i in [('sra',sraId),('gse',gseId),('pmid',pmid)] if i[1]]
-    s.other_ids = ",".join(idList)#"sra:%s" % sraId
+    idList = {'sra': sraId, 'gse': gseId, 'pmid': pmid}
+    s.other_ids = json.dumps(idList)
 
     if pmid:
         s.paper = pubmed.getOrCreatePaper(pmid)
@@ -711,12 +796,14 @@ def createSample(gsmid):
     #FACTOR, platform, species--HERE are the rest of them!
     fields = ['factor', 'cell_type', 'cell_line', 'cell_pop', 'strain',
               'disease_state', 'tissue_type']
-    _map = {'factor':models.Factors, 'cell_type':models.CellTypes,
-            'cell_line':models.CellLines,
-            'cell_pop':models.CellPops, 'strain':models.Strains,
-            'disease_state':models.DiseaseStates,
-            'tissue_type':models.TissueTypes}
+    _map = {'factor': models.Factors, 'cell_type': models.CellTypes,
+            'cell_line': models.CellLines,
+            'cell_pop': models.CellPops, 'strain': models.Strains,
+            'disease_state': models.DiseaseStates,
+            'tissue_type': models.TissueTypes}
 
+    description_dict = parseGeoInfo(gsmid)
+    s.description = json.dumps(description_dict)
     for f in fields:
         tmp = classifiers.classify(getattr(classifiers, f), geoPost)[0]
         #IS it above the threshold?
@@ -726,12 +813,49 @@ def createSample(gsmid):
             if fld:
                 setattr(s, f, fld[0])
 
+
     #fields.extend(['name', 'date_collected', 'fastq_file_url', "unique_id",
     #               "status", "species"])
     #for f in fields:
     #    print getattr(s, f)
+    try:
+        if not s.factor and "input" in s.name.lower():
+            s.factor = models.Factors.objects.get(name="Input")
+    except:
+        print s
+        raise
+
+    if not s.factor:
+        s.factor = parseFactorByAntibody(geoPost)
+
+    try:
+        if not s.cell_type and "cell type" in description_dict:
+            s.cell_type, created = models.CellTypes.objects.get_or_create(name=description_dict['cell type'])
+            if created:
+                s.cell_type.status = "new"
+
+        if not s.cell_line and "cell line" in description_dict:
+            s.cell_line, created = models.CellLines.objects.get_or_create(name=description_dict['cell line'])
+            if created:
+                s.cell_line.status = "new"
+
+        if not s.tissue_type and "tissue" in description_dict:
+            s.tissue_type, created = models.TissueTypes.objects.get_or_create(name=description_dict['tissue'])
+            if created:
+                s.tissue_type.status = "new"
+
+        if not s.strain and 'strain' in description_dict:
+            s.strain, created = models.Strains.objects.get_or_create(name=description_dict['strain'])
+            if created:
+                s.strain.status = "new"
+    except:
+        print description_dict
+        print "continue"
+        return s
+
     s.save()
     return s
+
 
 def updateSamples():
     """Will run through the whole flow of this package, trying to update
@@ -739,32 +863,45 @@ def updateSamples():
 
     Returns: list of newly created samples
     """
-    #"1. refresh the repository"
-    gdsSamples = getGDSSamples()
-    for gdsid in gdsSamples:
-        gsm = gsm_idToAcc(gdsid)
-        if gsm:
-            geoXML = getGeoXML(gsm)
-            geoPost = postProcessGeo(gsm)
+    print "1. refresh the repository"
+    #    gdsSamples = getGDSSamples()
+    #    for gdsid in gdsSamples:
+    #        gsm = gsm_idToAcc(gdsid)
+    #        if gsm:
+    #            geoXML = getGeoXML(gsm)
+    #            geoPost = postProcessGeo(gsm)
+    #
+    #            #"2a. sync geo and sra"
+    #            sraId = gsmToSra(gsm)
+    #            if sraId:
+    #                sra.getSraXML(sraId)
 
-            #"2a. sync geo and sra"
-            sraId = gsmToSra(gsm)
-            if sraId:
-                sra.getSraXML(sraId)
-
-    #"2. get the chip-seq samples"
+    print "2. get the chip-seq samples"
     samples = getGeoSamples_byType("geo", "ChIP-Seq", refresh=True)
     #samples = getGeoSamples_byType()
 
-    #3. try to create new samples
-    #ct = 0
+    print "#3. try to create new samples"
+    cnt_changed = 0
     ret = []
     for s in samples:
-        if not models.Samples.objects.filter(unique_id=s):
-            #ct += 1
+        samples_have_same_id = models.Samples.objects.filter(unique_id=s)
+
+        if samples_have_same_id.exists():
+            if samples_have_same_id[0].status == "new":
+                # Avoid changing old samples. Only update new-parsed samples.
+                tmp = createSample(s, overwrite=True)
+                print "overwrite", s
+            else:
+                print s, "already exist"
+                continue
+        else:
+            # when the gsmid has never been parsed before
+            print s, "new sample"
             tmp = createSample(s)
-            ret.append(tmp)
+
+        cnt_changed += 1
+        ret.append(tmp)
         #stop after creating 10
-        #if ct == 10:
-        #    sys.exit()
+    #        if cnt_changed == 10:
+    #            sys.exit()
     return ret
