@@ -145,10 +145,7 @@ class SampleAdmin(admin.ModelAdmin):
         return "Change"
 
     def custom_antibody(self,obj):
-        if obj.antibody:
-            return  re.sub(r'(?i)ANTI[^a-zA-Z0-9_]*(.*)',r'<strong>ANTI</strong> \1',obj.antibody.name)
-        else:
-            return ""
+        return obj.antibody
 
     def custom_description(self,obj):
         ret = ""
