@@ -402,7 +402,7 @@ def postProcessGeo(accession, docString=None):
         try:
             root = ET.fromstring(text)
         except:
-            print "Could not parse: %s" % fname
+            print "Could not parse: %s" % accession
             print '-' * 60
             traceback.print_exc(file=sys.stdout)
             print '-' * 60
@@ -641,7 +641,7 @@ def getGeoSamples_byType(ddir="geo", ttype="ChIP-Seq", refresh=False):
     return ret
 
 
-def parseAntibody(geoPost):
+def parseAntibody(description_dict):
     """Given a geoPost, will 1. try to parse out the antibody information
     2. create the new antibody if necessary with the name as:
     VENDOR Catalog# (TARGET) OR
@@ -652,45 +652,78 @@ def parseAntibody(geoPost):
 
     Returns the sample's antibody, None otherwise
     """
-    targetFlds = ["CHIP_ANTIBODY", "ANTIBODY"]
-    targetDetailFlds = ["ANTIBODY_SOURCE"]
-    vendorFlds = ["ANTIBODY_VENDORNAME", "CHIP_ANTIBODY_PROVIDER",
-                  "ANTIBODY_VENDOR", "ANTIBODY_MANUFACTURER",
-                  "CHIP_ANTIBODY_VENDOR", "CHIP_ANTIBODY_MANUFACTURER"]
-    catalogFlds = ["ANTIBODY_VENDORID", "CHIP_ANTIBODY_CATALOG",
-                   "ANTIBODY_CATALOG_NUMBER","CHIP_ANTIBODY_CAT_#","CHIP_ANTIBODY_LOT_#"]
+    print description_dict
+    targetFlds = ["antibody source","chip antibody", "antibody"]
+
+    vendorFlds = ["antibody vendorname", "chip antibody provider",
+                  "antibody vendor", "antibody manufacturer",
+                  "chip antibody vendor", "chip antibody manufacturer", "antibody vendorcatalog#",
+                  "antibody vendor and catalog number", "antibody vendor/catalog", "antobody vendor/catalog#"
+                  ]
+    catalogFlds = ["antibody vendorid", "chip antibody catalog",
+                   "antibody CATALOG NUMBER","chip antibody cat #", "antibody catalog #"]
+    lotFlds = ["chip antibody lot #"]
 
     #1. try to get the values
     vals = [None, None, None, None]
-    for (i, ls) in enumerate([targetFlds, targetDetailFlds, vendorFlds, catalogFlds]):
+    used_fld = []
+    for (i, ls) in enumerate([targetFlds, vendorFlds, catalogFlds, lotFlds]):
         for f in ls:
-            tmp = getFromPost(geoPost, f)
+            tmp = description_dict.get(f)
             if tmp:
                 vals[i] = tmp
-                break;
+                used_fld.append(f)
+                break
 
     #2. compose the antibody name
-    (target, detail, vendor, cat) = tuple(vals)
-    name = ""
+    (target, vendor, cat, lot) = tuple(vals)
+
     if target and "input" in target.lower():
         ret, created = models.Antibodies.objects.get_or_create(name="input")
         return ret
 
-    name = ""
+    name_list = []
 
-    if detail:
-        name += "%s" % detail
+    def if_match_then_get(keyword, current_key):
+        if keyword in current_key:
+            current_value = description_dict[current_key]
+            if current_value and current_key not in used_fld:
+                used_fld.append(current_key)
+                if current_value.startswith("catalog#"):
+                    current_value = current_value.replace("catalog#, or reference):", "").strip()
+                return current_value
+        return None
+
+
+    for k, v in description_dict.items():
+        if not (k and v):
+            continue
+
+        if not vendor:
+            vendor = if_match_then_get("vendor", k)
+
+        if not cat:
+            cat = if_match_then_get("catalog", k)
+
+        if not lot:
+            lot = if_match_then_get("lot", k)
+
+    print (vendor, cat, lot, target)
+    if vendor:
+        name_list.append(vendor)
 
     if cat:
-        name += " %s" % cat
+        name_list.append(cat)
 
-    if target:
-        name += " (%s)"%target
+    if lot:
+        name_list.append(lot)
+
+    if not vendor and not cat and not lot:
+        if target:
+            name_list.append(target)
 
 
-    if vendor:
-        name += " %s"%vendor
-
+    name = ", ".join(name_list)
     #3. try to get the antibody
     if name:
         ret, created = models.Antibodies.objects.get_or_create(name=name)
@@ -709,32 +742,27 @@ def parseFactorByAntibody(geoPost):
             continue
         tmp = tmp.upper().replace("ANTI-", " ").replace("ANTI", " ").strip()
         if len(tmp) < 10 and tmp != "":
-            print "CON!",tmp
             return models.Factors.objects.get_or_create(name=tmp)[0]
 
         splited = re.findall(r"[\w-]+", tmp)
         for s in splited:
-            print repr(s)
+
             if re.match(r"^[\d-]+$", s):
                 continue
-            print "yi"
+
             if d.check(s):
                 continue
-            print "er"
 
             if s.startswith("POL2") and len(s) < 10:
-                print "CON!",s
                 return models.Factors.objects.get_or_create(name=tmp)[0]
-            print "san"
 
             if models.Factors.objects.filter(name__iexact=s):
-                print "CON!",s
                 return models.Factors.objects.get(name__iexact=s)
         if "INPUT" in splited:
             return models.Factors.objects.get_or_create(name="Input")[0]
         if ("POLYMERASE" in splited) or ("POL" in splited):
             return models.Factors.objects.get_or_create(name="POL2")[0]
-    print "I don't know.."
+
     return None
 
 
@@ -750,19 +778,19 @@ def createSample(gsmid, overwrite=False):
     Returns newly created sample
     """
     #dynamically load classifiers
-    # print "ninmahao"
 
-    if not hasattr(_this_mod, "classifiers"):
-        classifiers = __import__("classifiers", globals(), locals(), ["*"], -1)
-        setattr(_this_mod, "classifiers", classifiers)
-    else:
-        classifiers = getattr(_this_mod, "classifiers")
-        #pull relevant info
-    sraId = gsmToSra(gsmid)
-    sraXML = sra.getSraXML(sraId) if sraId else None
-    geoPost = postProcessGeo(gsmid)
-    gseId = gsmToGse(gsmid)
-    pmid = gseToPubmed(gseId) if gseId else None
+
+    # if not hasattr(_this_mod, "classifiers"):
+    #     classifiers = __import__("classifiers", globals(), locals(), ["*"], -1)
+    #     setattr(_this_mod, "classifiers", classifiers)
+    # else:
+    #     classifiers = getattr(_this_mod, "classifiers")
+
+    # sraId = gsmToSra(gsmid)
+    # sraXML = sra.getSraXML(sraId) if sraId else None
+    # geoPost = postProcessGeo(gsmid)
+    # gseId = gsmToGse(gsmid)
+    # pmid = gseToPubmed(gseId) if gseId else None
     #print geoPost
 
     if not overwrite:
@@ -774,23 +802,23 @@ def createSample(gsmid, overwrite=False):
         if created:
             s.status = "new"
 
-    #add the other ids-
-    idList = {'sra': sraId, 'gse': gseId, 'pmid': pmid}
-    s.other_ids = json.dumps(idList)
+    # #add the other ids-
+    # idList = {'sra': sraId, 'gse': gseId, 'pmid': pmid}
+    # s.other_ids = json.dumps(idList)
+    #
+    # if pmid:
+    #     s.paper = pubmed.getOrCreatePaper(pmid)
+    #
+    # s.name = getFromPost(geoPost, "title")
+    # s.date_collected = datetime.datetime.now()
+    # s.fastq_file_url = sra.getSRA_downloadLink(sraXML) if sraXML else None
+    #
+    # if getFromPost(geoPost, "organism") == "HOMO SAPIENS":
+    #     s.species = models.Species.objects.get(pk=1)
+    # else:
+    #     s.species = models.Species.objects.get(pk=2)
 
-    if pmid:
-        s.paper = pubmed.getOrCreatePaper(pmid)
 
-    s.name = getFromPost(geoPost, "title")
-    s.date_collected = datetime.datetime.now()
-    s.fastq_file_url = sra.getSRA_downloadLink(sraXML) if sraXML else None
-
-    if getFromPost(geoPost, "organism") == "HOMO SAPIENS":
-        s.species = models.Species.objects.get(pk=1)
-    else:
-        s.species = models.Species.objects.get(pk=2)
-
-    s.antibody = parseAntibody(geoPost)
 
     #HERE is where I need to create a classifier app/module
     #FACTOR, platform, species--HERE are the rest of them!
@@ -804,29 +832,33 @@ def createSample(gsmid, overwrite=False):
 
     description_dict = parseGeoInfo(gsmid)
     s.description = json.dumps(description_dict)
-    for f in fields:
-        tmp = classifiers.classify(getattr(classifiers, f), geoPost)[0]
-        #IS it above the threshold?
-        if tmp[0] > 0.65:
-            #try to find the field
-            fld = _map[f].objects.filter(name__icontains=tmp[1])
-            if fld:
-                setattr(s, f, fld[0])
+    # for f in fields:
+    #     tmp = classifiers.classify(getattr(classifiers, f), geoPost)[0]
+    #     #IS it above the threshold?
+    #     if tmp[0] > 0.65:
+    #         #try to find the field
+    #         fld = _map[f].objects.filter(name__icontains=tmp[1])
+    #         if fld:
+    #             setattr(s, f, fld[0])
 
+    s.antibody = parseAntibody(description_dict)
+    print gsmid
+    print s.antibody
 
     #fields.extend(['name', 'date_collected', 'fastq_file_url', "unique_id",
     #               "status", "species"])
     #for f in fields:
     #    print getattr(s, f)
-    try:
-        if not s.factor and "input" in s.name.lower():
-            s.factor = models.Factors.objects.get(name="Input")
-    except:
-        print s
-        raise
+    # try:
+    #     if not s.factor and "input" in s.name.lower():
+    #         s.factor = models.Factors.objects.get(name="Input")
+    # except:
+    #     print s
+    #     raise
+    ## For faster
 
-    if not s.factor:
-        s.factor = parseFactorByAntibody(geoPost)
+    # if not s.factor:
+    #     s.factor = parseFactorByAntibody(geoPost)
 
     try:
         if not s.cell_type and "cell type" in description_dict:
@@ -902,6 +934,6 @@ def updateSamples():
         cnt_changed += 1
         ret.append(tmp)
         #stop after creating 10
-    #        if cnt_changed == 10:
-    #            sys.exit()
+        # if cnt_changed == 10:
+        #    sys.exit()
     return ret
