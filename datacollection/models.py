@@ -542,6 +542,14 @@ class Platforms(DCModel):
          return smart_str(self.name)
 
 
+class Aliases(DCModel):
+	"""Aliases of factors, e.g. p300, CBP, etc."""
+	name = models.CharField(max_length=255)
+	factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
+	def __str__(self):
+         return smart_str(self.name)
+         
+         
 class Factors(DCModel):
      """The factors applied to the sample, e.g. PolII, H3K36me3, etc."""
      class Meta:
