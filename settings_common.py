@@ -91,7 +91,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'datacollection', 'jsrecord', 'entrezutils',
     #    'haystack',
-    'south',
+#    'south',
 #    'swami',
     )
 
