@@ -711,3 +711,11 @@ class UserProfiles(DCModel):
 #     sample = models.ForeignKey('Samples', unique=True)
 #     total_peaks = models.IntegerField(default=0)
 #     peaks_in_dhs = models.IntegerField(default=0)
+
+
+class Aliases(DCModel):
+    """Aliases of factors, e.g. p300, CBP, etc."""
+    name = models.CharField(max_length=255)
+    factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
+    def __str__(self):
+        return smart_str(self.name)
