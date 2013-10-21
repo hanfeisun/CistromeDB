@@ -2,7 +2,7 @@
                                                                                                                         
 #LEN-DEFINED values                                                                                                     
 #where newdc is deployed                                                                                                
-DEPLOY_DIR="/Users/wuwuqiu/Desktop/Projects/cistrome/database/src"
+DEPLOY_DIR="/data1/newdc1.4/src/"
 STATIC_ROOT="/data1/newdc1.4/src/dc_statics"                                                                            
 #DEFINES sub-site prefix                                                                                                
 SUB_SITE=""                                                                                                             
