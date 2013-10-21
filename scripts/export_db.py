@@ -1,6 +1,6 @@
 from django.core.management import setup_environ
 import sys
-sys.path.insert(0,'/Users/wuwuqiu/Desktop/Projects/cistrome/database/newdc')
+sys.path.insert(0,'/data1/newdc1.4/src')
 import settings
 setup_environ(settings) 
 from datacollection import models
@@ -17,7 +17,7 @@ w1.close()'''
 
 factors = models.Factors.objects.all()
 dic = {}
-for line in open('/Users/wuwuqiu/Desktop/Projects/cistrome/database/newdc/scripts/alias_list.txt','r'):
+for line in open('/data1/home/chenfei/shared_users/wuqiu/alias_list.txt','r'):
 	line = line.strip().split('\t')
 	if len(line) != 2:
 		continue
