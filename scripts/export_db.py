@@ -1,6 +1,6 @@
 from django.core.management import setup_environ
 import sys
-sys.path.insert(0,'/Users/wuwuqiu/Desktop/Projects/cistrome/database/src')
+sys.path.insert(0,'/Users/wuwuqiu/Desktop/Projects/cistrome/database/newdc')
 import settings
 setup_environ(settings) 
 from datacollection import models
@@ -17,7 +17,7 @@ w1.close()'''
 
 factors = models.Factors.objects.all()
 dic = {}
-for line in open('/Users/wuwuqiu/Desktop/Alias/alias_list.txt','r'):
+for line in open('/Users/wuwuqiu/Desktop/Projects/cistrome/database/newdc/scripts/alias_list.txt','r'):
 	line = line.strip().split('\t')
 	if len(line) != 2:
 		continue
@@ -35,8 +35,13 @@ for line in open('/Users/wuwuqiu/Desktop/Alias/alias_list.txt','r'):
 	if not current_factor:
 		continue
 	for a in alias_names:
+		'''try:'''
 		a1,created = models.Aliases.objects.get_or_create(name = a, factor = current_factor)
-		print a1
+		'''except:
+			print current_factor
+			print a
+			raise'''
+		'''print a1'''
 		a1.save()
 
 
