@@ -12,6 +12,7 @@ import adminactions.actions as actions
 # register all adminactions
 actions.add_to_site(site)
 
+
 class ImpactFactorFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options.
@@ -31,7 +32,7 @@ class ImpactFactorFilter(admin.SimpleListFilter):
         return (
             ('>5', _('larger than 5')),
             ('>10', _('larger than 10')),
-            )
+        )
 
     def queryset(self, request, queryset):
         """
@@ -91,14 +92,16 @@ class DatasetAdmin(admin.ModelAdmin):
 #            return {'class': css_class, 'data': obj.name}
 
 class SampleAdmin(admin.ModelAdmin):
-    list_display = ['unique_id_url','other_id','custom_name', 'factor', 'species', 'cell_category', 'cell_source', 'condition',
-                    'custom_antibody','custom_description','action']
-    search_fields = ['id', 'unique_id','other_ids', 'factor__name', 'species__name', 'cell_type__name', 'cell_line__name',
+    list_display = ['unique_id_url', 'other_id', 'custom_name', 'factor', 'species', 'cell_category', 'cell_source',
+                    'condition',
+                    'custom_antibody', 'custom_description', 'action']
+    search_fields = ['id', 'unique_id', 'other_ids', 'factor__name', 'species__name', 'cell_type__name',
+                     'cell_line__name',
                      'cell_pop__name', 'strain__name', 'name',
                      'condition__name',
-                     'disease_state__name', 'tissue_type__name', 'antibody__name','description']
+                     'disease_state__name', 'tissue_type__name', 'antibody__name', 'description']
     list_display_links = ['action']
-    list_filter = ['species__name','factor__name', 'factor__type','status']
+    list_filter = ['species__name', 'factor__name', 'factor__type', 'status']
     list_per_page = 50
     related_search_fields = {
         'factor': ('name',),
@@ -111,24 +114,27 @@ class SampleAdmin(admin.ModelAdmin):
         'tissue_type': ('name',),
         'antibody': ('name',),
     }
-#    massadmin_exclude = ['name','unique_id','description','user','other_ids']
+    #    massadmin_exclude = ['name','unique_id','description','user','other_ids']
 
     def suit_row_attributes(self, obj, request):
         css_class = {
             'imported': 'success',
             'new': 'warning',
-            }.get(obj.status)
+        }.get(obj.status)
         if css_class:
             return {'class': css_class}
 
-    def custom_name(self,obj):
-        return obj.name.replace("_"," ")
-    def unique_id_url(self,obj):
+    def custom_name(self, obj):
+        return obj.name.replace("_", " ")
 
-        return '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=%s" target="_blank">%s</a>' % (obj.unique_id, obj.unique_id)
+    def unique_id_url(self, obj):
+
+        return '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=%s" target="_blank">%s</a>' % (
+        obj.unique_id, obj.unique_id)
 
         return ret
-    def other_id(self,obj):
+
+    def other_id(self, obj):
         ret = ""
         try:
             other_ids = json.loads(obj.other_ids)
@@ -136,47 +142,50 @@ class SampleAdmin(admin.ModelAdmin):
             return ret
         if other_ids['pmid']:
             pmid = other_ids['pmid'].strip()
-            ret += '<a href="http://www.ncbi.nlm.nih.gov/pubmed/%s" target="_blank">P%s</a><br>' %(pmid, pmid)
+            ret += '<a href="http://www.ncbi.nlm.nih.gov/pubmed/%s" target="_blank">P%s</a><br>' % (pmid, pmid)
         if other_ids['gse'] is not None:
             gse = other_ids['gse'].strip()[-5:]
-            ret += '<br><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s" target="_blank">GSE%s</a>' %(gse, gse)
+            ret += '<br><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s" target="_blank">GSE%s</a>' % (
+            gse, gse)
         return ret
-    def action(self,obj):
+
+    def action(self, obj):
         return "Change"
 
-    def custom_antibody(self,obj):
+    def custom_antibody(self, obj):
         return obj.antibody
 
-    def custom_description(self,obj):
+    def custom_description(self, obj):
         ret = ""
         if obj.description:
             desc_dict = json.loads(obj.description)
             for k in desc_dict:
-                ret += "<strong>%s</strong>: %s<br>" %(k.title(), desc_dict[k])
+                ret += "<strong>%s</strong>: %s<br>" % (k.title(), desc_dict[k])
         return ret
 
-    def cell_source(self,obj):
+    def cell_source(self, obj):
         ret = ""
         if obj.cell_line:
-            ret += "<strong>Cell Line</strong>: %s<br>"%obj.cell_line
+            ret += "<strong>Cell Line</strong>: %s<br>" % obj.cell_line
         if obj.cell_pop:
-            ret += "<strong>Cell Pop</strong>: %s<br>"%obj.cell_pop
+            ret += "<strong>Cell Pop</strong>: %s<br>" % obj.cell_pop
         if obj.strain:
-            ret += "<strong>Strain</strong>: %s<br>"%obj.strain
+            ret += "<strong>Strain</strong>: %s<br>" % obj.strain
         return ret
 
-    def cell_category(self,obj):
+    def cell_category(self, obj):
         ret = ""
         if obj.cell_type:
-            ret += "<strong>Cell Type</strong>: %s<br>"%obj.cell_type
+            ret += "<strong>Cell Type</strong>: %s<br>" % obj.cell_type
 
         if obj.disease_state:
-            ret += "<strong>Disease</strong>: %s<br>"%obj.disease_state
+            ret += "<strong>Disease</strong>: %s<br>" % obj.disease_state
 
         if obj.tissue_type:
-            ret += "<strong>Tissue</strong>: %s<br>"%obj.tissue_type
+            ret += "<strong>Tissue</strong>: %s<br>" % obj.tissue_type
 
         return ret
+
     custom_antibody.allow_tags = True
     custom_antibody.short_description = 'Antibody'
     custom_antibody.admin_order_field = 'antibody'
@@ -195,45 +204,84 @@ class SampleAdmin(admin.ModelAdmin):
 
     ordering = ['-id']
 
+
 class JournalAdmin(admin.ModelAdmin):
     list_display = ['name', 'issn', 'impact_factor']
     list_per_page = 100
 
+
 class FactorAdmin(admin.ModelAdmin):
-    list_display = ['id','type','name','status']
-    search_fields = ['id','name']
+    list_display = ['id',  'name', 'custom_aliases','custom_type','status',]
+    list_filter = ['type']
+
+    def custom_type(self, obj):
+        defined_choice = obj.get_type_display()
+        if defined_choice:
+            return defined_choice
+        else:
+            return obj.type
+
+    def custom_aliases(self,obj):
+        aliases_list = []
+        for i in obj.aliases.all():
+            aliases_list.append(i.name)
+        return ", ".join(aliases_list)
+
+    custom_type.short_description = 'Type'
+    custom_type.admin_order_field = "type"
+
+    search_fields = ['id', 'name']
+
 
 class CelllineAdmin(admin.ModelAdmin):
-    list_display = ['id','name']
-    search_fields = ['id','name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
+
 
 class CelltypeAdmin(admin.ModelAdmin):
-     list_display = ['id','name']
-     search_fields = ['id','name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
+
+
 class CellpopAdmin(admin.ModelAdmin):
-     list_display = ['id','name']
-     search_fields = ['id','name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
+
+
 class DiseaseAdmin(admin.ModelAdmin):
-     list_display = ['id','name']
-     search_fields = ['id','name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
+
+
 class StrainAdmin(admin.ModelAdmin):
-     list_display = ['id','name']
-     search_fields = ['id','name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
+
+
 class AntibodyAdmin(admin.ModelAdmin):
-     list_display = ['id','name']
-     search_fields = ['id','name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
+
+
 class ConditionAdmin(admin.ModelAdmin):
-     list_display = ['id','name']
-     search_fields = ['id','name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
+
+
+class AliasAdmin(admin.ModelAdmin):
+    list_display = ['id','name','factor']
+    search_field = ['name','factor__name']
+
+admin.site.register(Aliases, AliasAdmin)
 admin.site.register(Papers, PaperAdmin)
 admin.site.register(Samples, SampleAdmin)
 admin.site.register(Datasets, DatasetAdmin)
 admin.site.register(Journals, JournalAdmin)
-admin.site.register(Factors,FactorAdmin)
+admin.site.register(Factors, FactorAdmin)
 admin.site.register(CellTypes, CelltypeAdmin)
 admin.site.register(CellLines, CelllineAdmin)
-admin.site.register(CellPops,CellpopAdmin)
-admin.site.register(DiseaseStates,DiseaseAdmin)
+admin.site.register(CellPops, CellpopAdmin)
+admin.site.register(DiseaseStates, DiseaseAdmin)
 admin.site.register(Strains, StrainAdmin)
-admin.site.register(Antibodies,AntibodyAdmin)
+admin.site.register(Antibodies, AntibodyAdmin)
 admin.site.register(Conditions, ConditionAdmin)
