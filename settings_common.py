@@ -126,7 +126,7 @@ TEMPLATE_CONTEXT_PROCESSORS = TCP + (
     )
 
 SUIT_CONFIG = {
-    'ADMIN_NAME': 'Cistrome Suit',
+    'ADMIN_NAME': 'Cistrome Suite',
     'MENU': (
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock'},
         {'app':'datacollection','label':'DataCollection'}
