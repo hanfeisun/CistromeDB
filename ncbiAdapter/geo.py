@@ -867,9 +867,10 @@ def createSample(gsmid, overwrite=False):
                 s.cell_type.status = "new"
 
         if not s.cell_line and "cell line" in description_dict:
-            s.cell_line, created = models.CellLines.objects.get_or_create(name=description_dict['cell line'])
-            if created:
-                s.cell_line.status = "new"
+            if len(description_dict['cell line']) < 255:
+                s.cell_line, created = models.CellLines.objects.get_or_create(name=description_dict['cell line'])
+                if created:
+                    s.cell_line.status = "new"
 
         if not s.tissue_type and "tissue" in description_dict:
             s.tissue_type, created = models.TissueTypes.objects.get_or_create(name=description_dict['tissue'])
