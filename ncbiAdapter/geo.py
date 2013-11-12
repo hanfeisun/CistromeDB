@@ -898,7 +898,6 @@ def _general_parser(description_dict, description_key, model_selector, max_creat
                         reverse=True)
 
         if result and len(result[0].name.strip())>0:
-            print "CON!", result
             return result[0]
 
     if new and len(description_dict[description_key]) <= max_create_length:
