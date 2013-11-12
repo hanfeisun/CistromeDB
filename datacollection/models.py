@@ -67,6 +67,7 @@ FACTOR_TYPES = (
     (u'predicted chromatin regulator', u'predicted chromatin regulator'),
     (u'both predicted transcription factor and chromatin regulator',
      u'both predicted transcription factor and chromatin regulator'),
+    (u'not sure',u'not sure'),
     (u'other', u'other'),
 )
 
@@ -399,11 +400,6 @@ class Datasets(DCModel):
         return "%s::%s" % (",".join(treat), ",".join(control))
 
     # For admin interface
-    def treat_ids(self):
-        return ", ".join([obj.unique_id for obj in self.treats.all()])
-
-    def control_ids(self):
-        return ", ".join([obj.unique_id for obj in self.conts.all()])
 
     def journal_name(self):
         if self.paper:
@@ -479,6 +475,7 @@ class Samples(DCModel):
     unique_id = models.CharField(max_length=255, null=True, blank=True, default="")
     #comma sep list of other identifiers
     other_ids = models.CharField(max_length=255, null=True, blank=True, default="")
+    series_id = models.CharField(max_length=255, null=True, blank=True, default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     date_collected = models.DateTimeField(null=True, blank=True, default=None)
@@ -532,10 +529,9 @@ class Samples(DCModel):
 
 
     def __str__(self):
-    #return self._printInfo()
-
         return smart_str(
             "_".join([str(self.id), self.unique_id, self.name, self.species.name if self.species else "NA"]))
+
 
 
 Samples._meta._donotSerialize = ['user', 'curator']

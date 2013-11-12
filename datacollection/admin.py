@@ -1,4 +1,5 @@
 from django.contrib import admin
+import sys
 from models import *
 from django.utils.translation import ugettext_lazy as _
 import re
@@ -53,13 +54,49 @@ class DatasetInline(admin.TabularInline):
     fields = ['user', 'paper', 'treats', 'conts', 'status']
     raw_id_fields = ['treats', 'conts']
 
+class TreatInline(admin.TabularInline):
+    verbose_name = "treatment"
+    model = Datasets.treats.through
+    extra = 1
+
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        series_id = request._dataset_.treats.all()[0].series_id
+        field = super(TreatInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        if series_id and db_field.name == 'samples':
+            field.queryset = Samples.objects.filter(series_id = series_id)
+        elif db_field.name == 'datasets':
+            field.queryset = Datasets.objects.filter(treats__series_id = series_id)
+        else:
+            dn = db_field.name
+            raise
+        return field
+
+
+
+class ContInline(admin.TabularInline):
+    verbose_name = "control"
+    model = Datasets.conts.through
+    extra = 1
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        series_id = request._dataset_.treats.all()[0].series_id
+        field = super(ContInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        if series_id and db_field.name == 'samples':
+            field.queryset = Samples.objects.filter(series_id = series_id)
+        elif db_field.name == 'datasets':
+            field.queryset = Datasets.objects.filter(conts__series_id = series_id)
+        else:
+            dn = db_field.name
+            raise
+        return field
 
 class PaperAdmin(admin.ModelAdmin):
     list_display = ['pmid', 'title', 'journal', 'date_collected', 'pub_date', 'status']
     list_filter = ['journal', 'date_collected', 'pub_date', 'status']
     search_fields = ['title', '@abstract', 'journal']
     list_per_page = 50
-    inlines = [DatasetInline, ]
+    inlines = [DatasetInline]
 
     def suit_row_attributes(self, obj):
         css_class = {
@@ -74,25 +111,86 @@ class PaperAdmin(admin.ModelAdmin):
 
 
 class DatasetAdmin(admin.ModelAdmin):
-    fields = ['user', 'paper', 'treats', 'conts', 'date_created', 'status', 'comments']
-    raw_id_fields = ['treats', 'conts']
-    list_display = ['id', 'paper', 'status', 'journal_name', 'journal_impact_factor', 'factor', 'treat_ids',
-                    'control_ids']
+    fields = ['user', 'paper', 'date_created', 'status', 'comments']
+    list_display = ['custom_id', 'paper', 'status', 'journal_name', 'journal_impact_factor', 'factor', 'custom_treats',
+                    'custom_conts', 'custom_gse','action']
     list_filter = ['status', 'paper__journal', 'treats__factor__name', 'treats__factor__type', ImpactFactorFilter]
-    search_fields = ['paper__title', 'paper__pmid', 'paper__journal__name', 'treats__factor__name']
+    search_fields = ['paper__title', 'paper__pmid', 'paper__journal__name', 'treats__factor__name', 'treats__unique_id',
+                     'conts__unique_id']
     list_per_page = 100
+    list_display_links = ['action']
+    inlines = [TreatInline,ContInline,]
 
-#    def suit_row_attributes(self, obj):
-#        css_class = {
-#            1: 'success',
-#            0: 'warning',
-#            -1: 'error',
-#            }.get(obj.status)
-#        if css_class:
-#            return {'class': css_class, 'data': obj.name}
+    def get_form(self, request, obj=None, **kwargs):
+    # just save sample reference for future processing in Treatment & Control Inline
+        request._dataset_ = obj
+        return super(DatasetAdmin, self).get_form(request, obj, **kwargs)
+
+
+    def action(self, obj):
+        return "Change"
+
+    def custom_id(self, obj):
+        return '<a href="http://cistrome.org/finder/util/meta?did=%s" target="_blank">%s</a>' % (obj.id, obj.id)
+
+
+    geo_link_template = '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=%s" target="_blank">%s</a>' \
+                        '<a href="http://cistrome.org/dc/new_admin/datacollection/samples/?q=%s" target="_blank"><i class="icon-search"></i></a></br> %s'
+
+    def custom_treats(self, obj):
+        treats_list = obj.treats.all().order_by('unique_id')
+        return "</br>".join(
+            [DatasetAdmin.geo_link_template % (i.unique_id,
+                                               i.unique_id,
+                                               " ".join(re.findall(r"\d+", i.unique_id)),
+                                               i.name) for i in
+             treats_list])
+    gse_link_template = '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s" target="_blank">GSE%s</a>' \
+                        '<a href="http://cistrome.org/dc/new_admin/datacollection/samples/?q=%s" target="_blank"><i class="icon-search"></i></a></br>'
+    def custom_gse(self,obj):
+        treats_list = obj.treats.all()
+        if treats_list:
+            if treats_list[0].other_ids:
+                gse_id = json.loads(treats_list[0].other_ids)['gse'].strip()[-5:]
+                return DatasetAdmin.gse_link_template % (gse_id, gse_id, gse_id)
+        return ""
+
+    def custom_conts(self, obj):
+        conts_list = obj.conts.all().order_by('unique_id')
+        return "</br>".join(
+            [DatasetAdmin.geo_link_template % (i.unique_id,
+                                               i.unique_id,
+                                               " ".join(re.findall(r"\d+", i.unique_id)),
+                                               i.name) for i in
+        conts_list])
+
+
+    custom_id.allow_tags = True
+    custom_id.short_description = 'ID'
+    custom_id.ordering = 'id'
+
+    custom_treats.allow_tags = True
+    custom_treats.short_description = "Treatment IDs"
+
+    custom_conts.allow_tags = True
+    custom_conts.short_description = "Control IDs"
+
+    custom_gse.allow_tags = True
+    custom_gse.short_description = "GSE ID"
+
+
+        #    def suit_row_attributes(self, obj):
+        #        css_class = {
+        #            1: 'success',
+        #            0: 'warning',
+        #            -1: 'error',
+        #            }.get(obj.status)
+        #        if css_class:
+        #            return {'class': css_class, 'data': obj.name}
+
 
 class SampleAdmin(admin.ModelAdmin):
-    list_display = ['unique_id_url', 'other_id', 'custom_name', 'factor', 'species', 'cell_category', 'cell_source',
+    list_display = ['id','unique_id_url', 'other_id', 'custom_name', 'factor', 'species', 'cell_category', 'cell_source',
                     'condition',
                     'custom_antibody', 'custom_description', 'action']
     search_fields = ['id', 'unique_id', 'other_ids', 'factor__name', 'species__name', 'cell_type__name',
@@ -116,6 +214,8 @@ class SampleAdmin(admin.ModelAdmin):
     }
     #    massadmin_exclude = ['name','unique_id','description','user','other_ids']
 
+
+
     def suit_row_attributes(self, obj, request):
         css_class = {
             'imported': 'success',
@@ -130,9 +230,9 @@ class SampleAdmin(admin.ModelAdmin):
     def unique_id_url(self, obj):
 
         return '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=%s" target="_blank">%s</a>' % (
-        obj.unique_id, obj.unique_id)
+            obj.unique_id, obj.unique_id)
 
-        return ret
+
 
     def other_id(self, obj):
         ret = ""
@@ -146,7 +246,7 @@ class SampleAdmin(admin.ModelAdmin):
         if other_ids['gse'] is not None:
             gse = other_ids['gse'].strip()[-5:]
             ret += '<br><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s" target="_blank">GSE%s</a>' % (
-            gse, gse)
+                gse, gse)
         return ret
 
     def action(self, obj):
@@ -211,7 +311,7 @@ class JournalAdmin(admin.ModelAdmin):
 
 
 class FactorAdmin(admin.ModelAdmin):
-    list_display = ['id',  'name', 'custom_aliases','custom_type','status',]
+    list_display = ['id', 'name', 'custom_aliases', 'custom_type', 'status', ]
     list_filter = ['type']
 
     def custom_type(self, obj):
@@ -221,7 +321,7 @@ class FactorAdmin(admin.ModelAdmin):
         else:
             return obj.type
 
-    def custom_aliases(self,obj):
+    def custom_aliases(self, obj):
         aliases_list = []
         for i in obj.aliases.all():
             aliases_list.append(i.name)
@@ -231,6 +331,8 @@ class FactorAdmin(admin.ModelAdmin):
     custom_type.admin_order_field = "type"
 
     search_fields = ['id', 'name']
+
+    list_max_show_all = 5000
 
 
 class CelllineAdmin(admin.ModelAdmin):
@@ -269,8 +371,9 @@ class ConditionAdmin(admin.ModelAdmin):
 
 
 class AliasAdmin(admin.ModelAdmin):
-    list_display = ['id','name','factor']
-    search_field = ['name','factor__name']
+    list_display = ['id', 'name', 'factor']
+    search_field = ['name', 'factor__name']
+
 
 admin.site.register(Aliases, AliasAdmin)
 admin.site.register(Papers, PaperAdmin)
