@@ -55,15 +55,24 @@ class DatasetInline(admin.TabularInline):
     raw_id_fields = ['treats', 'conts']
 
 class TreatInline(admin.TabularInline):
-    verbose_name = "treatment"
+
+    verbose_name = "treatment samples"
+    name = verbose_name
     model = Datasets.treats.through
     extra = 1
 
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        series_id = request._dataset_.treats.all()[0].series_id
+        if request._dataset_:
+            series_id = request._dataset_.treats.all()[0].series_id
+        else:
+            series_id = None
         field = super(TreatInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
-        if series_id and db_field.name == 'samples':
+
+        if not series_id:
+            return field
+
+        if db_field.name == 'samples':
             field.queryset = Samples.objects.filter(series_id = series_id)
         elif db_field.name == 'datasets':
             field.queryset = Datasets.objects.filter(treats__series_id = series_id)
@@ -75,14 +84,23 @@ class TreatInline(admin.TabularInline):
 
 
 class ContInline(admin.TabularInline):
-    verbose_name = "control"
+    verbose_name = "control samples"
+    name = verbose_name
     model = Datasets.conts.through
     extra = 1
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        series_id = request._dataset_.treats.all()[0].series_id
+        if request._dataset_:
+            series_id = request._dataset_.treats.all()[0].series_id
+        else:
+            series_id = None
+
         field = super(ContInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
-        if series_id and db_field.name == 'samples':
+
+        if not series_id:
+            return field
+
+        if db_field.name == 'samples':
             field.queryset = Samples.objects.filter(series_id = series_id)
         elif db_field.name == 'datasets':
             field.queryset = Datasets.objects.filter(conts__series_id = series_id)
@@ -111,12 +129,12 @@ class PaperAdmin(admin.ModelAdmin):
 
 
 class DatasetAdmin(admin.ModelAdmin):
-    fields = ['user', 'paper', 'date_created', 'status', 'comments']
+    fields = ['user', 'paper', 'date_created', 'status', 'comments',]
     list_display = ['custom_id', 'paper', 'status', 'journal_name', 'journal_impact_factor', 'factor', 'custom_treats',
                     'custom_conts', 'custom_gse','action']
     list_filter = ['status', 'paper__journal', 'treats__factor__name', 'treats__factor__type', ImpactFactorFilter]
-    search_fields = ['paper__title', 'paper__pmid', 'paper__journal__name', 'treats__factor__name', 'treats__unique_id',
-                     'conts__unique_id']
+    search_fields = ['id','paper__title', 'paper__pmid', 'paper__journal__name', 'treats__factor__name', 'treats__unique_id',
+                     'conts__unique_id', 'treats__series_id','conts__series_id']
     list_per_page = 100
     list_display_links = ['action']
     inlines = [TreatInline,ContInline,]
@@ -146,13 +164,14 @@ class DatasetAdmin(admin.ModelAdmin):
                                                i.name) for i in
              treats_list])
     gse_link_template = '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s" target="_blank">GSE%s</a>' \
-                        '<a href="http://cistrome.org/dc/new_admin/datacollection/samples/?q=%s" target="_blank"><i class="icon-search"></i></a></br>'
+                        '<a href="http://cistrome.org/dc/new_admin/datacollection/samples/?q=%s" target="_blank"><i class="icon-search"></i></a></br>' \
+                        '<a href="http://cistrome.org/dc/new_admin/datacollection/datasets/?q=GSE%s" target="_blank"><i class="icon-magnet"></i></a></br>'
     def custom_gse(self,obj):
         treats_list = obj.treats.all()
         if treats_list:
             if treats_list[0].other_ids:
                 gse_id = json.loads(treats_list[0].other_ids)['gse'].strip()[-5:]
-                return DatasetAdmin.gse_link_template % (gse_id, gse_id, gse_id)
+                return DatasetAdmin.gse_link_template % (gse_id, gse_id, gse_id, gse_id)
         return ""
 
     def custom_conts(self, obj):
@@ -197,9 +216,9 @@ class SampleAdmin(admin.ModelAdmin):
                      'cell_line__name',
                      'cell_pop__name', 'strain__name', 'name',
                      'condition__name',
-                     'disease_state__name', 'tissue_type__name', 'antibody__name', 'description']
+                     'disease_state__name', 'tissue_type__name', 'antibody__name', 'description','series_id']
     list_display_links = ['action']
-    list_filter = ['species__name', 'factor__name', 'factor__type', 'status']
+    list_filter = ['status','species__name', 'factor__name', 'factor__type', ]
     list_per_page = 50
     related_search_fields = {
         'factor': ('name',),
