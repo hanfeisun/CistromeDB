@@ -47,6 +47,7 @@ DATASET_STATUS = (
 
 SAMPLE_STATUS = (
     (u'new', u'sample created'),
+    (u'checked', u'sample checked, awaiting importation'),
     (u'imported', u'sample imported'),
     (u'running', u'analysis is running, awaiting completion'),
     (u'complete', u'analysis complete'),
@@ -403,7 +404,7 @@ class Datasets(DCModel):
 
     def journal_name(self):
         if self.paper:
-            return self.paper.journal.name
+            return self.paper.journal.name if self.paper.journal else None
         else:
             return None
 
@@ -411,7 +412,7 @@ class Datasets(DCModel):
 
     def journal_impact_factor(self):
         if self.paper:
-            return self.paper.journal.impact_factor
+            return self.paper.journal.impact_factor if self.paper.journal else None
         else:
             return None
 
@@ -530,7 +531,8 @@ class Samples(DCModel):
 
     def __str__(self):
         return smart_str(
-            "_".join([str(self.id), self.unique_id, self.name, self.species.name if self.species else "NA"]))
+            "_".join([self.unique_id, self.factor.name if self.factor else "", self.name, self.species.name if self.species else "NA"]))
+
 
 
 
