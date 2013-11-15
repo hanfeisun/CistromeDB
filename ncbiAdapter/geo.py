@@ -776,7 +776,7 @@ def parseFactor(description_dict):
             if re.match(r"^[\d-]+$", s):
                 continue
 
-            if len(s) <= 2 and d.check(s):
+            if len(s) < 2 and d.check(s):
                 continue
 
             # POL2 factor usually starts with `POL2`
@@ -784,6 +784,9 @@ def parseFactor(description_dict):
                 return models.Factors.objects.get_or_create(name="POL2")[0]
 
             # If a token is neither a number nor a vocabulary in dictionary, it may be the factor name
+            if s=="IGG" or s=="NONE":
+                return models.Factors.objects.get_or_create(name="Input")[0]
+
             if models.Factors.objects.filter(name__iexact=s):
                 return models.Factors.objects.get(name__iexact=s)
 

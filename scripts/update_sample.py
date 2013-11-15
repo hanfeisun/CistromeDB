@@ -13,7 +13,7 @@ def my_update_condition(uid):
         return False
 
 
-update_samples(parse_fields=['antibody', 'cell line', 'cell type', 'cell pop','tissue', 'disease','strain','factor'],
+update_samples(parse_fields=['factor'],
                update_condition=my_update_condition)
 
 
