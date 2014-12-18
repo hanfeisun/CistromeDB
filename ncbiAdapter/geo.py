@@ -5,13 +5,14 @@ import re
 import sys
 import urllib
 import traceback
-import datetime
+from datetime import datetime
 import time
 import enchant
 import cPickle
 # from classifiers import *
 from django.db.models import Q
 import re
+from datacollection.models import Samples
 
 try:
     import xml.etree.cElementTree as ET
@@ -84,6 +85,7 @@ def readGeoXML(path, docString=None):
     **KEY: REMOVES the xmlns line
     Returns the xml record text WITHOUT the xmlns line!!!
     """
+
     if docString:
         f = docString.split("\n")
     else:
@@ -105,48 +107,49 @@ def getGDSSamples():
     NOTE: this returns ALL GDS samples which are of SRA type i.e.
     ALL CHIP-SEQ, RNA-SEQ, etc.
     """
-    #expireDate = now - 90 days in seconds
+    #expireDate = now - 30 days in seconds
     #ref: http://stackoverflow.com/questions/7430928/python-comparing-date-check-for-old-file
-    _expireDate = time.time() - 60 * 60 * 24 * 90
+    # _expireDate = time.time() - 60 * 60 * 24 * 30
 
     ret = []
-
-    #TRY: to read a file first -- IF IT IS NOT STALE
+    #
+    # #TRY: to read a file first -- IF IT IS NOT STALE
     path = os.path.join(_ppath, "gdsSamples.txt")
-    if os.path.exists(path) and not os.path.getctime(path) < _expireDate:
-        f = open(path)
-        for l in f:
-            ret.append(l.strip())
+    # if os.path.exists(path) and not os.path.getctime(path) < _expireDate:
+    #     f = open(path)
+    #     for l in f:
+    #         ret.append(l.strip())
+    #     f.close()
+    # else:
+    #     #REFRESH!
+
+    #REAL URL
+    URL = """http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gds&term=SRA[Sample Type] AND gsm[Entry Type] AND ("homo sapiens"[Organism] OR "mus musculus"[Organism])&retmax=100000"""
+
+    #TEST URL
+    #URL = """http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gds&term=SRA[Sample Type] AND gsm[Entry Type] AND ("homo sapiens"[Organism] OR "mus musculus"[Organism])&retmax=10"""
+
+    try:
+        #print "getGDSSample: %s" % URL
+        f = urllib.urlopen(URL)
+        root = ET.fromstring(f.read())
         f.close()
-    else:
-        #REFRESH!
 
-        #REAL URL
-        URL = """http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gds&term=SRA[Sample Type] AND gsm[Entry Type] AND ("homo sapiens"[Organism] OR "mus musculus"[Organism])&retmax=100000"""
+        #Get the IDList
+        tmp = root.findall("IdList/Id")
+        ret = [i.text for i in tmp]
 
-        #TEST URL
-        #URL = """http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gds&term=SRA[Sample Type] AND gsm[Entry Type] AND ("homo sapiens"[Organism] OR "mus musculus"[Organism])&retmax=10"""
-
-        try:
-            #print "getGDSSample: %s" % URL
-            f = urllib.urlopen(URL)
-            root = ET.fromstring(f.read())
-            f.close()
-
-            #Get the IDList
-            tmp = root.findall("IdList/Id")
-            ret = [i.text for i in tmp]
-
-            #write to disk
-            f = open(path, "w")
-            for l in ret:
-                f.write("%s\n" % l)
-            f.close()
-        except:
-            print "Exception in user code:"
-            print '-' * 60
-            traceback.print_exc(file=sys.stdout)
-            print '-' * 60
+        #write to disk
+        f = open(path, "w")
+        for l in ret:
+            f.write("%s\n" % l)
+        f.close()
+        print "Refresh %s"%path
+    except:
+        print "Exception in user code:"
+        print '-' * 60
+        traceback.print_exc(file=sys.stdout)
+        print '-' * 60
 
     return ret
 
@@ -255,8 +258,9 @@ def gseToPubmed(gseid):
         f.close()
     else:
         URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?id=%s&db=pubmed&dbfrom=gds" % gseid
+
         try:
-            #print "gseToPubmed: %s" % URL
+            print "gseToPubmed: %s" % URL
             urlf = urllib.urlopen(URL)
             root = ET.fromstring(urlf.read())
             urlf.close()
@@ -330,7 +334,6 @@ def getGeoXML(accession):
     if not os.path.exists(subdir):
         os.mkdir(subdir)
     path = os.path.join(subdir, "%s.xml" % accession)
-
     if os.path.exists(path):
         f = open(path)
         docString = f.read()
@@ -350,7 +353,8 @@ def getGeoXML(accession):
                 f.write(docString)
                 f.close()
             else:
-                print "ERROR: accession is NOT xml"
+                print accession
+                print "ERROR: accession is NOT xml. (The accession may be deleted from GEO repository)"
                 return None
 
         except:
@@ -372,6 +376,8 @@ def parseGeoInfo(accession):
             ret[node.get("tag").replace("_", " ")] = node.text.strip()
     ret["source name"] = tree.find("Sample/Channel/Source").text.strip()
     ret["title"] = tree.find("Sample/Title").text.strip()
+    ret['last update date'] = tree.find("Sample/Status/Last-Update-Date").text.strip()
+    ret['release date'] = tree.find("Sample/Status/Release-Date").text.strip()
     return ret
 
 
@@ -402,6 +408,10 @@ def postProcessGeo(accession, docString=None):
             #read the document from geo
             docString = getGeoXML(accession)
             #process the string
+
+        if not docString:
+            return None
+
         text = readGeoXML(None, docString=docString)
 
         try:
@@ -646,6 +656,33 @@ def getGeoSamples_byType(ddir="geo", ttype="ChIP-Seq", refresh=False):
     return ret
 
 
+def getGeoSamples_byTypes(path, ddir="geo", refresh=False, ttypes = ["ChIP-Seq", "DNase-Hypersensitivity"]):
+
+    ret = []
+    if not refresh and os.path.exists(path):
+        ret = cPickle.load(open(path))
+        return ret
+
+    for t in ttypes:
+        ret += getGeoSamples_byType(ddir, t, refresh)
+
+    cPickle.dump(ret, open(path, "w"))
+
+    return ret
+
+
+def parseUpdateTime(description_dict):
+    # a trick to convert time string into a datetime object
+    time_struct = time.strptime(description_dict["last update date"], "%Y-%m-%d")
+    return datetime.fromtimestamp(time.mktime(time_struct))
+
+
+def parseReleaseTime(description_dict):
+    # a trick to convert time string into a datetime object
+    time_struct = time.strptime(description_dict["release date"], "%Y-%m-%d")
+    return datetime.fromtimestamp(time.mktime(time_struct))
+
+
 def parseAntibody(description_dict):
     """Given a geoPost, will 1. try to parse out the antibody information
     2. create the new antibody if necessary with the name as:
@@ -739,76 +776,242 @@ def parseAntibody(description_dict):
         return None
 
 
-def parseFactor(description_dict):
-    # TODO: use description dict to parse, instead of using geoPost
+# def parseFactor(description_dict):
+#     # TODO: use description dict to parse, instead of using geoPost
+#
+#     standard_fields = ["chip antibody", "antibody", "chip", "antibody source", "antibody antibodydescription",
+#                        "antibody targetdescription", "factor"]
+#     avoid_words = ["MILLIPORE", "ABCAM", "METHYLCAP"]
+#
+#     non_standard_fields = [i for i in description_dict.keys() if "antibody" in i and i not in standard_fields] + [
+#         'title']
+#     #1. try to get the values
+#     factor_pattern = re.compile(r"[a-z]+[-\.]?[a-z0-9]+", re.I)
+#     factor_term_pattern = re.compile(r"^[a-z]+[-\.]?[a-z0-9]+$", re.I)
+#     possible_new_factor = None
+#
+#     for t in standard_fields + non_standard_fields:
+#         print t
+#         tmp = description_dict.get(t, "").strip()
+#         # skip the null field
+#         if not tmp:
+#             continue
+#
+#         # make all character upper case, then delete strings like `ANTI` and `_`
+#         tmp = tmp.upper().replace("ANTI-", " ").replace("ANTI", " ").replace("_", " ").strip()
+#
+#         # `N/A` often concurs with `Input`
+#         if "N/A" in tmp:
+#             return models.Factors.objects.get_or_create(name="Input")[0]
+#
+#         if "antibody" in t and ("NONE" in tmp or "INPUT" in tmp or "IGG" in tmp):
+#             return models.Factors.objects.get_or_create(name="Input")[0]
+#
+#         # If the field has very short description and it is not `TITLE`, the description is usually the factor name.
+#         if t not in non_standard_fields and not possible_new_factor \
+#             and len(tmp) < 10 and tmp not in avoid_words and factor_term_pattern.match(tmp) \
+#             and not models.Aliases.objects.filter(name__icontains=tmp) \
+#             and not models.Factors.objects.filter(name__icontains=tmp):
+#             possible_new_factor = tmp
+#
+#
+#
+#             # split the description into tokens
+#         splited = factor_pattern.findall(tmp)
+#         print splited
+#         for s in splited:
+#
+#             if d.check(s):
+#                 continue
+#             if s in avoid_words:
+#                 continue
+#                 # POL2 factor usually starts with `POL2`
+#             if (s.startswith("POL2") and len(s) < 10):
+#                 return models.Factors.objects.get_or_create(name="POL2")[0]
+#
+#             # If a token is neither a number nor a vocabulary in dictionary, it may be the factor name
+#             if models.Factors.objects.filter(name__iexact=s):
+#                 return models.Factors.objects.get(name__iexact=s)
+#
+#             if models.Aliases.objects.filter(name__iexact=s):
+#                 try:
+#                     alias = models.Aliases.objects.get(name__iexact=s)
+#                     return alias.factor
+#                 except Exception as e:
+#                     print e
+#                     print "FATAL!"
+#                     return None
+#
+#
+#
+#         # special cases for `Input` and `POL2`
+#         if "INPUT" in splited:
+#             return models.Factors.objects.get_or_create(name="Input")[0]
+#         if ("POLYMERASE" in splited) or ("POL" in splited):
+#             return models.Factors.objects.get_or_create(name="POL2")[0]
+#
+#     if possible_new_factor:
+#         ret, created = models.Factors.objects.get_or_create(name=possible_new_factor)
+#         if created:
+#             ret.status = 'new'
+#             ret.save()
+#         return ret
+#
+#     return None
 
-    standard_fields = ["chip antibody", "antibody", "chip", "antibody source", "antibody antibodydescription",
-                       "antibody targetdescription", "factor", "title"]
 
-    non_standard_fields = [i for i in description_dict.keys() if "antibody" in i and i not in standard_fields]
-    #1. try to get the values
+def _parse_a_field(description_dict, a_field, DCmodel, max_create_length=100, new=False):
+    if not description_dict.get(a_field, None):
+        return None
+    if len(description_dict.get(a_field, "")) > 0:
+        result_searched_by_name = sorted(
+            DCmodel.objects.extra(where={"%s REGEXP CONCAT('([^a-zA-Z0-9]|^)', `name`, '([^a-rt-zA-RT-Z0-9]|$)')"},
+                                  params=[description_dict[a_field]]),
+            key=lambda o: len(o.name),
+            reverse=True)
 
-    for t in standard_fields + non_standard_fields:
-        tmp = description_dict.get(t, "").strip()
-        # skip the null field
-        if not tmp:
-            continue
+        if result_searched_by_name and len(result_searched_by_name[0].name.strip()) > 0:
+            return result_searched_by_name[0]
 
-        # make all character upper case, then delete strings like `ANTI` and `_`
-        tmp = tmp.upper().replace("ANTI-", " ").replace("ANTI", " ").replace("_", " ").strip()
+        if DCmodel not in [models.Factors, models.Aliases] :
+            result_searched_by_aliases = sorted(DCmodel.objects.exclude(aliases=None).exclude(aliases="").extra(
+                where={"%s REGEXP CONCAT('([^a-zA-Z0-9]|^)', `aliases`, '([^a-rt-zA-RT-Z0-9]|$)')"},
+                params=[description_dict[a_field]]),
+                    key=lambda o: len(o.name),
+                    reverse=True)
+            if result_searched_by_aliases and len(result_searched_by_aliases[0].name.strip()) > 0:
+                return result_searched_by_aliases[0]
 
-        # `N/A` often concurs with `Input`
-        if "N/A" in tmp:
-            return models.Factors.objects.get_or_create(name="Input")[0]
-
-        # If the field has very short description and it is not `TITLE`, the description is usually the factor name.
-        if t != "title":
-            if len(tmp) < 10 and tmp != "":
-                ret, created = models.Factors.objects.get_or_create(name=tmp)
-                if created:
-                    ret.status = 'new'
-                return ret
-
-                # split the description into tokens
-        splited = re.findall(r"[\w-]+", tmp)
-        for s in splited:
-
-            if re.match(r"^[\d-]+$", s):
-                continue
-
-            if len(s) < 2 and d.check(s):
-                continue
-
-            # POL2 factor usually starts with `POL2`
-            if (s.startswith("POL2") and len(s) < 10):
-                return models.Factors.objects.get_or_create(name="POL2")[0]
-
-            # If a token is neither a number nor a vocabulary in dictionary, it may be the factor name
-            if s=="IGG" or s=="NONE":
-                return models.Factors.objects.get_or_create(name="Input")[0]
-
-            if models.Factors.objects.filter(name__iexact=s):
-                return models.Factors.objects.get(name__iexact=s)
-
-            if models.Aliases.objects.filter(name__iexact=s):
-                alias = models.Aliases.objects.get(name__iexact=s)
-                print "Con!! Find a factor by its alias"
-                print alias.name
-                return alias.factor
-
-
-
-        # special cases for `Input` and `POL2`
-        if "INPUT" in splited:
-            return models.Factors.objects.get_or_create(name="Input")[0]
-        if ("POLYMERASE" in splited) or ("POL" in splited):
-            return models.Factors.objects.get_or_create(name="POL2")[0]
+    if new and len(description_dict[a_field]) <= max_create_length:
+        ret, created = DCmodel.objects.get_or_create(name=description_dict[a_field])
+        if created:
+            ret.status = 'new'
+        return ret
 
     return None
 
 
-def update_one_sample(gsmid, parse_fields=['other_ids', 'paper', 'name', 'species', 'description', 'antibody', 'factor',
-                                           'cell type', 'cell line', 'tissue', 'strain']):
+def _parse_fields(description_dict, strict_fields, greedy_fields, DCmodel, greedy_length=100):
+    for sf in strict_fields:
+        ret = _parse_a_field(description_dict, sf, DCmodel, greedy_length, new=False)
+        if ret:
+            return ret
+
+    for gf in greedy_fields:
+        ret = _parse_a_field(description_dict, gf, DCmodel, greedy_length, new=True)
+        if ret:
+            return ret
+
+    return None
+
+#
+# def parseCellLineBySourceName(description_dict):
+#     return _parse_fields(description_dict, ['source name'], [],lambda m: m.CellLines, 15, )
+
+#
+
+def _search_factor_by_pattern(field_name, field_content):
+    field_content = field_content.upper()
+    if "antibody" in field_name or 'Chip' in field_name or 'title' in field_name:
+        if "NONE" in field_content or "INPUT" in field_content or "IGG" in field_content or "N/A" in field_content:
+            return models.Factors.objects.get_or_create(name="Input")[0]
+
+    if "POL2" in field_content or "POLYMERASE" in field_content:
+        return models.Factors.objects.get_or_create(name="POL2")[0]
+
+    if "CTCF" in field_content:
+        return models.Factors.objects.get_or_create(name="CTCF")[0]
+    return None
+
+
+def _guess_factor_boldly(field_name, field_content):
+    factor_finder = re.compile(r"anti[^a-z]([a-z]+[-\.]?[a-z0-9]{0,4})", re.I)
+    # get the word after anti
+    factor_pattern = re.compile(r"^[a-z]+[-\.]?[a-z0-9]+$", re.I)
+
+    factor_found = factor_finder.findall(field_content)
+
+    stop_words_pattern = re.compile(r"(mouse)|(abcam)|(dmso)|(negative)|(seq)|(chip)", re.I)
+    if factor_found and not stop_words_pattern.match(factor_found[0]):
+        return models.Factors.objects.get_or_create(name=factor_found[0])[0]
+
+    if len(field_content) < 10 and factor_pattern.match(field_content) and not stop_words_pattern.match(field_content):
+        return models.Factors.objects.get_or_create(name=field_content)[0]
+    return None
+
+
+def parseFactor(description_dict):
+    standard_fields = [i for i in
+                       ["antibody targetdescription", "factor", "title", 'hgn'] if i in description_dict.keys()]
+    non_standard_fields = [i for i in description_dict.keys() if "antibody" in i and i not in standard_fields]
+    fields = standard_fields + non_standard_fields
+
+    first_try = _parse_fields(description_dict, fields, [], models.Factors)
+    if first_try:
+        return first_try
+
+    print ".",
+    second_try = _parse_fields(description_dict, fields, [], models.Aliases)
+    if second_try:
+        return second_try.factor
+
+    print ".",
+    for f in fields:
+        third_try = _search_factor_by_pattern(f, description_dict[f])
+        if third_try:
+            return third_try
+
+    print ".",
+    for f in standard_fields:
+        fourth_try = _guess_factor_boldly(f, description_dict[f])
+        if fourth_try:
+            return fourth_try
+
+    print ".",
+    return None
+
+
+def parseCellType(description_dict):
+    return _parse_fields(description_dict,
+                         ['cell type', 'cell lineage', 'cell', 'cell line', 'source name', 'cell description', 'title'],
+                         ['cell type'],
+                         models.CellTypes)
+
+
+def parseCellLine(description_dict):
+    return _parse_fields(description_dict,
+                         ['cell', 'cell line', 'source name', 'cell description', 'title'],
+                         ['cell line'],
+                         models.CellLines)
+
+
+def parseCellPop(description_dict):
+    return _parse_fields(description_dict, ['cell', 'source name', 'cell description', 'title'], [], models.CellPops)
+
+
+def parseTissue(description_dict):
+    return _parse_fields(description_dict,
+                         ['tissue', 'tissue type', 'tissue depot', 'source name', 'cell description', 'title'],
+                         ['tissue', 'tissue type'],
+                         models.TissueTypes, )
+
+
+def parseStrain(description_dict):
+    return _parse_fields(description_dict,
+                         ['strain', 'strain background', 'source name', 'cell description', 'title'],
+                         ['strain'],
+                         models.Strains)
+
+
+def parseDisease(description_dict):
+    return _parse_fields(description_dict,
+                         ['disease', 'tumor stage', 'cell karotype', 'source name', 'title'],
+                         ['disease'],
+                         models.DiseaseStates)
+
+
+def recheck_one_sample(gsmid, parse_fields=['other_ids', 'paper', 'name', 'species', 'description', 'antibody', 'factor',
+                                           'cell type', 'cell line', 'cell pop', 'tissue', 'strain', 'disease']):
     """Given a gsmid, tries to create a new sample--auto-filling in the
     meta fields
 
@@ -822,16 +1025,93 @@ def update_one_sample(gsmid, parse_fields=['other_ids', 'paper', 'name', 'specie
 
     sraId = gsmToSra(gsmid)
     sraXML = sra.getSraXML(sraId) if sraId else None
+
     geoPost = postProcessGeo(gsmid)
-    gseId = gsmToGse(gsmid)
-    pmid = gseToPubmed(gseId) if gseId else None
+    if not geoPost:
+        return None
+    s = models.Samples.objects.get(unique_id=gsmid)
+    assert isinstance(s, Samples)
+
+    #HERE is where I need to create a classifier app/module
+    #FACTOR, platform, species--HERE are the rest of them!
+
+    description_dict = parseGeoInfo(gsmid)
+
+    rc_dict = {}
+    if 'factor' in parse_fields:
+        recheck_factor =  parseFactor(description_dict)
+        print s.factor
+        print recheck_factor
+        if recheck_factor and not s.factor == recheck_factor:
+            rc_dict["factor"] = recheck_factor.name
+
+    if 'cell type' in parse_fields:
+        recheck_celltype = parseCellType(description_dict)
+        if recheck_celltype and not s.cell_type == recheck_celltype:
+            rc_dict["cell type"] = recheck_celltype.name
+
+    if 'tissue' in parse_fields:
+        recheck_tissue =  parseTissue(description_dict)
+        if recheck_tissue and not s.tissue_type == recheck_tissue:
+            rc_dict['tissue'] = recheck_tissue.name
+
+
+    if 'cell line' in parse_fields:
+        recheck_cellline =  parseCellLine(description_dict)
+        if recheck_cellline and not s.cell_line == recheck_cellline:
+            rc_dict['cell line'] = recheck_cellline.name
+
+    if 'strain' in parse_fields:
+        recheck_strain = parseStrain(description_dict)
+        if recheck_strain and not s.strain == recheck_strain:
+            rc_dict['strain'] = recheck_strain.name
+
+    if 'disease' in parse_fields:
+        recheck_disease = parseDisease(description_dict)
+        if recheck_disease and not s.disease_state == recheck_disease:
+            rc_dict['disease'] = recheck_disease.name
+
+    if 'cell pop' in parse_fields:
+        recheck_cellpop = parseCellPop(description_dict)
+        if recheck_cellpop and not s.cell_pop == recheck_cellpop:
+            rc_dict['cell pop'] = recheck_cellpop.name
+
+    s.re_check = json.dumps(rc_dict)
+    s.save()
+    return s
+
+def update_one_sample(gsmid, parse_fields=['other_ids', 'paper', 'name', 'species', 'description', 'antibody', 'factor',
+                                           'cell type', 'cell line', 'cell pop', 'tissue', 'strain', 'disease','update date','release date']):
+    """Given a gsmid, tries to create a new sample--auto-filling in the
+    meta fields
+
+
+    If overwrite is True and there is the sample that has the same gsmid, this function will overwrite that sample
+
+    NOTE: will try to save the sample!!
+
+    Returns newly created sample
+    """
+
+    sraId = gsmToSra(gsmid)
+    sraXML = sra.getSraXML(sraId) if sraId else None
+
+    geoPost = postProcessGeo(gsmid)
+    if not geoPost:
+        return None
 
     s, created = models.Samples.objects.get_or_create(unique_id=gsmid)
-    if created:
-        s.status = "new"
+    assert isinstance(s, models.Samples)
 
-    s.date_collected = datetime.datetime.now()
-    s.fastq_file_url = sra.getSRA_downloadLink(sraXML) if sraXML else None
+    if 'species' in parse_fields:
+        if getFromPost(geoPost, "organism") == "HOMO SAPIENS":
+            s.species = models.Species.objects.get(pk=1)
+        else:
+            s.species = models.Species.objects.get(pk=2)
+
+    if ('other_ids' in parse_fields) or ('paper' in parse_fields):
+        gseId = gsmToGse(gsmid)
+        pmid = gseToPubmed(gseId) if gseId else None
 
     if 'other_ids' in parse_fields:
         idList = {'sra': sraId, 'gse': gseId, 'pmid': pmid}
@@ -872,98 +1152,56 @@ def update_one_sample(gsmid, parse_fields=['other_ids', 'paper', 'name', 'specie
     if 'cell line' in parse_fields:
         s.cell_line = parseCellLine(description_dict)
 
-        # Sometimes cell line name is the `source name` field, especially when the content in `source name` is short
-        if not s.tissue_type and not s.cell_line:
-            s.cell_line = parseCellLineBySourceName(description_dict)
+        # # Sometimes cell line name is the `source name` field, especially when the content in `source name` is short
+        # if not s.tissue_type and not s.cell_line:
+        #     s.cell_line = parseCellLineBySourceName(description_dict)
 
     if 'strain' in parse_fields:
         s.strain = parseStrain(description_dict)
 
     if 'disease' in parse_fields:
-        s.disease = parseDisease(description_dict)
+        s.disease_state = parseDisease(description_dict)
 
     if 'cell pop' in parse_fields:
         s.cell_pop = parseCellPop(description_dict)
 
+    if 'update date' in parse_fields:
+        s.geo_last_update_date = parseUpdateTime(description_dict)
+
+    if 'release date' in parse_fields:
+        s.geo_release_date = parseReleaseTime(description_dict)
+
     s.save()
     return s
 
-
-def _general_parser(description_dict, description_key, model_selector, max_create_length=100, new=False):
-    if not description_dict.get(description_key, None):
-        return None
-
-
-    if len(description_dict.get(description_key, "")) > 0:
-        result = sorted(model_selector(models).objects.extra(where={"%s like CONCAT('%%', `name`, '%%')"},
-                                                             params=[description_dict[description_key]]),
-                        key=lambda o: len(o.name),
-                        reverse=True)
-
-        if result and len(result[0].name.strip())>0:
-            return result[0]
-
-    if new and len(description_dict[description_key]) <= max_create_length:
-        ret, created = model_selector(models).objects.get_or_create(name=description_dict[description_key])
-        if created:
-            ret.status = 'new'
-        return ret
-
-    return None
-
-
-def _general_list_parser(description_dict, description_keys, model_selector, max_create_length=100, new=False):
-    for dk in description_keys:
-        gp = _general_parser(description_dict, dk, model_selector, max_create_length, new)
-        if gp:
-            return gp
-    return None
-
-
-def parseCellLineBySourceName(description_dict):
-    return _general_parser(description_dict, 'source name', lambda m: m.CellLines, 15, new=False)
-
-
-def parseCellType(description_dict):
-    return _general_list_parser(description_dict, ['cell type', 'cell lineage'], lambda m: m.CellTypes, new=True)
-
-
-def parseCellLine(description_dict):
-    return _general_list_parser(description_dict, ['cell line', 'cell'], lambda m: m.CellLines, new=True)
-
-
-def parseTissue(description_dict):
-    return _general_list_parser(description_dict, ['tissue', 'tissue type', 'tissue depot'], lambda m: m.TissueTypes,
-                                new=True)
-
-
-def parseStrain(description_dict):
-    return _general_list_parser(description_dict, ['strain', 'strain background'], lambda m: m.Strains, new=True)
-
-
-def parseDisease(description_dict):
-    return _general_list_parser(description_dict, ['disease', 'tumor stage', 'cell karotype'],
-                                lambda m: m.DiseaseStates, new=True)
-
-
-def parseCellPop(description_dict):
-    return _general_list_parser(description_dict, ['source name'], lambda m: m.CellPops, new=False)
-
-
-def update_samples(refresh=False, update_condition=lambda sample_id: True,
-                   parse_fields=['strain', 'tissue', 'cell line', 'cell type', 'factor', 'description'],
-                   cnt_max=None):
+def sync_samples(refresh=False):
     """Will run through the whole flow of this package, trying to update
     the db w/ new samples if any.
 
-    Returns: list of newly created samples
-    """
+    refresh: whether need to sync local repository (pickle file) with GEO.
+        If yes, sync local pickle file with GEO, then sync database with local pickle file.
+        If no, only sync database with local pickle file.
 
+    Returns: list of newly created samples
+
+
+
+
+    """
     if refresh:
-        print "1. refresh the repository"
+        print "# 1. resync the repository from Internet"
         gdsSamples = getGDSSamples()
+
+        print "There are %s GDS Samples in sum"%len(gdsSamples)
+
+        one_percent = len(gdsSamples)/100
+        cnt = 0
         for gdsid in gdsSamples:
+            cnt += 1
+            if cnt % one_percent == 0:
+                print "%s%%"%(cnt/one_percent)
             gsm = gsm_idToAcc(gdsid)
+
             if gsm:
                 geoXML = getGeoXML(gsm)
                 geoPost = postProcessGeo(gsm)
@@ -973,30 +1211,26 @@ def update_samples(refresh=False, update_condition=lambda sample_id: True,
                 if sraId:
                     sra.getSraXML(sraId)
 
-    print "2. get the chip-seq samples"
-    repository_samples_path = "/data1/newdc1.4/src/scripts/repository_samples.pickle"
-    if os.path.exists(repository_samples_path):
-        print "load from pickle file"
-        repository_samples = cPickle.load(open(repository_samples_path, "rb"))
-    else:
-        repository_samples = getGeoSamples_byType("geo", "ChIP-Seq", refresh=True)
-        cPickle.dump(repository_samples, open(repository_samples_path, "wb"))
-        print "write into pickle file"
+    print "# 2. get all samples"
 
-    print "#3. try to create new samples"
-    cnt_changed = 0
-    changed_samples = []
-    for s in repository_samples:
+    local_repo_path = "/data/newdc1.4/src/scripts/repository_samples.pickle"
+    local_repo_samples = set(getGeoSamples_byTypes(path=local_repo_path, refresh=refresh))
+
+    print "# 3. try to calculate new samples"
+
+    local_db_samples = set(models.Samples.objects.values_list('unique_id', flat=True))
+
+    print "There are %d samples in local repo." % len(local_repo_samples)
+    print "There are %d samples in local db." % len(local_db_samples)
+    need_added_samples = sorted(list(local_repo_samples - local_db_samples))
+    print "%d samples will be added." % len(need_added_samples)
+    print "The first 10 of them are " + str(need_added_samples[:10])
+
+    print "# 4. try to add new samples"
+    ret = []
+    for s in need_added_samples:
         try:
-            if update_condition(s):
-                tmp = update_one_sample(s, parse_fields)
-                print tmp
-                cnt_changed += 1
-                changed_samples.append(tmp)
-
-            if cnt_max:
-                if cnt_changed > cnt_max:
-                    sys.exit()
+            ret.append(update_one_sample(s))
 
         except KeyboardInterrupt:
             print "User interrupts!"
@@ -1008,7 +1242,54 @@ def update_samples(refresh=False, update_condition=lambda sample_id: True,
             #     print e
             #     continue
 
-    return changed_samples
+
+
+    return ret
+
+
+def updateExistingSamples(samples,
+                          parse_fields=['other_ids', 'paper', 'name', 'species', 'description', 'antibody', 'factor',
+                                        'cell type', 'cell line', 'tissue', 'strain', 'update date', 'release date']):
+    """Will run through the whole flow of this package, trying to update
+    the db w/ new samples if any.
+
+    Returns: list of newly created samples
+    """
+    total_cnt = len(samples)
+
+    print "%s samples needs updating"%total_cnt
+
+    if parse_fields:
+
+        current_cnt = 1
+        for s in samples:
+            print s
+            print "%s/%s" %(current_cnt, total_cnt)
+            update_one_sample(s.unique_id, parse_fields)
+            current_cnt += 1
+
+
+
+def recheckExistingSamples(samples,
+                          parse_fields=['other_ids', 'paper', 'name', 'species', 'description', 'antibody', 'factor',
+                                        'cell type', 'cell line', 'tissue', 'strain', 'update date', 'release date']):
+    """Will run through the whole flow of this package, trying to update
+    the db w/ new samples if any.
+
+    Returns: list of newly created samples
+    """
+    total_cnt = len(samples)
+
+    print "%s samples needs rechecking"%total_cnt
+
+    if parse_fields:
+
+        current_cnt = 1
+        for s in samples:
+            print s
+            print "%s/%s" %(current_cnt, total_cnt)
+            recheck_one_sample(s.unique_id, parse_fields)
+            current_cnt += 1
 
 
 def createDatasets():
@@ -1022,8 +1303,8 @@ def createDatasets():
 
     # This is a hack to get the dumped version of a unicode string
 
-    relative_regex = re.compile(r"cell|tissue|time|source")
-    rep_regex = re.compile(r"treat|antibody|genotype")
+    relative_regex = re.compile(r"cell|tissue|time|source|sex")
+    rep_regex = re.compile(r"treat|antibody|genotype|protocol|donor")
 
     control_factor_regex = re.compile(r"Input")
 
@@ -1032,19 +1313,40 @@ def createDatasets():
         return c_encode_basestring_ascii(description_dict[k])
 
 
-    def regex2query(regex):
-        matched_keys = [k for k in description_dict.keys() if regex.match(k)]
+    def _query_in_description(regex):
+        matched_keys = [k for k in description_dict.keys() if regex.search(k)]
         print matched_keys
-        print "Nima"
         ret = Q()
         for k in matched_keys:
             ret &= Q(description__contains=_description_get(k))
         return ret
 
+    def _filter_by_name(queryset):
+        main_title = an_orphan.name
+        if not main_title:
+            return queryset
+
+        ret_queryset = [an_orphan]
+        tokenizer = re.compile(r"\d+nm|t\d+|zt\d+|[a-z]{2,}", re.I)
+        main_tokenset = set(tokenizer.findall(main_title))
+        for a_sample in queryset:
+            if a_sample != an_orphan:
+                current_title = a_sample.name
+                current_tokenset = set(tokenizer.findall(current_title))
+                if main_tokenset == current_tokenset:
+                    ret_queryset.append(a_sample)
+        return ret_queryset
+
     # samples with necessary metadata
     candidate_samples = models.Samples.objects.exclude(
-        Q(factor__isnull=True) | Q(description__exact='') | Q(other_ids__exact='')).exclude(status=u'imported')
+        Q(factor__isnull=True) | Q(description__exact='') | Q(other_ids__exact=''))
+    # .exclude(status=u'imported')
+
     # TODO: add info for imported data and re-parse
+
+
+
+
 
     orphan_treat_samples = candidate_samples.exclude(
         factor__name__regex=control_factor_regex.pattern
@@ -1053,29 +1355,43 @@ def createDatasets():
         CONTS__isnull=True,
     )
 
+    error_cnt = 0
+
     for an_orphan in orphan_treat_samples:
         if an_orphan.TREATS.all() or an_orphan.CONTS.all():
             continue
         print an_orphan
+
         try:
             gse_id = json.loads(an_orphan.other_ids)['gse']
-        except KeyError:
-            print "no GSE number"
+        except Exception as e:
+            print "Exception when loads GSE ID"
+            print e
+            error_cnt += 1
             continue
-        description_dict = json.loads(an_orphan.description)
+
+        try:
+            description_dict = json.loads(an_orphan.description)
+        except Exception as e:
+            print "Exception when loads the description dict!"
+            print e
+            error_cnt += 1
+            continue
 
         relative_samples = candidate_samples.filter(
             Q(other_ids__contains='"gse": "%s"' % gse_id) &
-            regex2query(relative_regex))
+            _query_in_description(relative_regex))
 
         rep_samples = relative_samples.filter(
             Q(antibody=an_orphan.antibody, factor=an_orphan.factor, cell_line=an_orphan.cell_line) &
-            regex2query(rep_regex)).order_by('unique_id')
+            _query_in_description(rep_regex)).order_by('unique_id')
+
+        rep_samples = _filter_by_name(rep_samples)
 
         control_samples = relative_samples.filter(
             Q(factor__name__regex=control_factor_regex.pattern)).order_by('unique_id')
 
-        new_dataset = models.Datasets(status='info')
+        new_dataset = models.Datasets(status='auto-parsed')
         new_dataset.save()
         new_dataset.treats.add(*rep_samples)
         new_dataset.conts.add(*control_samples)
@@ -1083,5 +1399,6 @@ def createDatasets():
         # if cnt == 20:
         #     break
         print new_dataset
-
+    print "Error cnt"
+    print error_cnt
 

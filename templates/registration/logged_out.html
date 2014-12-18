@@ -1,13 +1,13 @@
-{% extends "datacollection/base.html" %}
 
-{% block title %}Logged out{% endblock %}
-{% block include %}
-<link href="{% url static_url %}css/forms.css" rel="stylesheet" type="text/css"/>
-{% endblock %}
+{% extends 'datacollection/DC_browser_base.html' %}
 
-{% block content %}
+
+
+{% block body %}
       <!--<div id="content_div">-->
-         <h1>you are logged out</h1>
-         <a href="{% url login %}">Login</a>
+    <div class="container">
+         <h1>You are logged out</h1>
+         <a href="http://cistrome.org/dc/main">Return to main page</a>
+    </div>
       <!--</div>-->
 {% endblock %}

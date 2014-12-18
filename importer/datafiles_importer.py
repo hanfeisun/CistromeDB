@@ -164,7 +164,7 @@ def main():
                 s = models.Samples.objects.get(pk=config['sample.sample_id'])
                 u = User.objects.get(username=config['sample.username'])
                 s.uploader=u
-                s.upload_date=datetime.datetime.now()
+                s.dc_upload_date=datetime.datetime.now()
                 
                 #try to set the sample fields
                 #NOTE: adding fault tolderance-if missing files, we don't fail;

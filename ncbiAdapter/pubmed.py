@@ -90,6 +90,8 @@ def getOrCreatePaper(pmid):
     """
     ret = None
     tmp = models.Papers.objects.filter(pmid=pmid)
+    print tmp
+    print "Bitcher"
     if tmp:
         #return the first hit
         ret = tmp[0]

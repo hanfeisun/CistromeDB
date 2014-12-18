@@ -2,8 +2,10 @@
 
 #LEN-DEFINED values
 #where newdc is deployed
-DEPLOY_DIR="/data1/newdc1.4/src/"
-STATIC_ROOT="/data1/newdc1.4/src/dc_statics"
+DEPLOY_DIR="/data/newdc1.4/src/"
+# STATIC_ROOT=
+STATIC_URL="/dc_statics/"
+STATICFILES_DIRS=("/data/newdc1.4/src/dc_statics",)
 #DEFINES sub-site prefix
 SUB_SITE=""
 
@@ -23,15 +25,24 @@ TEMPLATE_DEBUG = DEBUG
 DATABASES = {
    'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'newdc',
+        'NAME': 'newdc2',
         'USER': 'hanfei',
         'PASSWORD': 'cptbtptp',
         'HOST': '',
         'PORT': '',
-        'OPTIONS': { 'init_command': 'SET storage_engine=MyISAM;' }
+        'OPTIONS': { 'init_command': 'SET storage_engine=InnoDB;' },
+        'STORAGE_ENGINE': 'INNODB'
+
     },
+    'cistromeap':{
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'cistromeap',
+        'USER': 'hanfei',
+        'PASSWORD': 'cptbtptp',
+
+}
 
 }
 
 LOGIN_URL='/dc/accounts/login/'
-LOGIN_REDIRECT_URL='/dc/'
+LOGIN_REDIRECT_URL='/dc/main'

@@ -1,0 +1,16 @@
+{% for a_sample in object.treats.all %}
+    {{ a_sample.unique_id }}
+    {{ a_sample.name }}
+{% endfor %}
+{{ object.factor.name }}
+{{ object.factor.type }}
+{{ object.species.name }}
+{{ object.cell_type.name }}
+{{ object.cell_line.name }}
+{{ object.cell_pop.name }}
+{{ object.tissue_type.name }}
+{{ object.strain.name }}
+{{ object.disease_state.name}}
+{{ object.paper.pmid }}
+{{ object.paper.authors }}
+{{ object.paper.reference }}

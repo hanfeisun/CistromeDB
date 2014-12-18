@@ -109,7 +109,8 @@ def getSRA_downloadLink(sraXML):
     tmp = root.findall("EXPERIMENT_PACKAGE/RUN_SET/RUN")
     if tmp:
         attrib = tmp[0].attrib
-        if "accession" in attrib and attrib["is_public"] == "true":
+
+        if "accession" in attrib and attrib.get("is_public", False):
             acc = attrib["accession"]
             #NOTE: full path is: anonftp@ftp-private.ncbi.nlm.nih.gov: + PATH
             #EXAMPLE:/sra/sra-instant/reads/ByRun/sra/SRR/SRR007/SRR007437/SRR007437.sra

@@ -66,9 +66,12 @@ TEMPLATE_DIRS = (
 CONF_TEMPLATE_DIR = os.path.join(DEPLOY_DIR, "pipeline", "templates")
 
 MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     #    'django.middleware.csrf.CsrfViewMiddleware',
+
+
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     )
@@ -79,26 +82,34 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'django.contrib.databrowse',
+
+    'debug_toolbar',
+    'haystack',
+
     # Uncomment the next line to enable the admin:
      'suit',
-
-    'massadmin',
     'adminactions',
+    'django_select2',
     'django.contrib.admin',
     'django.contrib.messages',
     'datacollection', 'jsrecord', 'entrezutils',
-    #    'haystack',
+       'haystack',
     'south',
+    # 'admin_views'
+    # 'adminplus',
 #    'swami',
+    'template_timings_panel'
+
     )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
 
-CACHE_BACKEND = 'db://newdc_cache'
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend','datacollection.auths.CistromeAuthBackend')
 
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
 #AJAX_SELECT_BOOTSTRAP = True
 #AJAX_SELECT_INLINES = 'inline'
 #
@@ -109,10 +120,26 @@ CACHE_BACKEND = 'db://newdc_cache'
 #}
 
 #haystack specific
-HAYSTACK_SITECONF = 'search_sites'
-HAYSTACK_SEARCH_ENGINE = 'whoosh'
-HAYSTACK_WHOOSH_PATH = os.path.join(MEDIA_ROOT, 'whoosh_index')
+# HAYSTACK_SITECONF = 'search_sites'
+# HAYSTACK_SEARCH_ENGINE = '    whoosh'
+# HAYSTACK_WHOOSH_PATH = os.path.join(MEDIA_ROOT, 'whoosh_index')
 
+
+
+import os
+# HAYSTACK_CONNECTIONS = {
+#     'default': {
+#         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+#         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+#         },
+#     }
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'haystack',
+        },
+    }
 SOUTH_DATABASE_ADAPTERS = {
     'default': "south.db.mysql"
 }
@@ -121,15 +148,21 @@ SOUTH_DATABASE_ADAPTERS = {
 # Django-suit specific
 from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS as TCP
 
+
 TEMPLATE_CONTEXT_PROCESSORS = TCP + (
     'django.core.context_processors.request',
     )
 
 SUIT_CONFIG = {
-    'ADMIN_NAME': 'Cistrome Suite',
+    'ADMIN_NAME': 'DC Admin',
     'MENU': (
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock'},
-        {'app':'datacollection','label':'DataCollection'}
+        {'app':'datacollection','label':'DataCollection'},
+    {'label': 'Widgets', 'icon':'icon-cog', 'url': '/dc/stat/',
+     'models': (
+        {'label': 'Statistics', 'url': '/dc/stat/'},
+
+    )},
         )
 }
 
@@ -137,8 +170,55 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',
 )
+
 # GRAPPELLI_AUTOCOMPLETE_SEARCH_FIELDS = {
 #     "datacollection": {
 #         "factors": ("id__iexact", "name__icontains",)
 #     }
 # }
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': 'unique-snowflake'
+#     }
+# }
+
+
+DATABASE_ROUTERS = ['router.ModelDatabaseRouter']
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        }
+}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         }
+# }
+
+
+
+INTERNAL_IPS = ['222.66.175.158','222.66.175.149', '222.66.175.170','222.66.175.130','175.160.5.249','222.66.184.19','222.66.173.165','222.66.189.142','222.66.179.141']
+DEBUG_TOOLBAR_PANELS = [
+    'debug_toolbar.panels.versions.VersionsPanel',
+    'debug_toolbar.panels.timer.TimerPanel',
+    'debug_toolbar.panels.settings.SettingsPanel',
+    'debug_toolbar.panels.headers.HeadersPanel',
+    'debug_toolbar.panels.request.RequestPanel',
+    'debug_toolbar.panels.sql.SQLPanel',
+    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+    'debug_toolbar.panels.templates.TemplatesPanel',
+    'debug_toolbar.panels.cache.CachePanel',
+    'debug_toolbar.panels.signals.SignalsPanel',
+    'debug_toolbar.panels.logging.LoggingPanel',
+    'debug_toolbar.panels.redirects.RedirectsPanel',
+    'debug_toolbar.panels.profiling.ProfilingPanel',
+    'template_timings_panel.panels.TemplateTimings.TemplateTimings',
+
+    ]
+
+DEBUG = False
+TEMPLATE_DEBUG = True

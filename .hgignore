@@ -1,7 +1,10 @@
 # use glob syntax.
 syntax: glob
-
+*.orig
 *.pyc
+*~
+*.pickle
+
 .emacs_bak/*
 attic/*
 
@@ -21,7 +24,14 @@ classifiers/disease_state/*
 classifiers/factor/*
 classifiers/strain/*
 classifiers/tissue_type/*
-
+django-adminplus/*
 media/whoosh_index/*
 media/data/*
-dc_statics/*
+
+scripts/Encode_Data/
+dc_statics/admin/*
+dc_statics/suit/*
+dc_statics/debug_toolbar/*
+dc_statics/adminactions/*
+dc_statics/css/*
+dc_statics/js/*

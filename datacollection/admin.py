@@ -1,17 +1,32 @@
-from django.contrib import admin
-import sys
-from models import *
-from django.utils.translation import ugettext_lazy as _
 import re
 
+from adminactions.mass_update import MassUpdateForm
+from django.contrib import admin
+
+
+
+# def my_view(request):
+#     return HttpResponse("Hello!")
+# admin.site.register_view('somepath', name="MF", view=my_view)
+
+
+from django import forms
+from django.http import HttpResponse
+from django_select2 import Select2Widget, HeavySelect2MultipleWidget
+from django.utils.translation import ugettext_lazy as _
+
+from datacollection.views.admin_utils import SamplesSelect2View
+from models import *
 
 # from datacollection.widgets import *
 
-from django.contrib.admin import site
+
 import adminactions.actions as actions
 
+from django.contrib.admin import site
 # register all adminactions
 actions.add_to_site(site)
+
 
 
 class ImpactFactorFilter(admin.SimpleListFilter):
@@ -49,18 +64,62 @@ class ImpactFactorFilter(admin.SimpleListFilter):
             return queryset.filter(paper__journal__impact_factor__gt=10)
 
 
+
+class EmptyFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = _('empty')
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'empty'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return (
+            ('empty', _('no treatments')),
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        # Compare the requested value (either '80s' or '90s')
+        # to decide how to filter the queryset.
+        if self.value() == 'empty':
+            return queryset.filter(treats__isnull=True)
+
+
+
+
+
+
 class DatasetInline(admin.TabularInline):
     model = Datasets
     fields = ['user', 'paper', 'treats', 'conts', 'status']
     raw_id_fields = ['treats', 'conts']
 
-class TreatInline(admin.TabularInline):
 
+class SampleInline(admin.TabularInline):
+    model = Samples
+    fields = ['paper', 'unique_id', 'series_id', 'name']
+
+
+class TreatInline(admin.TabularInline):
+    formfield_overrides = {
+        models.ForeignKey: {'widget': Select2Widget(attrs={"style": "width: 300px;"})},
+    }
     verbose_name = "treatment samples"
     name = verbose_name
     model = Datasets.treats.through
     extra = 1
-
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if request._dataset_:
@@ -73,17 +132,19 @@ class TreatInline(admin.TabularInline):
             return field
 
         if db_field.name == 'samples':
-            field.queryset = Samples.objects.filter(series_id = series_id)
+            field.queryset = Samples.objects.filter(series_id=series_id)
         elif db_field.name == 'datasets':
-            field.queryset = Datasets.objects.filter(treats__series_id = series_id)
+            field.queryset = Datasets.objects.filter(treats__series_id=series_id)
         else:
             dn = db_field.name
             raise
         return field
 
 
-
 class ContInline(admin.TabularInline):
+    formfield_overrides = {
+        models.ForeignKey: {'widget': Select2Widget(attrs={"style": "width: 300px;"})},
+    }
     verbose_name = "control samples"
     name = verbose_name
     model = Datasets.conts.through
@@ -101,20 +162,22 @@ class ContInline(admin.TabularInline):
             return field
 
         if db_field.name == 'samples':
-            field.queryset = Samples.objects.filter(series_id = series_id)
+            field.queryset = Samples.objects.filter(series_id=series_id)
         elif db_field.name == 'datasets':
-            field.queryset = Datasets.objects.filter(conts__series_id = series_id)
+            field.queryset = Datasets.objects.filter(conts__series_id=series_id)
         else:
             dn = db_field.name
             raise
         return field
 
+
 class PaperAdmin(admin.ModelAdmin):
-    list_display = ['pmid', 'title', 'journal', 'date_collected', 'pub_date', 'status']
+    list_display = ['pmid', 'title', 'journal', 'date_collected', 'pub_date', 'status', 'reference', 'authors']
     list_filter = ['journal', 'date_collected', 'pub_date', 'status']
-    search_fields = ['title', '@abstract', 'journal']
+    search_fields = ['title', 'abstract', 'journal__name']
     list_per_page = 50
     inlines = [DatasetInline]
+    list_max_show_all = 5000
 
     def suit_row_attributes(self, obj):
         css_class = {
@@ -128,16 +191,74 @@ class PaperAdmin(admin.ModelAdmin):
             return {'class': css_class}
 
 
+class DatasetsHeavySelect2MultipleWidget(HeavySelect2MultipleWidget):
+    def __init__(self, **kwargs):
+        return super(DatasetsHeavySelect2MultipleWidget, self).__init__(data_view=SamplesSelect2View,
+                                                                        data_url="http://cistrome.org/dc/select2sample/",
+                                                                        **kwargs)
+
+
+class DatasetMassUpdateForm(MassUpdateForm):
+    conts = forms.ModelMultipleChoiceField(queryset=Samples.objects.all(),
+                                           widget=DatasetsHeavySelect2MultipleWidget, required=False)
+
+    class Meta:
+        model = Datasets
+
+    def model_fields(self):
+        return [field for field in super(DatasetMassUpdateForm, self).model_fields() if
+                field.name not in ['treats'] and not field.name.endswith(
+                    "file") and not field.name.startswith("rep")]
+
+
+class DatasetAddForm(forms.ModelForm):
+    treats = forms.ModelMultipleChoiceField(queryset=Samples.objects.all(), widget=DatasetsHeavySelect2MultipleWidget)
+    conts = forms.ModelMultipleChoiceField(queryset=Samples.objects.all(),
+                                           widget=DatasetsHeavySelect2MultipleWidget, required=False)
+
+    class Meta:
+        model = Datasets
+
+
 class DatasetAdmin(admin.ModelAdmin):
-    fields = ['user', 'paper', 'date_created', 'status', 'comments',]
+    class Media:
+        js = ("new_admin.js",)
+    mass_update_form = DatasetMassUpdateForm
+
+    formfield_overrides = {
+        models.ForeignKey: {'widget': Select2Widget(attrs={"style": "width: 300px;"})},
+    }
     list_display = ['custom_id', 'paper', 'status', 'journal_name', 'journal_impact_factor', 'factor', 'custom_treats',
-                    'custom_conts', 'custom_gse','action']
-    list_filter = ['status', 'paper__journal', 'treats__factor__name', 'treats__factor__type', ImpactFactorFilter]
-    search_fields = ['id','paper__title', 'paper__pmid', 'paper__journal__name', 'treats__factor__name', 'treats__unique_id',
-                     'conts__unique_id', 'treats__series_id','conts__series_id']
+                    'custom_conts', 'custom_gse', 'action']
+    list_filter = ['status', 'paper__journal', 'treats__factor__name', 'treats__factor__type', ImpactFactorFilter, EmptyFilter]
+    search_fields = ['id', 'paper__title', 'paper__pmid', 'paper__journal__name', 'treats__factor__name',
+                     'treats__unique_id',
+                     'conts__unique_id', 'treats__series_id', 'conts__series_id']
     list_per_page = 100
     list_display_links = ['action']
-    inlines = [TreatInline,ContInline,]
+    list_max_show_all = 5000
+
+
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        self.inlines = [TreatInline, ContInline, ]
+        self.fields = ['user', 'paper', 'date_created', 'status', 'comments','full_text' ]
+        return super(DatasetAdmin, self).change_view(request, object_id, form_url, extra_context)
+
+    def add_view(self, request, form_url='', extra_context=None):
+        self.inlines = []
+        self.form = DatasetAddForm
+        self.fields = ['user', 'paper', 'treats', 'conts', 'date_created', 'status', 'comments', ]
+        return super(DatasetAdmin, self).add_view(request, form_url, extra_context)
+
+
+    def suit_row_attributes(self, obj):
+        css_class = {
+            'validated': 'success',
+            'complete':'success'
+        }.get(obj.status)
+        if css_class:
+            return {'class': css_class}
 
     def get_form(self, request, obj=None, **kwargs):
     # just save sample reference for future processing in Treatment & Control Inline
@@ -163,15 +284,19 @@ class DatasetAdmin(admin.ModelAdmin):
                                                " ".join(re.findall(r"\d+", i.unique_id)),
                                                i.name) for i in
              treats_list])
+
     gse_link_template = '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s" target="_blank">GSE%s</a>' \
                         '<a href="http://cistrome.org/dc/new_admin/datacollection/samples/?q=%s" target="_blank"><i class="icon-search"></i></a></br>' \
                         '<a href="http://cistrome.org/dc/new_admin/datacollection/datasets/?q=GSE%s" target="_blank"><i class="icon-magnet"></i></a></br>'
-    def custom_gse(self,obj):
+
+    def custom_gse(self, obj):
         treats_list = obj.treats.all()
         if treats_list:
-            if treats_list[0].other_ids:
+            try:
                 gse_id = json.loads(treats_list[0].other_ids)['gse'].strip()[-5:]
                 return DatasetAdmin.gse_link_template % (gse_id, gse_id, gse_id, gse_id)
+            except:
+                return ""
         return ""
 
     def custom_conts(self, obj):
@@ -181,7 +306,7 @@ class DatasetAdmin(admin.ModelAdmin):
                                                i.unique_id,
                                                " ".join(re.findall(r"\d+", i.unique_id)),
                                                i.name) for i in
-        conts_list])
+             conts_list])
 
 
     custom_id.allow_tags = True
@@ -198,59 +323,137 @@ class DatasetAdmin(admin.ModelAdmin):
     custom_gse.short_description = "GSE ID"
 
 
-        #    def suit_row_attributes(self, obj):
-        #        css_class = {
-        #            1: 'success',
-        #            0: 'warning',
-        #            -1: 'error',
-        #            }.get(obj.status)
-        #        if css_class:
-        #            return {'class': css_class, 'data': obj.name}
+class SampleMassUpdateForm(MassUpdateForm):
+
+    class Meta:
+
+        model = Samples
+        exclude = ("dc_collect_date", "dc_upload_date","geo_last_update_date","geo_release_date","user","paper","fastq_file","fastq_file_url","bam_file","platform","paper")
+        widgets = {
+            # 'paper': Select2Widget(attrs={"style": "width: 300px;"}),
+            'factor': Select2Widget(attrs={"style": "width: 300px;"}),
+            'cell_line': Select2Widget(attrs={"style": "width: 300px;"}),
+            'cell_type': Select2Widget(attrs={"style": "width: 300px;"}),
+            'cell_pop': Select2Widget(attrs={"style": "width: 300px;"}),
+            'condition': Select2Widget(attrs={"style": "width: 300px;"}),
+            'strain': Select2Widget(attrs={"style": "width: 300px;"}),
+            'disease_state': Select2Widget(attrs={"style": "width: 300px;"}),
+            'tissue_type': Select2Widget(attrs={"style": "width: 300px;"}),
+            'antibody': Select2Widget(attrs={"style": "width: 300px;"}),
+            # 'platform': Select2Widget(attrs={"style": "width: 300px;"}),
+            # 'species': Select2Widget(attrs={"style": "width: 300px;"}),
+            # 'assembly': Select2Widget(attrs={"style": "width: 300px;"}),
+        }
+
+class CellInfoFilter(admin.SimpleListFilter):
+    title = _("cell info")
+    parameter_name = 'cellinfo'
+    def lookups(self, request, model_admin):
+        return (
+            ('lack', _('lacks cell information')),
+            ('ok', _('has cell information'))
+        )
+    def queryset(self, request, queryset):
+        if self.value() == 'lack':
+            return queryset.filter(cell_line__name=None, cell_type__name=None, cell_pop__name=None, tissue_type__name=None)
+        if self.value() == 'ok':
+            return queryset.exclude(cell_line__name=None, cell_type__name=None, cell_pop__name=None, tissue_type__name=None)
+
+class FactorInfoFilter(admin.SimpleListFilter):
+    title = _("factor info")
+    parameter_name = 'factorinfo'
+    def lookups(self, request, model_admin):
+        return (
+            ('lack', _('lacks factor information')),
+            ('ok', _('has cell information'))
+        )
+    def queryset(self, request, queryset):
+        if self.value() == 'lack':
+            return queryset.filter(factor__name=None)
+        if self.value() == 'ok':
+            return queryset.exclude(factor__name=None)
+
+
+class GroupingInfoFilter(admin.SimpleListFilter):
+    title = _("grouping info")
+    parameter_name = 'groupinginfo'
+    def lookups(self, request, model_admin):
+        return (
+            ('treatment', _('grouped as treatment')),
+            ('control', _('grouped as control')),
+            ('orphan', _('orphan (no grouping info)'))
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'treatment':
+            return queryset.exclude(TREATS__isnull=True)
+        if self.value() == 'control':
+            return queryset.exclude(CONTS__isnull=True)
+        if self.value() == 'orphan':
+            return queryset.filter(TREATS__isnull=True, CONTS__isnull=True)
+
+
+class RecheckInfoFilter(admin.SimpleListFilter):
+    title = _("recheck info")
+    parameter_name = 'recheckinfo'
+    def lookups(self, request, model_admin):
+        return (
+            ('need', _('need recheck')),
+        )
+    def queryset(self, request, queryset):
+        if self.value() == 'need':
+            return queryset.exclude(re_check=None).exclude(re_check="{}").exclude(re_check="")
+
 
 
 class SampleAdmin(admin.ModelAdmin):
-    list_display = ['id','unique_id_url', 'other_id', 'custom_name', 'factor', 'species', 'cell_category', 'cell_source',
+    class Media:
+        js = ("new_admin.js",)
+    mass_update_form = SampleMassUpdateForm
+
+    formfield_overrides = {
+        models.ForeignKey: {'widget': Select2Widget(attrs={"style": "width: 300px;"})},
+    }
+    list_display = ['id', 'unique_id_url', 'other_id', 'status', 'custom_name', 'factor', 'species', 'cell_category',
+                    'cell_source',
                     'condition',
-                    'custom_antibody', 'custom_description', 'action']
+                    'custom_antibody', 'custom_description', 'paper','action', 'custom_recheck']
     search_fields = ['id', 'unique_id', 'other_ids', 'factor__name', 'species__name', 'cell_type__name',
                      'cell_line__name',
                      'cell_pop__name', 'strain__name', 'name',
                      'condition__name',
-                     'disease_state__name', 'tissue_type__name', 'antibody__name', 'description','series_id']
+                     'disease_state__name', 'tissue_type__name', 'antibody__name', 'description', 'series_id']
     list_display_links = ['action']
-    list_filter = ['status','species__name', 'factor__name', 'factor__type', ]
-    list_per_page = 50
-    related_search_fields = {
-        'factor': ('name',),
-        'cell_type': ('name',),
-        'cell_pop': ('name',),
-        'cell_line': ('name',),
-        'condition': ('name',),
-        'strain': ('name',),
-        'disease_state': ('name',),
-        'tissue_type': ('name',),
-        'antibody': ('name',),
-    }
-    #    massadmin_exclude = ['name','unique_id','description','user','other_ids']
-
+    list_filter = ['status', 'species__name', 'factor__name', 'factor__type',  CellInfoFilter, FactorInfoFilter, GroupingInfoFilter, RecheckInfoFilter ]
+    list_per_page = 200
 
 
     def suit_row_attributes(self, obj, request):
         css_class = {
             'imported': 'success',
+            'checked': 'success',
             'new': 'warning',
+            "ignored": 'info',
         }.get(obj.status)
         if css_class:
             return {'class': css_class}
 
+    def custom_recheck(self, obj):
+        ret = ""
+        if obj.re_check:
+            recheck_dict = json.loads(obj.re_check)
+            for k in recheck_dict:
+                ret += "<strong>%s</strong>: %s<br>" % (k.title(), recheck_dict[k])
+        return ret
+
     def custom_name(self, obj):
-        return obj.name.replace("_", " ")
+        if obj.name:
+            return obj.name.replace("_", " ")
 
     def unique_id_url(self, obj):
 
         return '<a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=%s" target="_blank">%s</a>' % (
             obj.unique_id, obj.unique_id)
-
 
 
     def other_id(self, obj):
@@ -262,7 +465,7 @@ class SampleAdmin(admin.ModelAdmin):
         if other_ids['pmid']:
             pmid = other_ids['pmid'].strip()
             ret += '<a href="http://www.ncbi.nlm.nih.gov/pubmed/%s" target="_blank">P%s</a><br>' % (pmid, pmid)
-        if other_ids['gse'] is not None:
+        if other_ids['gse']:
             gse = other_ids['gse'].strip()[-5:]
             ret += '<br><a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE%s" target="_blank">GSE%s</a>' % (
                 gse, gse)
@@ -310,6 +513,8 @@ class SampleAdmin(admin.ModelAdmin):
     custom_antibody.admin_order_field = 'antibody'
     custom_description.allow_tags = True
     custom_description.short_description = "Description"
+    custom_recheck.allow_tags = True
+    custom_recheck.short_description = "Recheck"
     custom_name.short_description = "Name"
     custom_name.admin_order_field = 'name'
     cell_source.allow_tags = True
@@ -322,16 +527,27 @@ class SampleAdmin(admin.ModelAdmin):
     other_id.allow_tags = True
 
     ordering = ['-id']
+    list_max_show_all = 5000
 
 
 class JournalAdmin(admin.ModelAdmin):
     list_display = ['name', 'issn', 'impact_factor']
-    list_per_page = 100
+    list_per_page = 500
 
 
 class FactorAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'custom_aliases', 'custom_type', 'status', ]
-    list_filter = ['type']
+    list_filter = ['type','status']
+    inlines = [SampleInline, ]
+    list_per_page = 100
+
+    def suit_row_attributes(self, obj):
+        css_class = {
+            'new': 'warning'
+        }.get(obj.status)
+        if css_class:
+            return {'class': css_class}
+
 
     def custom_type(self, obj):
         defined_choice = obj.get_type_display()
@@ -354,44 +570,60 @@ class FactorAdmin(admin.ModelAdmin):
     list_max_show_all = 5000
 
 
-class CelllineAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['id', 'name']
+class CellInfoAdmin(admin.ModelAdmin):
+    # inlines = [SampleInline, ]
+    list_per_page = 500
+    list_display = ['id', 'name', 'status','aliases']
+    search_fields = ['id', 'name', 'aliases']
+    list_max_show_all = 5000
+    list_filter = ['status']
+    def suit_row_attributes(self, obj):
+        css_class = {
+            'new': 'warning'
+        }.get(obj.status)
+        if css_class:
+            return {'class': css_class}
+
+class TissueAdmin(CellInfoAdmin):
+    pass
+
+class CelllineAdmin(CellInfoAdmin):
+    pass
 
 
-class CelltypeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['id', 'name']
+class CelltypeAdmin(CellInfoAdmin):
+    pass
 
 
-class CellpopAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['id', 'name']
+class CellpopAdmin(CellInfoAdmin):
+    pass
 
 
-class DiseaseAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['id', 'name']
+class DiseaseAdmin(CellInfoAdmin):
+    pass
 
 
-class StrainAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['id', 'name']
+class StrainAdmin(CellInfoAdmin):
+    pass
 
 
-class AntibodyAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['id', 'name']
+class AntibodyAdmin(CellInfoAdmin):
+    pass
 
 
-class ConditionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['id', 'name']
+class ConditionAdmin(CellInfoAdmin):
+    pass
 
 
 class AliasAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        models.ForeignKey: {'widget': Select2Widget(attrs={"style": "width: 300px;"})},
+        }
     list_display = ['id', 'name', 'factor']
+    search_fields = ['id', 'name']
+    list_per_page = 100
     search_field = ['name', 'factor__name']
+    list_max_show_all = 5000
 
 
 admin.site.register(Aliases, AliasAdmin)
@@ -407,3 +639,5 @@ admin.site.register(DiseaseStates, DiseaseAdmin)
 admin.site.register(Strains, StrainAdmin)
 admin.site.register(Antibodies, AntibodyAdmin)
 admin.site.register(Conditions, ConditionAdmin)
+admin.site.register(TissueTypes, TissueAdmin)
+
