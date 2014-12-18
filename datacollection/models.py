@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.encoding import smart_str, smart_unicode
 import os
+import django.db.models.options as options
+options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('in_db',)
+from django.db.models.signals import m2m_changed
 
 
 try:
@@ -35,23 +38,29 @@ PAPER_STATUS = (
     (u'error', u'error/hold- see comments'),
 )
 
+GENERAL_STATUS = (
+    (u'new', u'newly imported'),
+    (u'ok', u'validated'),
+)
+
 DATASET_STATUS = (
-    (u'new', u'dataset created'),
-    (u'imported', u'imported awaiting meta-info'),
-    (u'info', u'meta-info inputted awaiting validation'),
-    (u'valid', u'meta-info validated awaiting file download'),
+    (u'inherited', u'inherited from DC 1.0'),
+    (u'validated', u'meta-info validated awaiting file download'),
+    (u'auto-parsed', u'meta-info extracted automatically awaiting validation'),
     (u'transfer', u'file is downloading'),
     (u'downloaded', u'downloaded/closed'),
+    (u'complete', u'analysis complete'),
     (u'error', u'error/hold- see comments'),
+    (u'?', u'not sure')
 )
 
 SAMPLE_STATUS = (
     (u'new', u'sample created'),
     (u'checked', u'sample checked, awaiting importation'),
-    (u'imported', u'sample imported'),
+    (u'inherited', u'sample inherited from DC 1.0'),
     (u'running', u'analysis is running, awaiting completion'),
     (u'complete', u'analysis complete'),
-    (u'ignored', u'ignored'),
+    (u'ignored', u'ignored or wrong sample'),
 )
 
 TEAMS = (
@@ -64,6 +73,7 @@ FACTOR_TYPES = (
     (u'tf', u'transcription factor'),
     (u'hm', u'histone mark'),
     (u'cr', u'chromatin regulator'),
+    (u'ca',u'chromatin accessibility'),
     (u'predicted transcription factor', u'predicted transcription factor'),
     (u'predicted chromatin regulator', u'predicted chromatin regulator'),
     (u'both predicted transcription factor and chromatin regulator',
@@ -140,7 +150,7 @@ class Papers(DCModel):
         samples"""
         #pluralizing the dset_field
         #exceptions first
-        if sample_field == 'species':
+        if sample_field == 'spe':
             plural = 'species'
         elif sample_field == 'assembly':
             plural = 'assemblies'
@@ -192,10 +202,24 @@ class Papers(DCModel):
         except:
             return smart_str(self.authors).strip()
 
-    lab = property(_get_lab)
+
+    lab = models.CharField(max_length=1000, null=True, blank=True, default="")
+
+    pub_summary = models.CharField(max_length=1000, null=True, blank=True, default="")
+    # a dirty trick to print first author, journal, and pub_date
 
     def __str__(self):
         return smart_str(self.title)
+
+    def save(self):
+        first_author = self.authors.split(",")[0] + ", et al."
+        title = self.title
+        journal = self.journal.name if self.journal else ""
+        year = str(self.pub_date.year) if self.pub_date else ""
+        self.reference = " ".join([first_author , title , journal, year])
+        self.lab = self._get_lab()
+        self.pub_summary = " ".join([first_author , journal, year])
+        super(Papers, self).save()
 
 #NOTE: _donotSerialize fields are not enumerated as records, just as keys
 Papers._meta._donotSerialize = ['user']
@@ -209,8 +233,9 @@ Papers._meta._virtualfields = [#'lab', 'factors', 'platforms', 'species',
                                'species',
                                'sample_unique_ids',
                                'factors', 'cell_types', 'cell_lines',
-                               'cell_pops', 'tissue_types'
-]
+                               'cell_pops', 'tissue_types']
+
+
 
 
 class Datasets(DCModel):
@@ -290,11 +315,14 @@ class Datasets(DCModel):
             (sample_field, sample_field)
             val = None
             if self.treats:
-                if self.treats.all():
-                    val = getattr(self.treats.all()[0], sample_field)
+
+                all_treat = self.treats.all()
+                if all_treat:
+                    val = getattr(all_treat[0], sample_field)
             elif self.conts:
-                if self.conts.all():
-                    val = getattr(self.conts.all()[0], sample_field)
+                all_cont = self.conts.all()
+                if all_cont:
+                    val = getattr(all_cont[0], sample_field)
             if val:
                 return val.name
             else:
@@ -304,7 +332,8 @@ class Datasets(DCModel):
 
     #user = the person curated/created the dataset
     user = models.ForeignKey(User, null=True, blank=True, default=None)
-    paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
+
+    paper = models.ForeignKey('Papers', null=True, blank=True, default=None, on_delete=models.SET_NULL)
 
     treats = models.ManyToManyField('Samples', related_name="TREATS")
     conts = models.ManyToManyField('Samples', related_name="CONTS", null=True, blank=True, default=None)
@@ -314,72 +343,85 @@ class Datasets(DCModel):
     #controls = models.CommaSeparatedIntegerField(max_length=255, null=True,
     #                                             blank=True)
 
-    #Virtual fields:
-    factor = property(_sampleAggregator('factor'))
-    platform = property(_sampleAggregator('platform'))
-    species = property(_sampleAggregator('species'))
-    assembly = property(_sampleAggregator('assembly'))
-    cell_type = property(_sampleAggregator('cell_type'))
-    cell_line = property(_sampleAggregator('cell_line'))
-    cell_pop = property(_sampleAggregator('cell_pop'))
-    tissue_type = property(_sampleAggregator('tissue_type'))
-    strain = property(_sampleAggregator('strain'))
-    condition = property(_sampleAggregator('condition'))
-    disease_state = property(_sampleAggregator('disease_state'))
+
+
+
+
+
+
+    paper = models.ForeignKey('Papers', null=True, blank=True, default=None, on_delete=models.SET_NULL)
+    factor = models.ForeignKey('Factors', null=True, blank=True, default=None,on_delete=models.SET_NULL)
+    species = models.ForeignKey('Species',
+                                null=True, blank=True, default=None,on_delete=models.SET_NULL)
+    cell_type = models.ForeignKey('CellTypes',
+                                  null=True, blank=True, default=None,on_delete=models.SET_NULL)
+    cell_line = models.ForeignKey('CellLines',
+                                  null=True, blank=True, default=None, on_delete=models.SET_NULL)
+    cell_pop = models.ForeignKey('CellPops',
+                                 null=True, blank=True, default=None,on_delete=models.SET_NULL)
+    strain = models.ForeignKey('Strains',
+                               null=True, blank=True, default=None,on_delete=models.SET_NULL)
+    disease_state = models.ForeignKey('DiseaseStates',
+                                      null=True, blank=True, default=None,on_delete=models.SET_NULL)
+    tissue_type = models.ForeignKey('TissueTypes', null=True, blank=True,
+                                    default=None,on_delete=models.SET_NULL)
+
+    full_text = models.TextField(null=True, blank=True, default="")
+    result_folder = models.CharField(max_length=255, null=True, blank=True, default="")
 
     #FileFields
-    peak_file = models.FileField(upload_to=upload_factory("peak"),
-                                 null=True, blank=True, max_length=1024)
-    peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
-                                     null=True, blank=True, max_length=1024)
+    # peak_file = models.FileField(upload_to=upload_factory("peak"),
+    #                              null=True, blank=True, max_length=1024)
+    # peak_xls_file = models.FileField(upload_to=upload_factory("peak"),
+    #                                  null=True, blank=True, max_length=1024)
     summit_file = models.FileField(upload_to=upload_factory("summit"),
                                    null=True, blank=True, max_length=1024)
 
     treat_bw_file = models.FileField(upload_to=upload_factory("bw"),
                                      null=True, blank=True, max_length=1024)
-    cont_bw_file = models.FileField(upload_to=upload_factory("bw"),
-                                    null=True, blank=True, max_length=1024)
-
+    # cont_bw_file = models.FileField(upload_to=upload_factory("bw"),
+    #                                 null=True, blank=True, max_length=1024)
+    #
     conservation_file = models.FileField(upload_to=upload_factory("conservation"),
                                          null=True, blank=True, max_length=1024)
-    conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
-                                           null=True, blank=True, max_length=1024)
+    # conservation_r_file = models.FileField(upload_to=upload_factory("conservation"),
+    #                                        null=True, blank=True, max_length=1024)
     ceas_file = models.FileField(upload_to=upload_factory("ceas"),
                                  null=True, blank=True, max_length=1024)
-    ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
-                                   null=True, blank=True, max_length=1024)
-    ceas_xls_file = models.FileField(upload_to=upload_factory("ceas"),
-                                     null=True, blank=True, max_length=1024)
-
-    venn_file = models.FileField(upload_to=upload_factory("venn"),
-                                 null=True, blank=True, max_length=1024)
-    seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
-                                   null=True, blank=True, max_length=1024)
-    rep_treat_bw = models.FileField(upload_to=upload_factory("bw"), null=True,
-                                    blank=True, max_length=1024)
-    rep_treat_peaks = models.FileField(upload_to=upload_factory("bw"),
-                                       null=True, blank=True, max_length=1024)
-    rep_treat_summits = models.FileField(upload_to=upload_factory("bw"),
-                                         null=True, blank=True, max_length=1024)
-    rep_cont_bw = models.FileField(upload_to=upload_factory("bw"), null=True,
-                                   blank=True, max_length=1024)
-    cor_pdf_file = models.FileField(upload_to=upload_factory("cor"),
-                                    null=True, blank=True, max_length=1024)
-    cor_r_file = models.FileField(upload_to=upload_factory("cor"),
-                                  null=True, blank=True, max_length=1024)
-
-    #adding meta files
-    conf_file = models.FileField(upload_to=upload_factory("meta"),
-                                 null=True, blank=True, max_length=1024)
-    log_file = models.FileField(upload_to=upload_factory("meta"),
-                                null=True, blank=True, max_length=1024)
+    # ceas_r_file = models.FileField(upload_to=upload_factory("ceas"),
+    #                                null=True, blank=True, max_length=1024)
+    # ceas_xls_file = models.FileField(upload_to=upload_factory("ceas"),
+    #                                  null=True, blank=True, max_length=1024)
+    #
+    # venn_file = models.FileField(upload_to=upload_factory("venn"),
+    #                              null=True, blank=True, max_length=1024)
+    # seqpos_file = models.FileField(upload_to=upload_factory("seqpos"),
+    #                                null=True, blank=True, max_length=1024)
+    # rep_treat_bw = models.FileField(upload_to=upload_factory("bw"), null=True,
+    #                                 blank=True, max_length=1024)
+    # rep_treat_peaks = models.FileField(upload_to=upload_factory("bw"),
+    #                                    null=True, blank=True, max_length=1024)
+    # rep_treat_summits = models.FileField(upload_to=upload_factory("bw"),
+    #                                      null=True, blank=True, max_length=1024)
+    # rep_cont_bw = models.FileField(upload_to=upload_factory("bw"), null=True,
+    #                                blank=True, max_length=1024)
+    # cor_pdf_file = models.FileField(upload_to=upload_factory("cor"),
+    #                                 null=True, blank=True, max_length=1024)
+    # cor_r_file = models.FileField(upload_to=upload_factory("cor"),
+    #                               null=True, blank=True, max_length=1024)
+    #
+    # #adding meta files
+    # conf_file = models.FileField(upload_to=upload_factory("meta"),
+    #                              null=True, blank=True, max_length=1024)
+    # log_file = models.FileField(upload_to=upload_factory("meta"),
+    #                             null=True, blank=True, max_length=1024)
     summary_file = models.FileField(upload_to=upload_factory("meta"),
                                     null=True, blank=True, max_length=1024)
-
-    #NOTE: even though dhs stats are saved in a table, we're going to store it
-    #in meta
-    dhs_file = models.FileField(upload_to=upload_factory("meta"),
-                                null=True, blank=True, max_length=1024)
+    #
+    # #NOTE: even though dhs stats are saved in a table, we're going to store it
+    # #in meta
+    # dhs_file = models.FileField(upload_to=upload_factory("meta"),
+    #                             null=True, blank=True, max_length=1024)
 
     date_created = models.DateTimeField(blank=True, null=True, default=None)
 
@@ -387,6 +429,15 @@ class Datasets(DCModel):
                               default="new")
     comments = models.TextField(blank=True, default="")
 
+    fastqc = models.CharField(max_length=255, null=True)
+    mapped = models.CharField(max_length=255, null=True)
+    map_ratio = models.CharField(max_length=255, null=True)
+    pbc = models.CharField(max_length=255, null=True)
+    peaks = models.CharField(max_length=255, null=True)
+    frip = models.CharField(max_length=255, null=True)
+    dhs = models.CharField(max_length=255, null=True)
+    motif = models.CharField(max_length=255, null=True)
+    qc_summary = models.CharField(max_length=255, null=True)
     def _printInfo(self):
         """Tries to print the treatment and controls list like this:
         GSMXXX,GSMYYY::GSMZZZ where the :: is a separator btwn the two lists"""
@@ -425,6 +476,52 @@ class Datasets(DCModel):
     def __str__(self):
         return smart_str(self.id) + "_" + smart_str(self.paper)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(Datasets, self).save(force_insert, force_update, using, update_fields)
+        self.complete_info(force_insert, force_update, using, update_fields)
+
+    def complete_info(self, force_insert=False, force_update=False, using=None, update_fields=None):
+
+        full_text = u""
+
+        treatments = self.treats.all()
+        if treatments:
+            treatment_first = treatments[0]
+            assert isinstance(treatment_first, Samples)
+            treatment_first.update_a_dataset(self)
+
+        for a_sample in self.treats.all():
+            full_text += u"\n".join([unicode(i) for i in [a_sample.unique_id, a_sample.name]])
+        if self.factor:
+            full_text += u"\n" + self.factor.name
+        if self.cell_line:
+            full_text += u"\n" + self.cell_line.name
+        if self.cell_pop:
+            full_text += u"\n" + self.cell_pop.name
+        if self.cell_type:
+            full_text += u"\n" + self.cell_type.name
+        if self.strain:
+            full_text += u"\n" + self.strain.name
+
+        if self.tissue_type:
+            full_text += u"\n" + self.tissue_type.name
+
+        if self.disease_state:
+            full_text += u"\n" + self.disease_state.name
+
+        if self.species:
+            full_text += u"\n" + self.species.name
+        if self.paper:
+            full_text += u"\n".join(unicode(i) for i in [self.paper.authors, self.paper.title, self.paper.pmid])
+
+        self.full_text = full_text
+
+        if self.conts and self.conts.all() and self.conts.all()[0].unique_id == "clear controls":
+            self.conts.clear()
+        super(Datasets, self).save(force_insert, force_update, using, update_fields)
+
+
 
     journal_impact_factor.admin_order_field = 'paper__journal__impact_factor'
 
@@ -439,6 +536,12 @@ Datasets._meta._virtualfields = ['factor', 'platform', 'species',
                                  'treats', 'conts'
 ]
 
+def samples_added(sender, **kwargs):
+    if kwargs["action"].startswith("post"):
+        kwargs["instance"].complete_info()
+
+
+m2m_changed.connect(samples_added, sender=Datasets.treats.through)
 
 class Samples(DCModel):
     """a table to store all of the sample information: a sample is a
@@ -471,7 +574,7 @@ class Samples(DCModel):
         #user = curator/uploader of this sample
 
     user = models.ForeignKey(User, null=True, blank=True, default=None)
-    paper = models.ForeignKey('Papers', null=True, blank=True, default=None)
+    paper = models.ForeignKey('Papers', null=True, blank=True, default=None, on_delete=models.SET_NULL)
 
     unique_id = models.CharField(max_length=255, null=True, blank=True, default="")
     #comma sep list of other identifiers
@@ -479,7 +582,7 @@ class Samples(DCModel):
     series_id = models.CharField(max_length=255, null=True, blank=True, default="")
     #Name comes from "title" in the geo sample information
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    date_collected = models.DateTimeField(null=True, blank=True, default=None)
+
 
     #RAW FILES assoc. w/ sample--i.e. FASTQ, and then when aligned --> BAM;
     #DELETE fastq when bam is generated
@@ -492,49 +595,73 @@ class Samples(DCModel):
                                 null=True, blank=True, max_length=1024)
 
     #META information
-    factor = models.ForeignKey('Factors', null=True, blank=True, default=None)
+    factor = models.ForeignKey('Factors', null=True, blank=True, default=None,on_delete=models.SET_NULL)
     platform = models.ForeignKey('Platforms',
-                                 null=True, blank=True, default=None)
+                                 null=True, blank=True, default=None,on_delete=models.SET_NULL)
     species = models.ForeignKey('Species',
-                                null=True, blank=True, default=None)
+                                null=True, blank=True, default=None,on_delete=models.SET_NULL)
     assembly = models.ForeignKey('Assemblies',
-                                 null=True, blank=True, default=None)
+                                 null=True, blank=True, default=None,on_delete=models.SET_NULL)
     #in description, we can add additional info e.g. protocols etc
     description = models.TextField(null=True, blank=True, default="")
     cell_type = models.ForeignKey('CellTypes',
-                                  null=True, blank=True, default=None)
+                                  null=True, blank=True, default=None,on_delete=models.SET_NULL)
     cell_line = models.ForeignKey('CellLines',
-                                  null=True, blank=True, default=None)
+                                  null=True, blank=True, default=None, on_delete=models.SET_NULL)
     cell_pop = models.ForeignKey('CellPops',
-                                 null=True, blank=True, default=None)
+                                 null=True, blank=True, default=None,on_delete=models.SET_NULL)
     strain = models.ForeignKey('Strains',
-                               null=True, blank=True, default=None)
+                               null=True, blank=True, default=None,on_delete=models.SET_NULL)
     condition = models.ForeignKey('Conditions',
-                                  null=True, blank=True, default=None)
+                                  null=True, blank=True, default=None,on_delete=models.SET_NULL)
     disease_state = models.ForeignKey('DiseaseStates',
-                                      null=True, blank=True, default=None)
+                                      null=True, blank=True, default=None,on_delete=models.SET_NULL)
     tissue_type = models.ForeignKey('TissueTypes', null=True, blank=True,
-                                    default=None)
+                                    default=None,on_delete=models.SET_NULL)
     antibody = models.ForeignKey('Antibodies', null=True, blank=True,
-                                 default=None, related_name='antibody')
+                                 default=None, related_name='antibody',on_delete=models.SET_NULL)
 
     #curator = the person who double checks the info
     curator = models.ForeignKey(User, null=True, blank=True, default=None,
-                                related_name="curator")
+                                related_name="curator",on_delete=models.SET_NULL)
 
     status = models.CharField(max_length=255, choices=SAMPLE_STATUS,
                               null=True, blank=True, default="new")
     comments = models.TextField(null=True, blank=True, default="")
 
-    upload_date = models.DateTimeField(blank=True, null=True, default=None)
+    dc_collect_date = models.DateTimeField(null=True, blank=True, default=None)
+    dc_upload_date = models.DateTimeField(blank=True, null=True, default=None)
 
+    geo_last_update_date = models.DateTimeField(blank=True, null=True, default=None)
+    geo_release_date = models.DateTimeField(blank=True, null=True, default=None)
 
+    re_check = models.TextField(null=True, blank=True, default=None)
     def __str__(self):
         return smart_str(
-            "_".join([self.unique_id, self.factor.name if self.factor else "", self.name, self.species.name if self.species else "NA"]))
+            "_".join([self.unique_id, self.factor.name if self.factor else "", self.name if self.name else "", self.species.name if self.species else "NA"]))
 
 
+    def save(self, *args, **kwargs):
+        super(Samples, self).save(*args, **kwargs)
+        self.update_related_datasets()
 
+    def update_related_datasets(self):
+        for a_dataset in self.TREATS.all():
+            self.update_a_dataset(a_dataset)
+
+    def update_a_dataset(self, dataset_obj):
+        # Update in place
+        dataset_obj.species = self.species
+        dataset_obj.factor = self.factor
+        dataset_obj.cell_line = self.cell_line
+        dataset_obj.cell_type = self.cell_type
+        dataset_obj.cell_pop = self.cell_pop
+        dataset_obj.strain = self.strain
+        dataset_obj.disease_state = self.disease_state
+        dataset_obj.tissue_type = self.tissue_type
+        dataset_obj.paper = self.paper
+        super(Datasets, dataset_obj).save() 
+    
 
 Samples._meta._donotSerialize = ['user', 'curator']
 
@@ -549,6 +676,7 @@ class Platforms(DCModel):
     experiment type- Choice: ChIP-Chip/ChIP-Seq
     """
     gplid = models.CharField(max_length=255, null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     technology = models.CharField(max_length=255, null=True, blank=True, default="")
     company = models.CharField(max_length=255, null=True, blank=True, default="")
@@ -580,10 +708,9 @@ class Factors(DCModel):
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
     #antibody = models.CharField(max_length=255, blank=True)
-    type = models.CharField(max_length=255, choices=FACTOR_TYPES,
-                            null=True, blank=True, default="")
-    status = models.CharField(max_length=255, null=True, blank=True, default="")
-
+    type = models.CharField(max_length=255, choices=FACTOR_TYPES,null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
     def __str__(self):
         return smart_str(self.name)
 
@@ -596,12 +723,13 @@ class CellTypes(DCModel):
         verbose_name_plural = 'cell types'
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    status = models.CharField(max_length=255, null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
 
     #tissue_type = models.CharField(max_length=255, blank=True)
     def __str__(self):
         return smart_str(self.name)
-
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
 
 class CellLines(DCModel):
     """Sample's cell lines.  I really don't know what distinguishes
@@ -613,27 +741,12 @@ class CellLines(DCModel):
         verbose_name_plural = 'cell lines'
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    status = models.CharField(max_length=255, null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
 
     def __str__(self):
         return smart_str(self.name)
-
-
-class Qc(DCModel):
-    #used to store the QC measures
-    qc1 = models.CharField(max_length=255, null=True)
-    qc2 = models.CharField(max_length=255, null=True)
-    qc3 = models.CharField(max_length=255, null=True)
-    qc4 = models.CharField(max_length=255, null=True)
-    qc5 = models.CharField(max_length=255, null=True)
-    qc6 = models.CharField(max_length=255, null=True)
-    qc7 = models.CharField(max_length=255, null=True)
-    qc8 = models.CharField(max_length=255, null=True)
-    qc9 = models.CharField(max_length=255, null=True)
-    qc10 = models.CharField(max_length=255, null=True)
-
-    def __str__(self):
-        return smart_str(self.name)
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
 
 
 class CellPops(DCModel):
@@ -641,22 +754,24 @@ class CellPops(DCModel):
         verbose_name_plural = 'cell populations'
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    status = models.CharField(max_length=255, null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
 
     def __str__(self):
         return smart_str(self.name)
-
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
 
 class Strains(DCModel):
     class Meta:
         verbose_name_plural = 'strains'
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    status = models.CharField(max_length=255, null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
 
     def __str__(self):
         return smart_str(self.name)
-
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
 
 class DiseaseStates(DCModel):
     """Information field for datasets"""
@@ -665,9 +780,12 @@ class DiseaseStates(DCModel):
         verbose_name_plural = 'disease states'
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
     def __str__(self):
         return smart_str(str(self.name))
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
+
 
 
 class Antibodies(DCModel):
@@ -677,9 +795,11 @@ class Antibodies(DCModel):
         verbose_name_plural = 'antibodies'
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
     def __str__(self):
         return smart_str(self.name)
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
 
 
 class TissueTypes(DCModel):
@@ -689,10 +809,11 @@ class TissueTypes(DCModel):
         verbose_name_plural = 'tissues'
 
     name = models.CharField(max_length=255, null=True, blank=True, default="")
-    status = models.CharField(max_length=255, null=True, blank=True, default="")
-
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
     def __str__(self):
         return smart_str(self.name)
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
 
 
 class Conditions(DCModel):
@@ -700,12 +821,13 @@ class Conditions(DCModel):
 
     class Meta:
         verbose_name_plural = 'conditions'
-
+    comments = models.CharField(max_length=255, null=True, blank=True, default="")
     name = models.CharField(max_length=255)
+    status = models.CharField(max_length=255, null=True, blank=True, default=u'new', choices=GENERAL_STATUS)
 
     def __str__(self):
         return smart_str(self.name)
-
+    aliases =   models.CharField(max_length=255, null=True, blank=True, default=None)
 
 class Journals(DCModel):
     """Journals that the papers are published in"""
@@ -774,6 +896,27 @@ class UserProfiles(DCModel):
     team = models.CharField(max_length=255, choices=TEAMS, blank=True,
                             null=True, default=None)
 
+
+class CistromeUser(models.Model):
+    id = models.IntegerField(primary_key=True)
+    create_time = models.DateTimeField()
+    update_time = models.DateTimeField()
+    email = models.CharField(max_length=255L)
+    password = models.CharField(max_length=255L)
+    external = models.IntegerField(null=True, blank=True)
+    deleted = models.IntegerField(null=True, blank=True)
+    purged = models.IntegerField(null=True, blank=True)
+    username = models.CharField(max_length=255L, blank=True)
+    form_values_id = models.IntegerField(null=True, blank=True)
+    disk_usage = models.DecimalField(null=True, max_digits=16, decimal_places=0, blank=True)
+    active = models.IntegerField(null=True, blank=True)
+    activation_token = models.CharField(max_length=64L, blank=True)
+    class Meta:
+        db_table = 'galaxy_user'
+        in_db = "cistromeap"
+
+
+
 #UserProfiles._meta._donotSerialize = ['user']
 
 
@@ -784,5 +927,3 @@ class UserProfiles(DCModel):
 #     sample = models.ForeignKey('Samples', unique=True)
 #     total_peaks = models.IntegerField(default=0)
 #     peaks_in_dhs = models.IntegerField(default=0)
-
-

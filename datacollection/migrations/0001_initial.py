@@ -1,19 +1,18 @@
-
 from south.db import db
 from django.db import models
 from datacollection.models import *
 
 class Migration:
-    
+
     def forwards(self, orm):
-        
+
         # Adding model 'Conditions'
         db.create_table('datacollection_conditions', (
             ('id', orm['datacollection.Conditions:id']),
             ('name', orm['datacollection.Conditions:name']),
         ))
         db.send_create_signal('datacollection', ['Conditions'])
-        
+
         # Adding model 'Datasets'
         db.create_table('datacollection_datasets', (
             ('id', orm['datacollection.Datasets:id']),
@@ -46,7 +45,7 @@ class Migration:
             ('comments', orm['datacollection.Datasets:comments']),
         ))
         db.send_create_signal('datacollection', ['Datasets'])
-        
+
         # Adding model 'Assemblies'
         db.create_table('datacollection_assemblies', (
             ('id', orm['datacollection.Assemblies:id']),
@@ -54,7 +53,7 @@ class Migration:
             ('pub_date', orm['datacollection.Assemblies:pub_date']),
         ))
         db.send_create_signal('datacollection', ['Assemblies'])
-        
+
         # Adding model 'Papers'
         db.create_table('datacollection_papers', (
             ('id', orm['datacollection.Papers:id']),
@@ -73,7 +72,7 @@ class Migration:
             ('comments', orm['datacollection.Papers:comments']),
         ))
         db.send_create_signal('datacollection', ['Papers'])
-        
+
         # Adding model 'PaperSubmissions'
         db.create_table('datacollection_papersubmissions', (
             ('id', orm['datacollection.PaperSubmissions:id']),
@@ -86,35 +85,35 @@ class Migration:
             ('comments', orm['datacollection.PaperSubmissions:comments']),
         ))
         db.send_create_signal('datacollection', ['PaperSubmissions'])
-        
+
         # Adding model 'Strains'
         db.create_table('datacollection_strains', (
             ('id', orm['datacollection.Strains:id']),
             ('name', orm['datacollection.Strains:name']),
         ))
         db.send_create_signal('datacollection', ['Strains'])
-        
+
         # Adding model 'DiseaseStates'
         db.create_table('datacollection_diseasestates', (
             ('id', orm['datacollection.DiseaseStates:id']),
             ('name', orm['datacollection.DiseaseStates:name']),
         ))
         db.send_create_signal('datacollection', ['DiseaseStates'])
-        
+
         # Adding model 'CellTypes'
         db.create_table('datacollection_celltypes', (
             ('id', orm['datacollection.CellTypes:id']),
             ('name', orm['datacollection.CellTypes:name']),
         ))
         db.send_create_signal('datacollection', ['CellTypes'])
-        
+
         # Adding model 'CellPops'
         db.create_table('datacollection_cellpops', (
             ('id', orm['datacollection.CellPops:id']),
             ('name', orm['datacollection.CellPops:name']),
         ))
         db.send_create_signal('datacollection', ['CellPops'])
-        
+
         # Adding model 'UserProfiles'
         db.create_table('datacollection_userprofiles', (
             ('id', orm['datacollection.UserProfiles:id']),
@@ -122,14 +121,14 @@ class Migration:
             ('team', orm['datacollection.UserProfiles:team']),
         ))
         db.send_create_signal('datacollection', ['UserProfiles'])
-        
+
         # Adding model 'TissueTypes'
         db.create_table('datacollection_tissuetypes', (
             ('id', orm['datacollection.TissueTypes:id']),
             ('name', orm['datacollection.TissueTypes:name']),
         ))
         db.send_create_signal('datacollection', ['TissueTypes'])
-        
+
         # Adding model 'Platforms'
         db.create_table('datacollection_platforms', (
             ('id', orm['datacollection.Platforms:id']),
@@ -140,14 +139,14 @@ class Migration:
             ('experiment_type', orm['datacollection.Platforms:experiment_type']),
         ))
         db.send_create_signal('datacollection', ['Platforms'])
-        
+
         # Adding model 'CellLines'
         db.create_table('datacollection_celllines', (
             ('id', orm['datacollection.CellLines:id']),
             ('name', orm['datacollection.CellLines:name']),
         ))
         db.send_create_signal('datacollection', ['CellLines'])
-        
+
         # Adding model 'Samples'
         db.create_table('datacollection_samples', (
             ('id', orm['datacollection.Samples:id']),
@@ -178,14 +177,14 @@ class Migration:
             ('upload_date', orm['datacollection.Samples:upload_date']),
         ))
         db.send_create_signal('datacollection', ['Samples'])
-        
+
         # Adding model 'Species'
         db.create_table('datacollection_species', (
             ('id', orm['datacollection.Species:id']),
             ('name', orm['datacollection.Species:name']),
         ))
         db.send_create_signal('datacollection', ['Species'])
-        
+
         # Adding model 'Factors'
         db.create_table('datacollection_factors', (
             ('id', orm['datacollection.Factors:id']),
@@ -193,7 +192,7 @@ class Migration:
             ('type', orm['datacollection.Factors:type']),
         ))
         db.send_create_signal('datacollection', ['Factors'])
-        
+
         # Adding model 'Journals'
         db.create_table('datacollection_journals', (
             ('id', orm['datacollection.Journals:id']),
@@ -202,74 +201,74 @@ class Migration:
             ('impact_factor', orm['datacollection.Journals:impact_factor']),
         ))
         db.send_create_signal('datacollection', ['Journals'])
-        
+
         # Adding model 'Antibodies'
         db.create_table('datacollection_antibodies', (
             ('id', orm['datacollection.Antibodies:id']),
             ('name', orm['datacollection.Antibodies:name']),
         ))
         db.send_create_signal('datacollection', ['Antibodies'])
-        
-    
-    
+
+
+
     def backwards(self, orm):
-        
+
         # Deleting model 'Conditions'
         db.delete_table('datacollection_conditions')
-        
+
         # Deleting model 'Datasets'
         db.delete_table('datacollection_datasets')
-        
+
         # Deleting model 'Assemblies'
         db.delete_table('datacollection_assemblies')
-        
+
         # Deleting model 'Papers'
         db.delete_table('datacollection_papers')
-        
+
         # Deleting model 'PaperSubmissions'
         db.delete_table('datacollection_papersubmissions')
-        
+
         # Deleting model 'Strains'
         db.delete_table('datacollection_strains')
-        
+
         # Deleting model 'DiseaseStates'
         db.delete_table('datacollection_diseasestates')
-        
+
         # Deleting model 'CellTypes'
         db.delete_table('datacollection_celltypes')
-        
+
         # Deleting model 'CellPops'
         db.delete_table('datacollection_cellpops')
-        
+
         # Deleting model 'UserProfiles'
         db.delete_table('datacollection_userprofiles')
-        
+
         # Deleting model 'TissueTypes'
         db.delete_table('datacollection_tissuetypes')
-        
+
         # Deleting model 'Platforms'
         db.delete_table('datacollection_platforms')
-        
+
         # Deleting model 'CellLines'
         db.delete_table('datacollection_celllines')
-        
+
         # Deleting model 'Samples'
         db.delete_table('datacollection_samples')
-        
+
         # Deleting model 'Species'
         db.delete_table('datacollection_species')
-        
+
         # Deleting model 'Factors'
         db.delete_table('datacollection_factors')
-        
+
         # Deleting model 'Journals'
         db.delete_table('datacollection_journals')
-        
+
         # Deleting model 'Antibodies'
         db.delete_table('datacollection_antibodies')
-        
-    
-    
+
+
+
     models = {
         'auth.group': {
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -455,5 +454,5 @@ class Migration:
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'profile'", 'unique': 'True', 'to': "orm['auth.User']"})
         }
     }
-    
+
     complete_apps = ['datacollection']

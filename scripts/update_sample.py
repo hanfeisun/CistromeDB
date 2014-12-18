@@ -2,18 +2,16 @@ from ncbiAdapter.geo import *
 from datacollection.models import Samples
 
 
-def my_update_condition(uid):
-    try:
-        the_sample = Samples.objects.get(unique_id=uid)
-        if the_sample.status == "new":
-            return True
-        else:
-            return False
-    except Samples.DoesNotExist:
-        return False
 
+# Usage:
+# updateExistingSamples(Samples.objects.filter(PUT_YOUR_CONDITIONS_HERE))
 
-update_samples(parse_fields=['factor'],
-               update_condition=my_update_condition)
+def main():
+    updateExistingSamples(Samples.objects.filter(status='new'),
+                          parse_fields=['cell type', 'cell line', 'cell pop','tissue', 'strain','disease','factor','update date','release date'])
+
+if __name__ == "__main__":
+    main()
+
 
 
