@@ -17,23 +17,15 @@ def motif_json(request):
     req_gene = request.GET.get("id", None)
     if not (req_id):
         return HttpResponse("Wrong Parameter")
-    
-    folder = Datasets.objects.get(id = int(req_id)).result_folder
-    if not folder:
-        return HttpResponse("Dataset not processed")
-    
-    matches = glob.glob(folder + "/*seqpos/") + glob.glob(folder + "/attic/*seqpos/")
+
     qc_motif = "/data/home/qqin/Workspace/Achieved/DCjsons/motif_json/"+str(req_id)+".json"
-    
+
     if not os.path.exists(qc_motif):
         return HttpResponse("Wrong Parameter")
-    if not matches:
-        return HttpResponse("File not found")
 
-    motif_handler = open(qc_motif)
-    motifs_dump  = json.load(motif_handler)
-    motif_handler.close()
-    return HttpResponse(json.dumps(motifs_dump,indent=4),content_type="application/json")
+    inf = open(qc_motif)
+    content = json.load(inf)
+    return HttpResponse(json.dumps(content, indent=4), content_type="application/json")
 
 @cache_page(60 * 60 * 24)
 def target_json(request):

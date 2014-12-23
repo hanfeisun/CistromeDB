@@ -4,8 +4,8 @@ dcApp.config(function(blockUIConfig) {
     blockUIConfig.autoBlock = false;
 })
 
-dcApp.controller("filterController", ["$scope","$sce", "filterService", 'inspectorService', "targetService","loginService","blockUI","similarService",
-    function ($scope, $sce, filterService, inspectorService,  targetService, loginService, blockUI, similarService) {
+dcApp.controller("filterController", ["$scope","$sce", "filterService", 'inspectorService', "targetService", "motifService", "loginService","blockUI","similarService",
+                                      function ($scope, $sce, filterService, inspectorService,  targetService, motifService, loginService, blockUI, similarService) {
         var filterSentData = {
             species: "all",
             cellinfos: "all",
@@ -214,10 +214,19 @@ dcApp.controller("filterController", ["$scope","$sce", "filterService", 'inspect
             ).error(function(){blockUI.stop()})
         }
 
-
 	$scope.setMotif = function(id, gene) {
-	    
-	};
+	    if (id==$scope.id && !gene) {
+		return
+	    }
+	    blockUI.start();
+
+	    motifService.request(id, gene).success(
+		function(data, status) {
+		    $scope.motifs = data
+		    blockUI.stop()
+		}
+	    )
+	}
 
         $scope.setInspector = function (id) {
 
