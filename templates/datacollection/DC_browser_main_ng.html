@@ -260,9 +260,9 @@
 
                     <div class="circle-col">
                         <div class="circle"
-                             ng-class="{green: inspector.qc.judge.peaks, red: !inspector.qc.judge.peak}"
+                             ng-class="{green: inspector.qc.judge.peaks, red: !inspector.qc.judge.peaks}"
                              data-toggle="tooltip" data-html="true" data-placement="auto"
-                             title="<strong class='text-primary'>ChIP enrichment:</strong><br> Sufficient number of peaks with good enrichment"
+                             title="<strong class='text-primary'>ChIP enrichment:</strong><br> Sufficient number of peaks(above 500) with good enrichment(10 fold change)"
                              dc-tooltip></div>
                     </div>
 
@@ -288,7 +288,7 @@
                     </div>
                     <div class="circle-col">
                         <div class="circle"
-                             ng-class="{green: inspector.qc.judge.motif_judge, red: !inspector.qc.judge.motif_judge}"
+                             ng-class="{true: 'green', false: 'red', NA: 'grey'}[inspector.qc.judge.motif_judge]"
                              data-toggle="tooltip" data-html="true" data-placement="auto"
                              title="<strong class='text-primary'>Motif:</strong><br> Enrichment of corresponding motifs in peaks"
                              dc-tooltip></div>
@@ -387,6 +387,7 @@
                     <div class="col-sm-12">
                         <ul class="nav nav-tabs nav-justified" role="tablist" id="toolTab">
                             <li class="active"><a href="#qc-reports" dc-tab>QC reports</a></li>
+                            <li ng-hide="inspector.qc.judge.motif_judge=='NA'"><a href="#qc-motif" ng-click="setMotif(inspector.id)" dc-tab>QC motifs</a></li>
                             <li><a href="#allTarget" id="target-trigger" ng-click="setTarget(inspector.id)" dc-tab>Get
                                 top putative targets</a></li>
                             <li><a href="#peak" ng-click="targets=[]" dc-tab>Check a putative target</a></li>
@@ -396,7 +397,7 @@
                             <div class="tab-pane fade in active" id="qc-reports">
                                 <div class="tool-content" id="qc-reports-content" class="qc-reports-content-600px">
 
-                                    <table class="table table-striped table-bordered">
+                                    <table class="table table-striped table-bordered" id="qc-tables">
                                         <thead>
                                         <tr>
                                             <th>QC</th>
@@ -432,8 +433,8 @@
                                             <td ng-repeat="frip in table.frip track by $index" ng-bind="frip"></td>
                                         </tr>
                                         <tr>
-                                            <td>% Reads in DHS / promoter / exon</td>
-                                            <td ng-repeat="emeta in table.e_meta.slice(1) track by $index"
+                                            <td>% Reads in promoter / exon / DHS regions</td>
+                                            <td ng-repeat="emeta in table.e_meta track by $index"
                                                 ng-bind="emeta"></td>
                                         </tr>
                                         <tr ng-show="isNaN(inspector.qc.overlap)">
@@ -459,9 +460,33 @@
 
                                     </table>
                                 </div>
-
-
                             </div>
+			    <div class="tab-pane fade" id="qc-motif">
+			      <div class="row">
+				<div class="col-sm-12">
+				  <table class="table">
+                                                <thead>
+                                                <tr>
+                                                    <th>Gene</th>
+                                                    <th>Z Score</th>
+                                                    <th>Hits</th>
+                                                    <th>Logo</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr ng-repeat="motif in motifs">
+                                                    <td ng-bind="motif.factors"></td>
+                                                    <td ng-bind="motif.zscore"></td>
+                                                    <td ng-bind="motif.hits"></td>
+                                                    <td ng-bind="motif.id"></td>
+                                                </tr>
+                                                </tbody>
+
+
+				  </table>
+				</div>
+			      </div>
+			    </div>
                             <div class="tab-pane fade" id="peak">
                                 <div class="tool-content">
                                     <div class="row">

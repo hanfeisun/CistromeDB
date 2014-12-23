@@ -53,6 +53,23 @@ services.factory("targetService", ["$http", function ($http) {
     }
 }])
 
+services.factory('motifService', ["$http", function($http) {
+    var doRequest = function(id, gene) {
+        if (!gene) {
+            gene = ""
+        }
+        return $http({
+            method: "POST",
+            url: "/dc/motif_ng",
+            params: {id: id, gene:gene}
+        })
+    }
+    return {
+        request: function (id, gene) {
+            return doRequest(id, gene)
+        }
+    }
+}])
 
 services.factory("similarService", ["$http", function ($http) {
     var doRequest = function (id) {
@@ -70,23 +87,8 @@ services.factory("similarService", ["$http", function ($http) {
     }
 }])
 
-//services.factory('motifService', ["$http", function ($http) {
-//    var doRequest = function (id, gene) {
-//        if (!gene) {
-//            gene = ""
-//        }
-//        return $http({
-//            method: "POST",
-//            url: "/dc/motif_ng",
-//            params: {i: id, gene: gene}
-//        })
-//    }
-//
-//    ])
-
-
-    services.factory("loginService", ["$http", function ($http) {
-        var doRequest = function () {
+services.factory("loginService", ["$http", function ($http) {
+       var doRequest = function () {
             return $http({
                 method: "GET",
                 url: "/dc/accounts/check"
