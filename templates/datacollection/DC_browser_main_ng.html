@@ -475,10 +475,10 @@
                                                 </thead>
                                                 <tbody>
                                                 <tr ng-repeat="motif in motifs">
-                                                    <td ng-bind="motif.factors"></td>
-                                                    <td ng-bind="motif.zscore"></td>
-                                                    <td ng-bind="motif.hits"></td>
-                                                    <td ng-bind="motif.id"></td>
+                                                    <td  ng-bind="motif.factors"></td>
+                                                    <td  ng-bind="motif.zscore | motifZscore"></td>
+                                                    <td  ng-bind="motif.hits"></td>
+                                                    <td  ng-bind="motif.id"></td>
                                                 </tr>
                                                 </tbody>
 

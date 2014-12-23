@@ -306,6 +306,14 @@ dcApp.filter("datasetMeta", function () {
     return bioSourceFilter
 })
 
+dcApp.filter("motifZscore", function() {
+    var transZscore = function(input) {
+	var score = input.toFixed(0);
+	return score;
+    }
+    return transZscore;
+})
+
 dcApp.filter("escape", function () {
     var escape = function (d) {
         return encodeURI(d)
