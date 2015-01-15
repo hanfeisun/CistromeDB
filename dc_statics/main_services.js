@@ -25,11 +25,19 @@ services.factory("inspectorService", ["$http", function ($http) {
             method: "GET",
             url: "/dc/inspector",
             params: {id: id}
-        })
-    }
+        });
+    };
+
+   var getImg = function(id) {
+        baseUrl = '/dc/conserv';
+        return $http.get(baseUrl, {params: {id: id}});
+   };
     return {
         request: function (id) {
-            return doRequest(id)
+          return doRequest(id);
+        },
+        get: function(id) {
+          return getImg(id);
         }
     }
 }])

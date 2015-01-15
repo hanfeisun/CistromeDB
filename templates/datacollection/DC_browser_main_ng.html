@@ -454,6 +454,13 @@
                                             <td ng-bind="table.dhs"
                                                 colspan="{{table.treat_number+table.control_number}}"></td>
                                         </tr>
+                                        <tr>
+                                          <td> % Top 5k peaks Phastcon Conservation Profiles
+                                          </td>
+                                          <td colspan="{{table.treat_number+table.control_number}}">
+                                            <img ng-src="http://cistrome.org/dc/conserv?id={{ inspector.id }}"> </img>
+                                          </td>
+                                        </tr>
                                         </tbody>
                                         </thead>
 
