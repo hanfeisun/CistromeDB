@@ -175,6 +175,21 @@ def inspector_ajax(request):
             mimetype='application/json')
 
 @cache_page(60 * 60 * 24)
+def show_image(request):
+    req_id = request.GET.get("id", None)
+
+    if not (req_id):
+        return HttpResponse("Wrong parameter")
+    try:
+        req_id = str(req_id)
+    except:
+        return HttpResponse("id not available")
+    conserv_dir = "/data/home/qqin/Workspace/Active/NewSpeciesConservation/ConservFigs"
+    img = glob.glob(os.path.join(conserv_dir, req_id+"_*"+".png"))[0]
+    with open(img, "rb") as f:
+        return HttpResponse(f.read(), mimetype = "image/png")
+
+@cache_page(60 * 60 * 24)
 def similarity_ajax(request):
     req_dataset_id = request.GET.get("id",None)
     if not req_dataset_id:

@@ -87,6 +87,7 @@ def target_json(request):
 
     return HttpResponse(json.dumps(target_list))
 
+
 def file_view(request):
     req_type = request.GET.get("type", None)
     req_id = request.GET.get("id", None)
@@ -98,7 +99,7 @@ def file_view(request):
         return HttpResponse("Dataset not processed")
 
     if req_type == "bed":
-        matches = glob.glob(folder + "/*.bed.gz")
+        matches = glob.glob(folder + "/*.narrowPeak.gz")  # change to shorter peak names
 
         if matches:
             target_file = matches[0]

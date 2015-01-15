@@ -250,12 +250,13 @@ dcApp.controller("filterController", ["$scope","$sce", "filterService", 'inspect
                         $scope.toolHidden = false
                         $("#toolTab a:first").tab("show")
                         $scope.columnCnt = msg.qc.table.treat_number + msg.qc.table.control_number
-
                     }
+
 
                     blockUI.stop();
                 }
-            ).error(function(){blockUI.stop()})
+            ).error(function(){blockUI.stop()});
+            inspectorService.get(id);
         }
         initialize()
 
