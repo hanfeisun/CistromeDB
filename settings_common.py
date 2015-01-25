@@ -67,6 +67,7 @@ CONF_TEMPLATE_DIR = os.path.join(DEPLOY_DIR, "pipeline", "templates")
 
 MIDDLEWARE_CLASSES = (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     #    'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,7 +87,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
-    'debug_toolbar',
+   'debug_toolbar',
     'haystack',
 
     # Uncomment the next line to enable the admin:
@@ -101,8 +102,8 @@ INSTALLED_APPS = (
     # 'admin_views'
     # 'adminplus',
 #    'swami',
-    'template_timings_panel'
-
+    'template_timings_panel',
+    'corsheaders',
     )
 
 AUTH_PROFILE_MODULE = 'datacollection.UserProfiles'
@@ -187,17 +188,17 @@ STATICFILES_FINDERS = (
 
 DATABASE_ROUTERS = ['router.ModelDatabaseRouter']
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': '127.0.0.1:11211',
-#         }
-# }
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
         }
 }
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         }
+# }
 
 
 
@@ -219,6 +220,9 @@ DEBUG_TOOLBAR_PANELS = [
     'template_timings_panel.panels.TemplateTimings.TemplateTimings',
 
     ]
+
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 DEBUG = False
 TEMPLATE_DEBUG = True

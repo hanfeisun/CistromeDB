@@ -13,6 +13,8 @@ from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 from datacollection.models import Datasets
 
+
+
 ab_cellline = "cl"
 ab_celltype = "ct"
 ab_cellpop = "cp"
@@ -24,7 +26,9 @@ def main_view_ng(request):
         return render_to_response('datacollection/DC_browser_main_ng.html',
                                   context_instance=RequestContext(request))
 
+
 @cache_page(60 * 60 * 24)
+
 def main_filter_ng(request):
     req_s = request.GET.get("species", None)
     req_c = request.GET.get("cellinfos", None)
@@ -185,9 +189,13 @@ def show_image(request):
     except:
         return HttpResponse("id not available")
     conserv_dir = "/data/home/qqin/Workspace/Active/NewSpeciesConservation/ConservFigs"
-    img = glob.glob(os.path.join(conserv_dir, req_id+"_*"+".png"))[0]
-    with open(img, "rb") as f:
-        return HttpResponse(f.read(), mimetype = "image/png")
+    try:
+        img = glob.glob(os.path.join(conserv_dir, req_id+"_*"+".png"))[0]
+        with open(img, "rb") as f:
+            return HttpResponse(f.read(), mimetype = "image/png")
+    except IndexError:
+        err = {req_id: "not found image"}
+        return HttpResponse(json.dumps(err), mimetype='application/json')
 
 @cache_page(60 * 60 * 24)
 def similarity_ajax(request):
