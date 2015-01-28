@@ -143,6 +143,7 @@ class Papers(DCModel):
     status = models.CharField(max_length=255, choices=PAPER_STATUS,
                               null=True, blank=True, default="imported")
     #a place for curators to add comments
+
     comments = models.TextField(null=True, blank=True, default="")
 
     def _sampleAggregator(sample_field):

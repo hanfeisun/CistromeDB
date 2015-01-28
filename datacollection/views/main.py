@@ -199,22 +199,26 @@ def show_image(request):
 
 @cache_page(60 * 60 * 24)
 def similarity_ajax(request):
+    import os
     req_dataset_id = request.GET.get("id",None)
     if not req_dataset_id:
         return HttpResponse("Request denied")
     else:
         try:
-            json_f = open("/data/home/hanfei/dc_intersect_result/%s_intersect.json" % req_dataset_id)
-            json_orig = json.load(json_f)
-            json_sorted = sorted(json_orig,key=lambda x:x[1],reverse=True)[:20]
-            ids = [int(js[0]) for js in json_sorted]
+            radar_output = "/data/home/qqin/Workspace/radar/radar/sm_output"
+            radar_text = os.path.join(radar_output, req_dataset_id + ".sm")
+            radar_json = []
+            with open(radar_text) as inf:
+                for line in inf:
+                    element = line.strip().split()
+                    radar_json.append(element) ## index 0 is dataset id, index 1 is radar score
+            ids = [ i[0] for i in radar_json ]
             datasets = Datasets.objects.filter(id__in=ids).values("factor__name",
-                                                                             "cell_line__name", "cell_pop__name",
-                                                                             "cell_type__name", "strain__name",
-                                                                             "tissue_type__name")
-            json_result = [[ds, js[1]] for js,ds in zip(json_sorted, datasets)]
-
-            json_f.close()
+                                                                  "cell_line__name", "cell_pop__name",
+                                                                  "cell_type__name", "strain__name",
+                                                                  "tissue_type__name")
+            json_result = [[ds, js[1]] for js, ds in zip(radar_json, datasets)]
+            json_result = json_result[:20]
         except IOError:
             json_result = {}
         return HttpResponse(json.dumps(json_result), mimetype="application/json")
