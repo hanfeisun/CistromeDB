@@ -96,7 +96,7 @@ class DCModel(models.Model):
         abstract = True
 
     def to_json(self):
-        """Returns the model as a json strong"""
+        """Returns the model as a json string"""
         tmp = {}
         for k in self.__dict__.keys():
             tmp[k] = "%s" % self.__dict__[k]

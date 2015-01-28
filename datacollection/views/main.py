@@ -28,7 +28,6 @@ def main_view_ng(request):
 
 
 @cache_page(60 * 60 * 24)
-
 def main_filter_ng(request):
     req_s = request.GET.get("species", None)
     req_c = request.GET.get("cellinfos", None)
@@ -197,10 +196,13 @@ def show_image(request):
         err = {req_id: "not found image"}
         return HttpResponse(json.dumps(err), mimetype='application/json')
 
+
 @cache_page(60 * 60 * 24)
 def similarity_ajax(request):
-    import os
-    req_dataset_id = request.GET.get("id",None)
+    """ similarity search function
+    return a json_result response
+    """
+    req_dataset_id = request.GET.get("id", None)
     if not req_dataset_id:
         return HttpResponse("Request denied")
     else:
@@ -210,15 +212,21 @@ def similarity_ajax(request):
             radar_json = []
             with open(radar_text) as inf:
                 for line in inf:
-                    element = line.strip().split()
+                    element = map(int, line.strip().split())
                     radar_json.append(element) ## index 0 is dataset id, index 1 is radar score
-            ids = [ i[0] for i in radar_json ]
-            datasets = Datasets.objects.filter(id__in=ids).values("factor__name",
+            ids = [ i[0] for i in radar_json ][:20]
+            radar_json = radar_json[:20]
+            radar_json.sort(key = lambda x: x[0])
+            datasets = Datasets.objects.filter(id__in=ids).values("species__name", "factor__name",
                                                                   "cell_line__name", "cell_pop__name",
                                                                   "cell_type__name", "strain__name",
-                                                                  "tissue_type__name")
-            json_result = [[ds, js[1]] for js, ds in zip(radar_json, datasets)]
-            json_result = json_result[:20]
+                                                                  "tissue_type__name",
+                                                                  "status",
+                                                                  "paper__pub_summary",
+                                                                  "id").order_by("id")
+            for single_data, radar in zip(datasets, radar_json):
+                single_data["score"] = radar[1]
+            json_result = list(datasets) ## convert to basic data type to avoid json serializable error
         except IOError:
             json_result = {}
         return HttpResponse(json.dumps(json_result), mimetype="application/json")
