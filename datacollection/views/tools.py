@@ -28,6 +28,31 @@ def motif_json(request):
     return HttpResponse(json.dumps(content, indent=4), content_type="application/json")
 
 @cache_page(60 * 60 * 24)
+def show_motif(request):
+    req_id = request.GET.get("id", None)
+    logoid = request.GET.get("logoid", None)
+
+    if not (req_id):
+        return HttpResponse("Wrong parameter")
+    if not (logoid):
+        return HttpResponse("Wrong parameter")
+
+    try:
+        folder = Datasets.objects.get(id=int(req_id)).result_folder
+        logoid = str(logoid)
+        req_id = str(req_id)
+    except:
+        return HttpResponse("id not available")
+
+    try:
+        img = glob.glob(os.path.join(folder, "attic", req_id + "_*_seqpos", "seqLogo", logoid+"*"+".png"))[0]
+        with open(img, "rb") as f:
+            return HttpResponse(f.read(), mimetype = "image/png")
+    except IndexError:
+        err = {req_id: "not found image"}
+        return HttpResponse(json.dumps(err), mimetype='application/json')
+
+@cache_page(60 * 60 * 24)
 def target_json(request):
     req_id = request.GET.get("id", None)
     req_gene = request.GET.get("gene", None)
