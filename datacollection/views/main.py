@@ -110,16 +110,29 @@ def main_filter_ng(request):
         factors = []
 
     if clicked != "cell_filter":
+        # celllines = [(ab_cellline, i) for i in
+        #              datasets.filter(cell_line__status="ok").values_list("cell_line__name", flat=True).distinct()]
+        # celltypes = [(ab_celltype, i) for i in
+        #              datasets.filter(cell_type__status="ok").values_list("cell_type__name", flat=True).distinct()]
+        # cellpops = [(ab_cellpop, i) for i in
+        #             datasets.filter(cell_pop__status="ok").values_list("cell_pop__name", flat=True).distinct()]
+        # strains = [(ab_strain, i) for i in
+        #            datasets.filter(strain__status="ok").values_list("strain__name", flat=True).distinct()]
         celllines = [(ab_cellline, i) for i in
-                     datasets.filter(cell_line__status="ok").values_list("cell_line__name", flat=True).distinct()]
+                     datasets.values_list("cell_line__name", flat=True).distinct()]
         celltypes = [(ab_celltype, i) for i in
-                     datasets.filter(cell_type__status="ok").values_list("cell_type__name", flat=True).distinct()]
+                     datasets.values_list("cell_type__name", flat=True).distinct()]
         cellpops = [(ab_cellpop, i) for i in
-                    datasets.filter(cell_pop__status="ok").values_list("cell_pop__name", flat=True).distinct()]
+                    datasets.values_list("cell_pop__name", flat=True).distinct()]
         strains = [(ab_strain, i) for i in
-                   datasets.filter(strain__status="ok").values_list("strain__name", flat=True).distinct()]
-
-        cellinfos = sorted(chain(celllines, celltypes, cellpops, strains), key=lambda s: s[1].lower())
+                   datasets.values_list("strain__name", flat=True).distinct()]
+        
+        # cellinfos = sorted(chain(celllines, celltypes, cellpops, strains), key=lambda s: s[1].lower())
+        cellinfos = []
+        for info in chain(celllines, celltypes, cellpops, strains):
+            if info[1] and info[0]:
+                cellinfos.append(info)
+        cellinfos = sorted(cellinfos, key=lambda s: s[1].lower())
 
     else:
         cellinfos = []
