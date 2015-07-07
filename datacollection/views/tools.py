@@ -11,6 +11,22 @@ from django.shortcuts import redirect
 
 __author__ = 'hanfei'
 
+#@cache_page(60 * 60 * 24)
+#def motif_json(request):
+#    req_id = request.GET.get("id", None)
+#    req_gene = request.GET.get("id", None)
+#    if not (req_id):
+#        return HttpResponse("Wrong Parameter")
+#
+#    qc_motif = "/data/home/qqin/Workspace/Achieved/DCjsons/motif_json/"+str(req_id)+".json"
+#
+#    if not os.path.exists(qc_motif):
+#        return HttpResponse("Wrong Parameter")
+#
+#    inf = open(qc_motif)
+#    content = json.load(inf)
+#    return HttpResponse(json.dumps(content, indent=4), content_type="application/json")
+
 @cache_page(60 * 60 * 24)
 def motif_json(request):
     req_id = request.GET.get("id", None)
