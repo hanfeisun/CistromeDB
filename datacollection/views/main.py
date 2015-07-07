@@ -227,8 +227,8 @@ def similarity_ajax(request):
                 for line in inf:
                     element = map(int, line.strip().split())
                     radar_json.append(element) ## index 0 is dataset id, index 1 is radar score
-            ids = [ i[0] for i in radar_json ][:20]
-            radar_json = radar_json[:20]
+            ids = [ i[0] for i in radar_json ][:2000]
+            radar_json = radar_json[:2000]
             radar_json.sort(key = lambda x: x[0])
             datasets = Datasets.objects.filter(id__in=ids).values("species__name", "factor__name",
                                                                   "cell_line__name", "cell_pop__name",
@@ -243,3 +243,4 @@ def similarity_ajax(request):
         except IOError:
             json_result = {}
         return HttpResponse(json.dumps(json_result), mimetype="application/json")
+
