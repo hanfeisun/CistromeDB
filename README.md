@@ -14,5 +14,5 @@ of CistromeDB is served at cistrome.org/db and under internal development.
 
 The text mining module locates at ncbiAdapter folder, which contains two features
 
-* Rule-based text-mining is used to extract and normalize terms from GEO metadata (recommended)
-* Naive Bayes classifier is used to classify samples into categories (obsoleted)
+* Rule-based text-mining is used to extract and normalize terms from GEO metadata [link](https://github.com/hanfeisun/CistromeDB/blob/newdc/ncbiAdapter/geo.py)
+* Naive Bayes classifier is used to classify samples into categories [link](https://github.com/hanfeisun/CistromeDB/tree/newdc/ncbiAdapter/classifiers)
