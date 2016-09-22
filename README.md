@@ -8,7 +8,7 @@ functions to analysis and visualize these datasets.
 ## Notes
 
 This is a snapshot of an old-version of CistromeDB. The latest version 
-of CistromeDB is served at cistrome.org/db and under internal development.
+of CistromeDB is served at http://cistrome.org/db and under internal development.
 
 ## Text mining
 
