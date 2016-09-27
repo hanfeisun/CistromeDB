@@ -10,6 +10,8 @@ functions to analysis and visualize these datasets.
 This is a snapshot of an old-version of CistromeDB. The latest version 
 of CistromeDB is served at http://cistrome.org/db and under internal development.
 
+This work is accepted by 2016 database issue of Nucleic Acids Research.
+
 ## Text mining
 
 The text mining module locates at ncbiAdapter folder, which contains two features
