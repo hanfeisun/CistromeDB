@@ -2,7 +2,7 @@ Django==1.5.4
 Django-Select2==4.2.2
 Mako==1.0.0
 MarkupSafe==0.23
-PyYAML==3.10
+PyYAML==5.4
 South==0.7.6
 WebOb==1.2.3
 WebTest==2.0.7
