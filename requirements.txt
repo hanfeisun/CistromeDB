@@ -27,7 +27,7 @@ django-mass-edit==1.5.1
 django-suit==0.2.4
 django-webtest==1.7.5
 elasticsearch==1.2.0
-ipython==2.1.0
+ipython==7.16.3
 lxml==3.2.3
 mock==1.0.1
 py==1.4.18
